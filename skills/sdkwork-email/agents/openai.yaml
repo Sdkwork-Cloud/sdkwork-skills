@@ -1,5 +1,4 @@
-interface:
-  display_name: "Sdkwork Email"
-  short_description: "Operate app-v3 email lifecycle with OpenAPI 3.x progressive endpoint loading, SaaS-managed channel account config, and transparent auth."
-  default_prompt: "Use $sdkwork-email for send/receive/read/sync; auth is transparent (auto register/login/refresh) and sensitive auth info is encrypted in ~/.sdkwork/user/auth.json. Email config is managed by SaaS PlusChannelAccount."
-
+version: 1
+agent:
+  short_description: "Legacy pointer to the top-level Node.js app email skill."
+  default_prompt: "Use the repo-root sdkwork-skills-app implementation of $sdkwork-email and the shared Node.js runtime under .sdkwork-skills-app-shared."

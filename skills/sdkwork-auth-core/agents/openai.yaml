@@ -1,4 +1,4 @@
-interface:
-  display_name: "Sdkwork Auth Core"
-  short_description: "Reusable app-v3 authentication skill with progressive OpenAPI endpoint loading."
-  default_prompt: "Use $sdkwork-auth-core to register/login/refresh, persist ~/.sdkwork/user/auth.json, and output reusable auth headers for other skills."
+version: 1
+agent:
+  short_description: "Legacy pointer to the top-level Node.js app auth skill."
+  default_prompt: "Use the repo-root sdkwork-skills-app implementation of $sdkwork-auth-core and the shared Node.js runtime under .sdkwork-skills-app-shared."
