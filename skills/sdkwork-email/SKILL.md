@@ -1,6 +1,6 @@
 ---
 name: sdkwork-email
-description: Use when an app workflow against spring-ai-plus-app-api needs SDKWORK email operations through the shared app auth runtime.
+description: Use when an app workflow against legacy-java-plus-app-api needs SDKWORK email operations through the shared app auth runtime.
 ---
 
 # SDKWORK Email

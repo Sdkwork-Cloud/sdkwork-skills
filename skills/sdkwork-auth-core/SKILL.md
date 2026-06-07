@@ -1,6 +1,6 @@
 ---
 name: sdkwork-auth-core
-description: Use when an app skill against spring-ai-plus-app-api needs reusable login, refresh, per-app session storage, or backend-bound access-token headers.
+description: Use when an app skill against legacy-java-plus-app-api needs reusable login, refresh, per-app session storage, or backend-bound access-token headers.
 ---
 
 # SDKWORK Auth Core
