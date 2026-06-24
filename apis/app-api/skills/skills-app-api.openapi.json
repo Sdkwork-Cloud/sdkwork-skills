@@ -1,0 +1,48 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SDKWork Skills App API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/app/v3/api/skills": {
+      "get": {
+        "operationId": "skills.listSkills",
+        "summary": "List marketplace skills",
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-api-surface": "app-api",
+        "responses": {
+          "200": {
+            "description": "Skill list"
+          }
+        }
+      }
+    },
+    "/app/v3/api/skill_packages": {
+      "get": {
+        "operationId": "skills.listSkillPackages",
+        "summary": "List skill packages",
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-api-surface": "app-api",
+        "responses": {
+          "200": {
+            "description": "Skill package list"
+          }
+        }
+      }
+    },
+    "/app/v3/api/categories": {
+      "get": {
+        "operationId": "skills.listCategories",
+        "summary": "List skill categories",
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-api-surface": "app-api",
+        "responses": {
+          "200": {
+            "description": "Category list"
+          }
+        }
+      }
+    }
+  }
+}

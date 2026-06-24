@@ -1,0 +1,16 @@
+schemaVersion: 1
+kind: sdkwork.docs.index
+repository: skills
+canon:
+  prd: docs/product/prd/PRD.md
+  techArchitecture: docs/architecture/tech/TECH_ARCHITECTURE.md
+entries:
+  - id: ADR-20260624-skills-domain-extraction-and-ai-table-standard
+    kind: adr
+    path: docs/architecture/decisions/ADR-20260624-skills-domain-extraction-and-ai-table-standard.md
+    title: Skills domain extraction and ai_ table standard
+  - id: MIG-2026-0010-skills-domain-extraction
+    kind: migration
+    path: docs/migrations/MIG-2026-0010-skills-domain-extraction.md
+    title: Skills domain extraction from kernel
+domains: []

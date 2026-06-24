@@ -1,11 +1,34 @@
-# Legacy SDKWORK App Skills
+# SDKWork Skills
 
-The canonical app skill pack now lives at the repository root:
+Skills Hub application root with PC client, Rust APIs, and `ai_*` intelligence-domain tables.
 
-- `sdkwork-skills-app`
+## Surfaces
 
-Use that package for installation, Node.js runtime scripts, and the unified
-`~/.sdkwork/app/<appId>/` storage contract.
+| Surface | Path |
+| --- | --- |
+| Skills Hub | `apps/sdkwork-skills-pc` → `/skills-hub` |
+| Console CRUD | `/console/skills` |
+| Admin CRUD | `/admin/skills`, `/admin/categories` |
 
-This legacy folder is kept only as a compatibility pointer for repository
-readers. Do not add new runtime logic here.
+## Quick start
+
+```bash
+pnpm install
+pnpm db:materialize:contract
+pnpm api:check
+cargo test --workspace
+pnpm dev
+```
+
+## Documentation Canon
+
+- [docs/README.md](docs/README.md)
+- [docs/product/prd/PRD.md](docs/product/prd/PRD.md)
+- [docs/architecture/tech/TECH_ARCHITECTURE.md](docs/architecture/tech/TECH_ARCHITECTURE.md)
+
+## Verification
+
+```bash
+pnpm verify
+node ../sdkwork-specs/tools/check-repository-docs-standard.mjs --root .
+```

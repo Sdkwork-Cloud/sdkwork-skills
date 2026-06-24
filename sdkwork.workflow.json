@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.workflow",
+  "application": {
+    "key": "sdkwork-skills",
+    "displayName": "SDKWork Skills"
+  },
+  "dependencies": [
+    {
+      "id": "sdkwork-specs",
+      "repository": "Sdkwork-Cloud/sdkwork-specs",
+      "ref": "main",
+      "path": "../sdkwork-specs"
+    },
+    {
+      "id": "sdkwork-database",
+      "repository": "Sdkwork-Cloud/sdkwork-database",
+      "ref": "main",
+      "path": "../sdkwork-database"
+    },
+    {
+      "id": "sdkwork-web-framework",
+      "repository": "Sdkwork-Cloud/sdkwork-web-framework",
+      "ref": "main",
+      "path": "../sdkwork-web-framework"
+    },
+    {
+      "id": "sdkwork-utils",
+      "repository": "Sdkwork-Cloud/sdkwork-utils",
+      "ref": "main",
+      "path": "../sdkwork-utils"
+    },
+    {
+      "id": "sdkwork-appbase",
+      "repository": "Sdkwork-Cloud/sdkwork-appbase",
+      "ref": "main",
+      "path": "../sdkwork-appbase"
+    },
+    {
+      "id": "sdkwork-kernel",
+      "repository": "Sdkwork-Cloud/sdkwork-kernel",
+      "ref": "main",
+      "path": "../sdkwork-kernel"
+    }
+  ]
+}

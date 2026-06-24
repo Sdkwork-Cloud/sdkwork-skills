@@ -1,4 +1,4 @@
 version: 1
 agent:
-  short_description: "Legacy pointer to the top-level Node.js app auth skill."
-  default_prompt: "Use the repo-root sdkwork-skills-app implementation of $sdkwork-auth-core and the shared Node.js runtime under .sdkwork-skills-app-shared."
+  short_description: "Legacy pointer to sdkwork-skills-private app auth skill."
+  default_prompt: "Use sdkwork-skills-private/sdkwork-skills-app and sdkwork-skills-framework for $sdkwork-auth-core. Do not implement auth clients in the public sdkwork-skills repository."

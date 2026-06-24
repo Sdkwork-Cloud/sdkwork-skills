@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-skills",
+    "displayName": "SDKWork Skills Application",
+    "version": "0.1.0",
+    "type": "application-root",
+    "root": "sdkwork-skills",
+    "domain": "intelligence",
+    "capability": "skills",
+    "languages": ["rust", "typescript"],
+    "generated": false,
+    "manifests": [
+      "sdkwork.app.config.json",
+      "package.json",
+      "Cargo.toml"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "APP_PC_ARCHITECTURE_SPEC.md",
+      "path": "../sdkwork-specs/APP_PC_ARCHITECTURE_SPEC.md",
+      "purpose": "PC application root layout."
+    },
+    {
+      "file": "WEB_FRAMEWORK_SPEC.md",
+      "path": "../sdkwork-specs/WEB_FRAMEWORK_SPEC.md",
+      "purpose": "HTTP API runtime integration."
+    },
+    {
+      "file": "DATABASE_FRAMEWORK_SPEC.md",
+      "path": "../sdkwork-specs/DATABASE_FRAMEWORK_SPEC.md",
+      "purpose": "Database lifecycle."
+    },
+    {
+      "file": "DATABASE_SPEC.md",
+      "path": "../sdkwork-specs/DATABASE_SPEC.md",
+      "purpose": "ai_* table naming."
+    }
+  ],
+  "contracts": {
+    "publicExports": [],
+    "runtimeEntrypoints": [
+      "package.json#scripts.dev",
+      "package.json#scripts.verify"
+    ],
+    "routeManifest": null,
+    "sdkClients": [
+      "sdkwork-skills-app-sdk",
+      "sdkwork-skills-backend-sdk"
+    ],
+    "events": [],
+    "configKeys": []
+  },
+  "verification": {
+    "commands": [
+      "pnpm verify",
+      "node ../sdkwork-specs/tools/check-repository-docs-standard.mjs --root ."
+    ]
+  }
+}

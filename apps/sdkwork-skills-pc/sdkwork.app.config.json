@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 3,
+  "kind": "sdkwork.app",
+  "app": {
+    "key": "sdkwork-skills-pc",
+    "name": "SDKWork Skills PC",
+    "displayName": "SDKWork Skills Hub",
+    "description": "PC application for Skills Hub, console skill management, and admin operations.",
+    "vendor": "SDKWork",
+    "appType": "APP_REACT",
+    "versionSource": "package.json",
+    "identifiers": {
+      "desktopAppId": "com.sdkwork.skills.pc",
+      "containerImage": "registry.sdkwork.com/apps/sdkwork-skills-pc"
+    }
+  },
+  "backend": {
+    "profileKey": "backend-root-admin",
+    "platform": "WEB",
+    "appId": "sdkwork-skills-pc",
+    "tenantId": "100001"
+  },
+  "runtime": {
+    "family": "desktop",
+    "framework": "react",
+    "runtimes": ["WEB"],
+    "supportedDeploymentProfiles": ["cloud"],
+    "defaultDeploymentProfile": "cloud"
+  },
+  "metadata": {
+    "component": "sdkwork-skills-pc",
+    "surface": "pc"
+  }
+}

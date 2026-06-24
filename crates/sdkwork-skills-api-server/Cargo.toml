@@ -1,0 +1,28 @@
+[package]
+name = "sdkwork-skills-api-server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+axum.workspace = true
+sdkwork-intelligence-skills-repository-sqlx = { path = "../sdkwork-intelligence-skills-repository-sqlx" }
+sdkwork-intelligence-skills-service = { path = "../sdkwork-intelligence-skills-service" }
+sdkwork-router-skills-app-api = { path = "../sdkwork-router-skills-app-api" }
+sdkwork-router-skills-backend-api = { path = "../sdkwork-router-skills-backend-api" }
+sdkwork-skills-database-host = { path = "../sdkwork-skills-database-host" }
+sqlx.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[[bin]]
+name = "sdkwork-skills-app-api"
+path = "src/bin/app_main.rs"
+
+[[bin]]
+name = "sdkwork-skills-backend-api"
+path = "src/bin/backend_main.rs"

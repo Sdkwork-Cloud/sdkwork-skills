@@ -1,0 +1,15 @@
+schemaVersion: 1
+moduleId: skills
+engine: postgres
+tables:
+  - c_category
+  - ai_agent_skill_package
+  - ai_agent_skill
+  - ai_user_agent_skill
+  - ai_skill_asset
+  - ai_skill_artifact
+  - ai_skill_action
+prefixes:
+  - ai_
+  - c_
+baseline: database/ddl/baseline/postgres/0001_skills_baseline.sql

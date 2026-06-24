@@ -5,10 +5,13 @@ description: Use when an app workflow against legacy-java-plus-app-api needs SDK
 
 # SDKWORK Email
 
-The active implementation moved to the top-level `sdkwork-skills-app` pack.
+The active implementation is in `sdkwork-skills-private/sdkwork-skills-app`.
 
-Use:
+Use the shared script:
 
-`installedSkillDir/../.sdkwork-skills-app-shared/scripts/sdkwork_email_client.mjs`
+`sdkwork-skills-private/sdkwork-skills-app/.sdkwork-skills-app-shared/scripts/sdkwork_email_client.mjs`
 
-and reuse the same app-scoped state under `~/.sdkwork/app/<appId>/`.
+Reuse the same app-scoped state under `~/.sdkwork/app/<appId>/` via
+`sdkwork-skills-private/sdkwork-skills-framework`.
+
+Do not add email client logic to this legacy public repository.

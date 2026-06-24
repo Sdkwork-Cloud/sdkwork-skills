@@ -1,0 +1,3 @@
+packages:
+  - apps/sdkwork-skills-pc
+  - apps/sdkwork-skills-pc/packages/*

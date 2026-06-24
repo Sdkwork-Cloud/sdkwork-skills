@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.database.prefix-registry",
+  "prefixes": [
+    {
+      "prefix": "ai_",
+      "domain": "intelligence",
+      "owner": "skills-platform"
+    },
+    {
+      "prefix": "c_",
+      "domain": "catalog",
+      "owner": "skills-platform"
+    }
+  ]
+}

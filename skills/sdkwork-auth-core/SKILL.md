@@ -5,14 +5,18 @@ description: Use when an app skill against legacy-java-plus-app-api needs reusab
 
 # SDKWORK Auth Core
 
-The active implementation moved to the top-level `sdkwork-skills-app` pack.
+The active implementation is in `sdkwork-skills-private/sdkwork-skills-app`.
 
-Use:
+Use the shared script:
 
-`installedSkillDir/../.sdkwork-skills-app-shared/scripts/sdkwork_auth_client.mjs`
+`sdkwork-skills-private/sdkwork-skills-app/.sdkwork-skills-app-shared/scripts/sdkwork_auth_client.mjs`
 
-and persist state only under:
+Runtime is provided by `sdkwork-skills-private/sdkwork-skills-framework`.
+
+Persist state only under:
 
 - `~/.sdkwork/app/<appId>/config.json`
 - `~/.sdkwork/app/<appId>/profiles.json`
 - `~/.sdkwork/app/<appId>/session.json`
+
+Do not add auth client logic to this legacy public repository.

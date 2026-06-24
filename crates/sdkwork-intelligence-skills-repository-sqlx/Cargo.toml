@@ -1,0 +1,13 @@
+[package]
+name = "sdkwork-intelligence-skills-repository-sqlx"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+chrono = { version = "0.4", features = ["serde"] }
+sdkwork-intelligence-skills-service = { path = "../sdkwork-intelligence-skills-service" }
+sdkwork-skills-contract.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true

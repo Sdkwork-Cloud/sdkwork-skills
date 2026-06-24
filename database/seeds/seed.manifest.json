@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.database.seed-manifest",
+  "profiles": [
+    {
+      "id": "standard",
+      "locales": ["zh-CN"]
+    }
+  ]
+}

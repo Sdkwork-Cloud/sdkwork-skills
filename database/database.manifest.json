@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.database.module",
+  "moduleId": "skills",
+  "serviceCode": "SKILLS",
+  "displayName": "SKILLS Database",
+  "owner": "skills-platform",
+  "engines": ["postgres"],
+  "defaultEngine": "postgres",
+  "tablePrefix": "ai_",
+  "contractVersion": "1.0.0",
+  "baselineStrategy": "baseline-plus-migrations",
+  "modules": [],
+  "lifecycle": {
+    "autoMigrate": true,
+    "seedOnBoot": true,
+    "defaultSeedLocale": "zh-CN",
+    "defaultSeedProfile": "standard",
+    "supportedSeedLocales": ["zh-CN", "en-US"],
+    "activeSeedLocales": ["zh-CN"],
+    "driftCheckIntervalSec": 60
+  },
+  "paths": {
+    "contract": "contract/schema.yaml",
+    "migrations": "migrations",
+    "seeds": "seeds",
+    "driftPolicy": "drift/policy.yaml"
+  },
+  "spi": {
+    "provider": "default",
+    "hooks": []
+  }
+}

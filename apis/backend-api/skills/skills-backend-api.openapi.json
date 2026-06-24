@@ -1,0 +1,48 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SDKWork Skills Backend API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/backend/v3/api/skill": {
+      "get": {
+        "operationId": "skills.admin.listSkills",
+        "summary": "Admin list skills",
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-api-surface": "backend-api",
+        "responses": {
+          "200": {
+            "description": "Skill list"
+          }
+        }
+      }
+    },
+    "/backend/v3/api/skill/package": {
+      "get": {
+        "operationId": "skills.admin.listSkillPackages",
+        "summary": "Admin list skill packages",
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-api-surface": "backend-api",
+        "responses": {
+          "200": {
+            "description": "Skill package list"
+          }
+        }
+      }
+    },
+    "/backend/v3/api/category": {
+      "get": {
+        "operationId": "skills.admin.listCategories",
+        "summary": "Admin list categories",
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-api-surface": "backend-api",
+        "responses": {
+          "200": {
+            "description": "Category list"
+          }
+        }
+      }
+    }
+  }
+}

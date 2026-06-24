@@ -1,0 +1,12 @@
+pub const OP_LIST_SKILLS: &str = "skills.listSkills";
+pub const OP_GET_SKILL: &str = "skills.getSkill";
+pub const OP_INSTALL_SKILL: &str = "skills.installSkill";
+pub const OP_LIST_SKILL_PACKAGES: &str = "skills.listSkillPackages";
+pub const OP_GET_SKILL_PACKAGE: &str = "skills.getSkillPackage";
+pub const OP_CREATE_SKILL_PACKAGE: &str = "skills.admin.createSkillPackage";
+pub const OP_UPDATE_SKILL_PACKAGE: &str = "skills.admin.updateSkillPackage";
+pub const OP_DELETE_SKILL_PACKAGE: &str = "skills.admin.deleteSkillPackage";
+pub const OP_LIST_CATEGORIES: &str = "skills.listCategories";
+pub const OP_CREATE_CATEGORY: &str = "skills.admin.createCategory";
+pub const OP_UPDATE_CATEGORY: &str = "skills.admin.updateCategory";
+pub const OP_DELETE_CATEGORY: &str = "skills.admin.deleteCategory";

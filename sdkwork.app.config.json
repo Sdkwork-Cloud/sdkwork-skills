@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 3,
+  "kind": "sdkwork.app",
+  "app": {
+    "key": "sdkwork-skills",
+    "name": "SDKWork Skills",
+    "displayName": "SDKWork Skills",
+    "description": "Skills Hub, marketplace, and agent skill package management for SDKWork.",
+    "vendor": "SDKWork",
+    "officialWebsiteUrl": "https://sdkwork.com/apps/sdkwork-skills",
+    "supportUrl": "https://sdkwork.com/support",
+    "privacyPolicyUrl": "https://sdkwork.com/privacy",
+    "termsOfServiceUrl": "https://sdkwork.com/terms",
+    "iconUrl": "https://cdn.sdkwork.com/apps/sdkwork-skills/assets/icon-1024.png",
+    "appType": "APP_HTML",
+    "versionSource": "manifest",
+    "identifiers": {
+      "packageName": null,
+      "bundleId": null,
+      "desktopAppId": "com.sdkwork.skills.desktop",
+      "containerImage": "registry.sdkwork.com/apps/sdkwork-skills"
+    }
+  },
+  "backend": {
+    "profileKey": "backend-root-admin",
+    "ownerMode": "tenant",
+    "grantMode": "current",
+    "platform": "WEB",
+    "appId": "sdkwork-skills",
+    "tenantId": "100001",
+    "organizationId": "0"
+  },
+  "runtime": {
+    "family": "web",
+    "framework": "web",
+    "runtimes": ["WEB", "BROWSER"],
+    "deliveryModes": ["WEB_URL", "DIRECT_DOWNLOAD"],
+    "defaultPlatform": "WEB",
+    "defaultArchitecture": "x64",
+    "supportedDeploymentProfiles": ["cloud", "standalone"],
+    "defaultDeploymentProfile": "cloud"
+  },
+  "metadata": {
+    "component": "sdkwork-skills",
+    "surface": "platform",
+    "domain": "intelligence",
+    "capability": "skills"
+  }
+}
