@@ -18,7 +18,8 @@
     "profileKey": "backend-root-admin",
     "platform": "WEB",
     "appId": "sdkwork-skills-pc",
-    "tenantId": "100001"
+    "tenantId": "100001",
+    "organizationId": "0"
   },
   "runtime": {
     "family": "desktop",

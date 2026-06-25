@@ -1,0 +1,23 @@
+{
+  "workspace": "sdkwork-skills-app-sdk",
+  "title": "SDKWork Skills App API SDK",
+  "apiVersion": "0.1.0",
+  "openapiVersion": "3.1.2",
+  "authoritySpec": "../../apis/app-api/skills/skills-app-api.openapi.json",
+  "generationInputSpec": "../../apis/app-api/skills/skills-app-api.openapi.json",
+  "derivedSpecs": {
+    "default": "../../apis/app-api/skills/skills-app-api.openapi.json"
+  },
+  "sdkOwner": "sdkwork-skills",
+  "apiAuthority": "sdkwork-skills.app",
+  "discoverySurface": {
+    "sdkTarget": "app",
+    "apiPrefix": "/app/v3/api",
+    "schemaUrl": "/app/v3/openapi.json",
+    "generatedProtocols": [
+      "http-openapi"
+    ],
+    "manualTransports": []
+  },
+  "sdkDependencies": []
+}

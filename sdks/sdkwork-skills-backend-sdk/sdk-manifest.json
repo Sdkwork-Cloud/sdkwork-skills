@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "sdkName": "sdkwork-skills-backend-sdk",
+  "sdkOwner": "sdkwork-skills",
+  "apiAuthority": "sdkwork-skills.backend",
+  "sdkFamily": "sdkwork-skills-backend-sdk",
+  "sdkType": "backend",
+  "apiPrefix": "/backend/v3/api",
+  "generationInputSpec": "../../apis/backend-api/skills/skills-backend-api.openapi.json",
+  "sdkDependencies": [],
+  "generatedPackages": {
+    "typescript": {
+      "language": "typescript",
+      "packageName": "sdkwork-skills-backend-sdk-generated-typescript",
+      "generatedOutput": "sdkwork-skills-backend-sdk-typescript/generated/server-openapi"
+    }
+  },
+  "generatorName": "@sdkwork/sdk-generator",
+  "generatorPath": "E:\\sdkwork-space\\sdkwork-sdk-generator\\bin\\sdkgen.js",
+  "baseUrl": "http://127.0.0.1:18091",
+  "standardProfile": "sdkwork-v3",
+  "fixedSdkVersion": "0.1.0",
+  "ownerOnlyOperationCount": 8,
+  "operations": [
+    {
+      "method": "POST",
+      "operationId": "categories.create",
+      "path": "/backend/v3/api/category"
+    },
+    {
+      "method": "GET",
+      "operationId": "categories.management.list",
+      "path": "/backend/v3/api/category"
+    },
+    {
+      "method": "PUT",
+      "operationId": "categories.update",
+      "path": "/backend/v3/api/category/{categoryId}"
+    },
+    {
+      "method": "POST",
+      "operationId": "skillPackages.create",
+      "path": "/backend/v3/api/skill/package"
+    },
+    {
+      "method": "DELETE",
+      "operationId": "skillPackages.delete",
+      "path": "/backend/v3/api/skill/package/{skillId}"
+    },
+    {
+      "method": "GET",
+      "operationId": "skillPackages.management.list",
+      "path": "/backend/v3/api/skill/package"
+    },
+    {
+      "method": "PUT",
+      "operationId": "skillPackages.update",
+      "path": "/backend/v3/api/skill/package/{skillId}"
+    },
+    {
+      "method": "GET",
+      "operationId": "skills.management.list",
+      "path": "/backend/v3/api/skill"
+    }
+  ],
+  "managedBy": "tools/skills_sdk_generator_runner.mjs"
+}

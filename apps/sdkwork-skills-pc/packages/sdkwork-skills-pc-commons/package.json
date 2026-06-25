@@ -1,0 +1,14 @@
+{
+  "name": "@sdkwork/skills-pc-commons",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./runtime": "./src/runtime.ts",
+    "./driveUri": "./src/driveUri.ts"
+  },
+  "dependencies": {
+    "@sdkwork/utils": "file:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript"
+  }
+}

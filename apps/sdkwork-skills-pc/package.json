@@ -5,23 +5,53 @@
   "type": "module",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "dev": "vite",
+    "dev": "node ../../../sdkwork-iam/scripts/dev/run-pc-renderer-dev-with-bootstrap.mjs -- vite",
     "build": "vite build",
     "test": "node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@sdkwork/iam-app-sdk": "workspace:*",
+    "@sdkwork/auth-pc-react": "workspace:*",
+    "@sdkwork/auth-runtime-pc-react": "workspace:*",
+    "@sdkwork/drive-app-sdk": "workspace:*",
+    "@sdkwork/iam-contracts": "workspace:*",
+    "@sdkwork/iam-runtime": "workspace:*",
+    "@sdkwork/runtime-bootstrap": "workspace:*",
+    "@sdkwork/skills-pc-admin": "workspace:*",
+    "@sdkwork/skills-pc-admin-core": "workspace:*",
+    "@sdkwork/skills-pc-commons": "workspace:*",
+    "@sdkwork/skills-pc-console": "workspace:*",
+    "@sdkwork/skills-pc-core": "workspace:*",
+    "@sdkwork/skills-pc-hub": "workspace:*",
     "@sdkwork/skills-pc-shell": "workspace:*",
-    "@sdkwork/utils": "file:../../../sdkwork-utils/packages/sdkwork-utils-typescript",
+    "@sdkwork/sdk-common": "workspace:*",
+    "@sdkwork/utils": "workspace:*",
+    "@tailwindcss/vite": "^4.1.14",
+    "i18next": "catalog:",
+    "lucide-react": "catalog:",
+    "qrcode": "catalog:",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.0"
+    "react-i18next": "catalog:",
+    "react-router-dom": "^7.6.0",
+    "sdkwork-skills-app-sdk-generated-typescript": "workspace:*",
+    "sdkwork-skills-backend-sdk-generated-typescript": "workspace:*",
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.4.1",
+    "tailwindcss": "^4.1.14",
     "typescript": "^5.9.0",
     "vite": "^6.3.0"
+  },
+  "sdkwork": {
+    "workspace": "sdkwork-skills",
+    "architecture": "pc-react",
+    "domain": "intelligence",
+    "capability": "skills",
+    "status": "ready"
   }
 }

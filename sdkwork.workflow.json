@@ -1,46 +1,160 @@
 {
-  "schemaVersion": 1,
-  "kind": "sdkwork.workflow",
-  "application": {
-    "key": "sdkwork-skills",
-    "displayName": "SDKWork Skills"
+  "$schema": "../sdkwork-github-workflow/schemas/sdkwork-workflow.schema.json",
+  "schemaVersion": "2026-06-06.sdkwork.workflow.v1",
+  "app": {
+    "id": "sdkwork-skills",
+    "name": "SDKWork Skills",
+    "repository": "Sdkwork-Cloud/sdkwork-skills",
+    "sourcePath": ".",
+    "configPath": "sdkwork.app.config.json"
+  },
+  "release": {
+    "artifactPrefix": "sdkwork-skills",
+    "defaultVersion": "0.1.0",
+    "changelog": {
+      "source": "app-manifest",
+      "maxCommitSubjects": 50
+    }
   },
   "dependencies": [
     {
-      "id": "sdkwork-specs",
-      "repository": "Sdkwork-Cloud/sdkwork-specs",
-      "ref": "main",
-      "path": "../sdkwork-specs"
-    },
-    {
-      "id": "sdkwork-database",
-      "repository": "Sdkwork-Cloud/sdkwork-database",
-      "ref": "main",
-      "path": "../sdkwork-database"
+      "id": "sdkwork-appbase",
+      "repository": "Sdkwork-Cloud/sdkwork-appbase",
+      "refInput": "SDKWORK_APPBASE_REF",
+      "tokenSecret": "SDKWORK_RELEASE_TOKEN"
     },
     {
       "id": "sdkwork-web-framework",
       "repository": "Sdkwork-Cloud/sdkwork-web-framework",
-      "ref": "main",
-      "path": "../sdkwork-web-framework"
+      "refInput": "SDKWORK_WEB_FRAMEWORK_REF",
+      "tokenSecret": "SDKWORK_RELEASE_TOKEN"
+    },
+    {
+      "id": "sdkwork-database",
+      "repository": "Sdkwork-Cloud/sdkwork-database",
+      "refInput": "SDKWORK_DATABASE_REF",
+      "tokenSecret": "SDKWORK_RELEASE_TOKEN"
     },
     {
       "id": "sdkwork-utils",
       "repository": "Sdkwork-Cloud/sdkwork-utils",
-      "ref": "main",
-      "path": "../sdkwork-utils"
+      "refInput": "SDKWORK_UTILS_REF",
+      "tokenSecret": "SDKWORK_RELEASE_TOKEN"
     },
     {
       "id": "sdkwork-appbase",
       "repository": "Sdkwork-Cloud/sdkwork-appbase",
-      "ref": "main",
-      "path": "../sdkwork-appbase"
+      "refInput": "SDKWORK_APPBASE_REF",
+      "tokenSecret": "SDKWORK_RELEASE_TOKEN"
+    },
+    {
+      "id": "sdkwork-drive",
+      "repository": "Sdkwork-Cloud/sdkwork-drive",
+      "refInput": "SDKWORK_DRIVE_REF",
+      "tokenSecret": "SDKWORK_RELEASE_TOKEN"
+    },
+    {
+      "id": "sdkwork-sdk-generator",
+      "repository": "Sdkwork-Cloud/sdkwork-sdk-generator",
+      "refInput": "SDKWORK_SDK_GENERATOR_REF",
+      "tokenSecret": "SDKWORK_RELEASE_TOKEN"
     },
     {
       "id": "sdkwork-kernel",
       "repository": "Sdkwork-Cloud/sdkwork-kernel",
-      "ref": "main",
-      "path": "../sdkwork-kernel"
+      "refInput": "SDKWORK_KERNEL_REF",
+      "tokenSecret": "SDKWORK_RELEASE_TOKEN"
     }
-  ]
+  ],
+  "toolchains": {
+    "node": "22",
+    "pnpm": "10.33.0",
+    "rust": "stable"
+  },
+  "lifecycle": {
+    "install": [
+      {
+        "name": "Install workspace dependencies",
+        "shell": "pwsh",
+        "run": "pnpm install --no-frozen-lockfile --config.auto-install-peers=false"
+      }
+    ],
+    "build": [
+      {
+        "name": "Run skills verification",
+        "shell": "pwsh",
+        "run": "pnpm verify"
+      }
+    ],
+    "package": [
+      {
+        "name": "Build Skills API server binaries",
+        "shell": "pwsh",
+        "run": "cargo build --release -p sdkwork-skills-api-server"
+      },
+      {
+        "name": "Build Skills PC web bundle",
+        "shell": "pwsh",
+        "run": "pnpm build"
+      }
+    ],
+    "validate": [
+      {
+        "name": "Validate Skills contracts",
+        "shell": "pwsh",
+        "run": "pnpm verify"
+      }
+    ],
+    "sign": [
+      {
+        "name": "Sign Skills release artifacts",
+        "shell": "pwsh",
+        "run": "node ../sdkwork-github-workflow/scripts/sign-release-artifacts.mjs --app sdkwork-skills --package-id $env:SDKWORK_PACKAGE_ID"
+      }
+    ],
+    "sbom": [
+      {
+        "name": "Generate Skills SBOM",
+        "shell": "pwsh",
+        "run": "node ../sdkwork-github-workflow/scripts/generate-release-sbom.mjs --app sdkwork-skills --package-id $env:SDKWORK_PACKAGE_ID"
+      }
+    ]
+  },
+  "targets": [
+    {
+      "id": "linux-x64-standalone-server-tar-gz",
+      "profile": "server",
+      "platform": "linux",
+      "architecture": "x64",
+      "formats": ["tar.gz"],
+      "runner": "ubuntu-24.04",
+      "outputGlobs": [
+        "target/release/sdkwork-skills-app-api*",
+        "target/release/sdkwork-skills-backend-api*"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "server"
+    },
+    {
+      "id": "web-universal-cloud-browser-zip",
+      "profile": "browser",
+      "platform": "web",
+      "architecture": "universal",
+      "formats": ["zip"],
+      "runner": "ubuntu-24.04",
+      "outputGlobs": ["apps/sdkwork-skills-pc/dist/**"],
+      "deploymentProfile": "cloud",
+      "runtimeTarget": "browser"
+    }
+  ],
+  "security": {
+    "artifactAttestations": true,
+    "sbomRequired": true,
+    "signingRequired": true
+  },
+  "publish": {
+    "workflowArtifact": true,
+    "githubRelease": false,
+    "retentionDays": 30
+  }
 }

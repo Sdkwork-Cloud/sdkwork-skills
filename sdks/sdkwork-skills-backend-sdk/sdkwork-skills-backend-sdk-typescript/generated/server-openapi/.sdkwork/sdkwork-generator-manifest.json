@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "generator": "@sdkwork/sdk-generator",
+  "sdk": {
+    "name": "sdkwork-skills-backend-sdk",
+    "version": "0.1.0",
+    "language": "typescript",
+    "sdkType": "backend",
+    "protocol": "http",
+    "packageName": "sdkwork-skills-backend-sdk-generated-typescript"
+  },
+  "generatedFiles": [
+    {
+      "path": "bin/publish-core.mjs",
+      "sha256": "98ad0918a78bfbe22bf8f12fec709b0bed545b9e01edd40f5e4abf31a23378a5"
+    },
+    {
+      "path": "bin/publish.ps1",
+      "sha256": "78c6419400b988409d9393c2ecd85aa02dd6760f73edb3cc84cb28fefc51b41e"
+    },
+    {
+      "path": "bin/publish.sh",
+      "sha256": "899087c23e670b6951a12a13490fd557f761c96d78fabfb7e58a37e367db889f"
+    },
+    {
+      "path": "bin/sdk-gen.bat",
+      "sha256": "1fa0948b506e5deecf73be9371db39a042e48555d018292334fa0004a897fcbe"
+    },
+    {
+      "path": "bin/sdk-gen.sh",
+      "sha256": "215c7192b3f5891efebd79d6e2938a520ac6c9c6eb6b64979371c1ee7a58fd3d"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "fb941a0806986a54fc192f98a98f6d9c282b8d350b2b19a3e71dda404e92d545"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "7840cc7d2b36ff364ac16c2fc5ec15b861bfe96854eecf81fb59b00edb8b1447"
+    },
+    {
+      "path": "package.json",
+      "sha256": "ac2ccd5c4b78ac74b6b0861d29a605d12a349e7d01859f22e95d7f087d543ac3"
+    },
+    {
+      "path": "README.md",
+      "sha256": "aae989719bff82a4153f5fdbba15cf775c1efdbff475a283ee502541ef2be0d6"
+    },
+    {
+      "path": "sdkwork-sdk.json",
+      "sha256": "7d7c2d9f2f25d109fe472949ab872c824fa201a05074c155a9f88af5e543aee0"
+    },
+    {
+      "path": "src/api/base.ts",
+      "sha256": "02ad25e6bf331ff241ba387c2947ddf1900dd849038e08c2757416a3aa788a04"
+    },
+    {
+      "path": "src/api/index.ts",
+      "sha256": "3487c4515c1c1c668e266cf3318008a67d0d9d09203cc637d7142622ff1802e6"
+    },
+    {
+      "path": "src/api/paths.ts",
+      "sha256": "fb06a3db13e96bb5b349ddc1831aa6d350c17b09d05ea92a36438131140f666e"
+    },
+    {
+      "path": "src/api/skills.ts",
+      "sha256": "8bf59e28e1483c3f33fea2c4a21dd3b3a56f80d64d8b42cb8a4c695c2d3ea34a"
+    },
+    {
+      "path": "src/auth/index.ts",
+      "sha256": "657fc63738bdcd61d83133120732a477dd127448cf2c51229b05d21f5e1f5c04"
+    },
+    {
+      "path": "src/http/client.ts",
+      "sha256": "1d339275acee6ec54660a32eb9effcc718ebf0992c5e9bfdb80a3452e0702137"
+    },
+    {
+      "path": "src/http/index.ts",
+      "sha256": "fc204fbe89750b9d25ecaffe41003e6ac243a1a895b65e65856202ab825d2dbe"
+    },
+    {
+      "path": "src/index.ts",
+      "sha256": "3a4a3f9c5ce1c5bf55baf261e7b648091cbef7ba2c30ea402dd15f3f37820956"
+    },
+    {
+      "path": "src/sdk.ts",
+      "sha256": "a6eccde9b584cd2ca20d769a23ea29da5e06eb5fff24b04a42ddffc8b281e096"
+    },
+    {
+      "path": "src/types/common.ts",
+      "sha256": "351d721c3c6f48f4453f92276856105120d72eb8d2fa9cd28de8e3854bf10f6c"
+    },
+    {
+      "path": "src/types/create-skill-category-command.ts",
+      "sha256": "1484bacb99e247c98c52f06c5533296ba3a540596228e3d4f9d8c511bb8ecb1c"
+    },
+    {
+      "path": "src/types/create-skill-package-command.ts",
+      "sha256": "95565a37d168a66787cfefde83b15fe0afe520d6c8cbacdb097db523f7ca60b8"
+    },
+    {
+      "path": "src/types/index.ts",
+      "sha256": "1aa921f328262bd781ad56e680e8ad700bd306dd38f77d5b56c8f4a68bb719d2"
+    },
+    {
+      "path": "src/types/install-skill-command.ts",
+      "sha256": "1ba4d551bc4b5a8aa852d3e40880f4adb76dc78171c57314f4d9154c98b0a62f"
+    },
+    {
+      "path": "src/types/problem-detail.ts",
+      "sha256": "ea50f7466f2e1f6a350f2f7974613579a50cfe968d6ff503496c7662e12fb612"
+    },
+    {
+      "path": "src/types/skill-category-list-response.ts",
+      "sha256": "cbff389295989a705650d10920f10cab2d03de8df3916148623528a8e374554a"
+    },
+    {
+      "path": "src/types/skill-category-record-response.ts",
+      "sha256": "770ae21d11caa10364fbf81c9701b238f0fa3c23e0bf4db20361b74dcdb75ec1"
+    },
+    {
+      "path": "src/types/skill-category-record.ts",
+      "sha256": "8fa853430da4fd5bc75c8758073d767ed3f424d313764afcd434a465a801035a"
+    },
+    {
+      "path": "src/types/skill-list-response.ts",
+      "sha256": "af1b6373d54c55a9b79e294b5a225a817b97c17aafe00df2b494f7ada9893664"
+    },
+    {
+      "path": "src/types/skill-package-list-response.ts",
+      "sha256": "4c2cc20c881cba90e79a6f5143e77d14ef59f04ad6a2f7dd7b07a59165cdf643"
+    },
+    {
+      "path": "src/types/skill-package-record-response.ts",
+      "sha256": "75575a9461b4517c45b915c47f5622307476d9dbbf916e5460a343d16c658dc2"
+    },
+    {
+      "path": "src/types/skill-package-record.ts",
+      "sha256": "19e38c049b5d30a266f4a64a389169bd44d2294448f150344e8fdad108931fad"
+    },
+    {
+      "path": "src/types/skill-record-response.ts",
+      "sha256": "36c02fc2fd4959d14480cb9b1772338348ef05f8eeff0b9d3bcd3d4a40ac9f28"
+    },
+    {
+      "path": "src/types/skill-record.ts",
+      "sha256": "e4d6ed0e81e6c3c2d4b72f06f76bd383701cf542ed7e4b05abcb320ab8e4364b"
+    },
+    {
+      "path": "src/types/user-skill-install-record-response.ts",
+      "sha256": "2f8313101a4065ed29058418151db08abe732e2563bcd28640ca233409aa67ed"
+    },
+    {
+      "path": "src/types/user-skill-install-record.ts",
+      "sha256": "4770750ab4467c0c82efc35982570a8c568396f5c0bf3a6a55aa06ceca8c7d32"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "7c8a6c2b00fb208ec28e1e6045194487d1b3e563d6c44cef4783fd4fe0e8ffad"
+    }
+  ],
+  "scaffoldFiles": [
+    "custom/build-runtime.mjs",
+    "custom/README.md"
+  ],
+  "customRoots": [
+    "custom/"
+  ]
+}

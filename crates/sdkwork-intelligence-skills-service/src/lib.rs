@@ -130,6 +130,7 @@ impl<R: SkillsRepository> SkillsService<R> {
         &self,
         record: SkillCategoryRecord,
     ) -> SkillsResult<SkillCategoryRecord> {
+        validation::validate_category_record(&record)?;
         self.repository.upsert_category(record).await
     }
 

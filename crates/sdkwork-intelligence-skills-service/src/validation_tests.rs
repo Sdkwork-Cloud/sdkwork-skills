@@ -19,7 +19,7 @@ mod tests {
             summary: Some("summary".to_string()),
             description: None,
             invocation_kind: SkillInvocationKind::LocalWorkflow,
-            package_ref: "file://demo".to_string(),
+            package_ref: "drive://spaces/skills-dev/nodes/demo-package".to_string(),
             entrypoint: "run".to_string(),
             input_schema_json: "{}".to_string(),
             output_schema_json: "{}".to_string(),

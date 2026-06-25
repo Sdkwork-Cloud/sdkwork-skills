@@ -9,6 +9,8 @@ async-trait.workspace = true
 regex-lite = "0.1"
 serde_json = "1"
 sdkwork-skills-contract.workspace = true
+sdkwork-utils-rust.workspace = true
+sdkwork-drive-contract.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]

@@ -2,6 +2,11 @@ target/
 **/target/
 node_modules/
 **/node_modules/
+dist/
+**/dist/
+.env
+.env.*
+!.env.example
 
 # SDKWork local environment and runtime config overrides
 .env.local
