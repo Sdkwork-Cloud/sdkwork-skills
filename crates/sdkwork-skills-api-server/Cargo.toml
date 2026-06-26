@@ -8,11 +8,12 @@ license.workspace = true
 path = "src/lib.rs"
 
 [dependencies]
+sdkwork_skills_gateway_assembly = { package = "sdkwork-skills-gateway-assembly", path = "../sdkwork-skills-gateway-assembly" }
 axum.workspace = true
 sdkwork-intelligence-skills-repository-sqlx = { path = "../sdkwork-intelligence-skills-repository-sqlx" }
 sdkwork-intelligence-skills-service = { path = "../sdkwork-intelligence-skills-service" }
-sdkwork-router-skills-app-api = { path = "../sdkwork-router-skills-app-api" }
-sdkwork-router-skills-backend-api = { path = "../sdkwork-router-skills-backend-api" }
+sdkwork-routes-skills-app-api = { path = "../sdkwork-routes-skills-app-api" }
+sdkwork-routes-skills-backend-api = { path = "../sdkwork-routes-skills-backend-api" }
 sdkwork-skills-database-host = { path = "../sdkwork-skills-database-host" }
 sqlx.workspace = true
 tokio.workspace = true
@@ -26,3 +27,7 @@ path = "src/bin/app_main.rs"
 [[bin]]
 name = "sdkwork-skills-backend-api"
 path = "src/bin/backend_main.rs"
+
+[[bin]]
+name = "sdkwork-skills-standalone-gateway"
+path = "src/bin/app_main.rs"

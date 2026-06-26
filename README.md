@@ -32,3 +32,7 @@ pnpm dev
 pnpm verify
 node ../sdkwork-specs/tools/check-repository-docs-standard.mjs --root .
 ```
+
+## Application Roots
+
+- [apps directory index](apps/README.md)

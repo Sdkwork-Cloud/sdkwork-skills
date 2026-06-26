@@ -431,3 +431,18 @@ where
     ))
     .await
 }
+
+pub fn gateway_route_manifest() -> HttpRouteManifest {
+    backend_route_manifest()
+}
+
+pub async fn gateway_mount<R>(
+    service: std::sync::Arc<SkillsService<R>>,
+    default_tenant_id: u64,
+    pool: sqlx::PgPool,
+) -> axum::Router
+where
+    R: sdkwork_intelligence_skills_service::SkillsRepository + Clone + Send + Sync + 'static,
+{
+    build_router_with_web_framework_from_env(service, default_tenant_id, pool).await
+}

@@ -20,14 +20,14 @@ async fn build_app_router(runtime: Arc<SkillsRuntime>) -> Router {
     let tenant_id = runtime.default_tenant_id();
     let pool = runtime.postgres_pool();
     if web_framework_enabled() {
-        sdkwork_router_skills_app_api::build_router_with_web_framework_from_env(
+        sdkwork_routes_skills_app_api::build_router_with_web_framework_from_env(
             service,
             tenant_id,
             pool,
         )
         .await
     } else {
-        sdkwork_router_skills_app_api::build_router_with_readiness(service, tenant_id, pool)
+        sdkwork_routes_skills_app_api::build_router_with_readiness(service, tenant_id, pool)
     }
 }
 
@@ -36,14 +36,14 @@ async fn build_backend_router(runtime: Arc<SkillsRuntime>) -> Router {
     let tenant_id = runtime.default_tenant_id();
     let pool = runtime.postgres_pool();
     if web_framework_enabled() {
-        sdkwork_router_skills_backend_api::build_router_with_web_framework_from_env(
+        sdkwork_routes_skills_backend_api::build_router_with_web_framework_from_env(
             service,
             tenant_id,
             pool,
         )
         .await
     } else {
-        sdkwork_router_skills_backend_api::build_router_with_readiness(service, tenant_id, pool)
+        sdkwork_routes_skills_backend_api::build_router_with_readiness(service, tenant_id, pool)
     }
 }
 

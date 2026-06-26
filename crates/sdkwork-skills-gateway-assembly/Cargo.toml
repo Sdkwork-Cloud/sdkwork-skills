@@ -1,0 +1,16 @@
+[package]
+name = "sdkwork-skills-gateway-assembly"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+description = "Generated gateway assembly for sdkwork-skills application HTTP plane."
+
+[lib]
+name = "sdkwork_skills_gateway_assembly"
+path = "src/lib.rs"
+
+[dependencies]
+axum.workspace = true
+tokio = { version = "1.48", features = ["macros", "rt-multi-thread"] }
+sdkwork_routes_skills_app_api = { package = "sdkwork-routes-skills-app-api", path = "../sdkwork-routes-skills-app-api" }
+sdkwork_routes_skills_backend_api = { package = "sdkwork-routes-skills-backend-api", path = "../sdkwork-routes-skills-backend-api" }

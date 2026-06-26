@@ -1,10 +1,11 @@
 [workspace]
 members = [
+    "crates/sdkwork-skills-gateway-assembly",
     "crates/sdkwork-skills-contract",
     "crates/sdkwork-intelligence-skills-service",
     "crates/sdkwork-intelligence-skills-repository-sqlx",
-    "crates/sdkwork-router-skills-app-api",
-    "crates/sdkwork-router-skills-backend-api",
+    "crates/sdkwork-routes-skills-app-api",
+    "crates/sdkwork-routes-skills-backend-api",
     "crates/sdkwork-skills-api-server",
     "crates/sdkwork-skills-database-host",
 ]
