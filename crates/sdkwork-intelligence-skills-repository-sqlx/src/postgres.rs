@@ -65,10 +65,6 @@ fn row_to_skill_package(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillPackag
             "tags_json",
         )?,
         security_profile_id: row.try_get("security_profile_id").map_err(map_sqlx)?,
-        category_id: row
-            .try_get::<Option<i64>, _>("category_id")
-            .map_err(map_sqlx)?
-            .map(|value| value as u64),
         status: map_lifecycle_status(row.try_get("status").map_err(map_sqlx)?)?,
         visibility: map_visibility(row.try_get("visibility").map_err(map_sqlx)?)?,
         version: row.try_get::<i64, _>("version").map_err(map_sqlx)? as u64,
@@ -100,10 +96,12 @@ fn row_to_skill(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillRecord> {
         market_status: row.try_get("market_status").map_err(map_sqlx)?,
         visibility: row.try_get("visibility").map_err(map_sqlx)?,
         review_status: row.try_get("review_status").map_err(map_sqlx)?,
-        category_id: row
-            .try_get::<Option<i64>, _>("category_id")
-            .map_err(map_sqlx)?
-            .map(|value| value as u64),
+        categories: string_list_from_json(
+            row.try_get::<String, _>("categories_json")
+                .map_err(map_sqlx)?
+                .as_str(),
+            "categories_json",
+        )?,
         enabled: row.try_get::<i16, _>("enabled").map_err(map_sqlx)? != 0,
         featured: row.try_get::<i16, _>("featured").map_err(map_sqlx)? != 0,
         install_count: row.try_get::<i64, _>("install_count").map_err(map_sqlx)? as u64,
@@ -143,6 +141,7 @@ fn row_to_category(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillCategoryRec
             .map_err(map_sqlx)?
             .map(|value| value as u64),
         sort_weight: row.try_get("sort_weight").map_err(map_sqlx)?,
+        permission_code: row.try_get("permission_code").map_err(map_sqlx)?,
         visible: row.try_get::<i16, _>("visible").map_err(map_sqlx)? != 0,
         status: row.try_get("status").map_err(map_sqlx)?,
     })
@@ -177,7 +176,7 @@ pub async fn list_skill_packages(pool: &PgPool, tenant_id: u64) -> SkillsResult<
         SELECT id, tenant_id, organization_id, owner_user_id, skill_id, package_key, code,
                display_name, summary, description, invocation_kind, package_ref, entrypoint,
                input_schema_json, output_schema_json, capability_ids_json, categories_json,
-               tags_json, security_profile_id, category_id, status, visibility, version,
+               tags_json, security_profile_id, status, visibility, version,
                created_at, updated_at, deleted_at
         FROM ai_agent_skill_package
         WHERE tenant_id = $1 AND deleted_at IS NULL AND status <> 4
@@ -202,7 +201,7 @@ pub async fn get_skill_package(
         SELECT id, tenant_id, organization_id, owner_user_id, skill_id, package_key, code,
                display_name, summary, description, invocation_kind, package_ref, entrypoint,
                input_schema_json, output_schema_json, capability_ids_json, categories_json,
-               tags_json, security_profile_id, category_id, status, visibility, version,
+               tags_json, security_profile_id, status, visibility, version,
                created_at, updated_at, deleted_at
         FROM ai_agent_skill_package
         WHERE tenant_id = $1 AND skill_id = $2 AND deleted_at IS NULL
@@ -236,10 +235,10 @@ pub async fn upsert_skill_package(
             uuid, tenant_id, organization_id, owner_user_id, skill_id, package_key, code,
             display_name, summary, description, invocation_kind, package_ref, entrypoint,
             input_schema_json, output_schema_json, capability_ids_json, categories_json,
-            tags_json, security_profile_id, category_id, status, visibility, version
+            tags_json, security_profile_id, status, visibility, version
         ) VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
-            $19, $20, $21, $22, $23
+            $19, $20, $21, $22
         )
         ON CONFLICT (tenant_id, skill_id) DO UPDATE SET
             organization_id = EXCLUDED.organization_id,
@@ -258,7 +257,6 @@ pub async fn upsert_skill_package(
             categories_json = EXCLUDED.categories_json,
             tags_json = EXCLUDED.tags_json,
             security_profile_id = EXCLUDED.security_profile_id,
-            category_id = EXCLUDED.category_id,
             status = EXCLUDED.status,
             visibility = EXCLUDED.visibility,
             version = ai_agent_skill_package.version + 1,
@@ -267,7 +265,7 @@ pub async fn upsert_skill_package(
         RETURNING id, tenant_id, organization_id, owner_user_id, skill_id, package_key, code,
                   display_name, summary, description, invocation_kind, package_ref, entrypoint,
                   input_schema_json, output_schema_json, capability_ids_json, categories_json,
-                  tags_json, security_profile_id, category_id, status, visibility, version,
+                  tags_json, security_profile_id, status, visibility, version,
                   created_at, updated_at, deleted_at
         "#,
     )
@@ -290,7 +288,6 @@ pub async fn upsert_skill_package(
     .bind(categories_json)
     .bind(tags_json)
     .bind(&record.security_profile_id)
-    .bind(record.category_id.map(|value| value as i64))
     .bind(record.status.as_db_code())
     .bind(record.visibility.as_db_code())
     .bind(record.version as i64)
@@ -306,7 +303,7 @@ pub async fn list_skills(pool: &PgPool, tenant_id: u64) -> SkillsResult<Vec<Skil
         r#"
         SELECT id, tenant_id, organization_id, owner_user_id, skill_key, package_id, name,
                summary, description, runtime, entrypoint, market_status, visibility,
-               review_status, category_id, enabled, featured, install_count, tags_json,
+               review_status, categories_json, enabled, featured, install_count, tags_json,
                capabilities_json, version, created_at, updated_at, deleted_at
         FROM ai_agent_skill
         WHERE tenant_id = $1 AND deleted_at IS NULL AND enabled = 1
@@ -330,7 +327,7 @@ pub async fn get_skill(
         r#"
         SELECT id, tenant_id, organization_id, owner_user_id, skill_key, package_id, name,
                summary, description, runtime, entrypoint, market_status, visibility,
-               review_status, category_id, enabled, featured, install_count, tags_json,
+               review_status, categories_json, enabled, featured, install_count, tags_json,
                capabilities_json, version, created_at, updated_at, deleted_at
         FROM ai_agent_skill
         WHERE tenant_id = $1 AND skill_key = $2 AND deleted_at IS NULL
@@ -357,8 +354,8 @@ pub async fn list_categories(
     let rows = sqlx::query(
         r#"
         SELECT id, tenant_id, organization_id, category_type, code, name, description,
-               parent_id, sort_weight, visible, status
-        FROM c_category
+               parent_id, sort_weight, permission_code, visible, status
+        FROM ai_skill_category
         WHERE category_type = $1 AND tenant_id IN (0, $2) AND deleted_at IS NULL AND status = 1
         ORDER BY sort_weight ASC, code ASC
         "#,
@@ -385,12 +382,12 @@ pub async fn upsert_category(
     let row = if record.id == 0 {
         sqlx::query(
             r#"
-            INSERT INTO c_category (
+            INSERT INTO ai_skill_category (
                 uuid, tenant_id, organization_id, category_type, code, name, description,
-                parent_id, sort_weight, visible, status
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                parent_id, sort_weight, permission_code, visible, status
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             RETURNING id, tenant_id, organization_id, category_type, code, name, description,
-                      parent_id, sort_weight, visible, status
+                      parent_id, sort_weight, permission_code, visible, status
             "#,
         )
         .bind(uuid)
@@ -402,6 +399,7 @@ pub async fn upsert_category(
         .bind(&record.description)
         .bind(record.parent_id.map(|value| value as i64))
         .bind(record.sort_weight)
+        .bind(&record.permission_code)
         .bind(visible)
         .bind(record.status)
         .fetch_one(pool)
@@ -410,17 +408,18 @@ pub async fn upsert_category(
     } else {
         sqlx::query(
             r#"
-            UPDATE c_category SET
+            UPDATE ai_skill_category SET
                 name = $3,
                 description = $4,
                 parent_id = $5,
                 sort_weight = $6,
-                visible = $7,
-                status = $8,
+                permission_code = $7,
+                visible = $8,
+                status = $9,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = $1 AND tenant_id = $2
             RETURNING id, tenant_id, organization_id, category_type, code, name, description,
-                      parent_id, sort_weight, visible, status
+                      parent_id, sort_weight, permission_code, visible, status
             "#,
         )
         .bind(record.id as i64)
@@ -429,6 +428,7 @@ pub async fn upsert_category(
         .bind(&record.description)
         .bind(record.parent_id.map(|value| value as i64))
         .bind(record.sort_weight)
+        .bind(&record.permission_code)
         .bind(visible)
         .bind(record.status)
         .fetch_one(pool)
@@ -497,7 +497,7 @@ pub async fn delete_skill_package(
         RETURNING id, tenant_id, organization_id, owner_user_id, skill_id, package_key, code,
                   display_name, summary, description, invocation_kind, package_ref, entrypoint,
                   input_schema_json, output_schema_json, capability_ids_json, categories_json,
-                  tags_json, security_profile_id, category_id, status, visibility, version,
+                  tags_json, security_profile_id, status, visibility, version,
                   created_at, updated_at, deleted_at
         "#,
     )
@@ -558,6 +558,7 @@ pub async fn sync_skill_from_package(
     let uuid = format!("agent_skill_{}_{}", package.tenant_id, package.skill_id);
     let tags_json = string_list_to_json(&package.tags, "tags")?;
     let capabilities_json = string_list_to_json(&package.capability_ids, "capabilities")?;
+    let categories_json = string_list_to_json(&package.categories, "categories")?;
     let enabled = if package.status == SkillLifecycleStatus::Active {
         1_i16
     } else {
@@ -571,7 +572,7 @@ pub async fn sync_skill_from_package(
         INSERT INTO ai_agent_skill (
             uuid, tenant_id, organization_id, owner_user_id, skill_key, package_id, name,
             summary, description, runtime, entrypoint, market_status, visibility, review_status,
-            category_id, enabled, tags_json, capabilities_json
+            categories_json, enabled, tags_json, capabilities_json
         ) VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'approved', $14, $15, $16, $17
         )
@@ -584,7 +585,7 @@ pub async fn sync_skill_from_package(
             entrypoint = EXCLUDED.entrypoint,
             market_status = EXCLUDED.market_status,
             visibility = EXCLUDED.visibility,
-            category_id = EXCLUDED.category_id,
+            categories_json = EXCLUDED.categories_json,
             enabled = EXCLUDED.enabled,
             tags_json = EXCLUDED.tags_json,
             capabilities_json = EXCLUDED.capabilities_json,
@@ -593,7 +594,7 @@ pub async fn sync_skill_from_package(
             deleted_at = NULL
         RETURNING id, tenant_id, organization_id, owner_user_id, skill_key, package_id, name,
                   summary, description, runtime, entrypoint, market_status, visibility,
-                  review_status, category_id, enabled, featured, install_count, tags_json,
+                  review_status, categories_json, enabled, featured, install_count, tags_json,
                   capabilities_json, version, created_at, updated_at, deleted_at
         "#,
     )
@@ -610,7 +611,7 @@ pub async fn sync_skill_from_package(
     .bind(&package.entrypoint)
     .bind(market_status)
     .bind(visibility)
-    .bind(package.category_id.map(|value| value as i64))
+    .bind(categories_json)
     .bind(enabled)
     .bind(tags_json)
     .bind(capabilities_json)

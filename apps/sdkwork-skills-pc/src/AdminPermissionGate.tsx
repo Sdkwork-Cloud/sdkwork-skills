@@ -36,6 +36,10 @@ export function AdminPermissionGate({
   const allowed =
     hasPermissionInScope(granted, permission) ||
     roleCodes.includes(SKILLS_ADMIN_ROLES.superAdmin) ||
+    (permission === SKILLS_ADMIN_PERMISSIONS.packageManage &&
+      granted.some((item) =>
+        item.startsWith(`${SKILLS_ADMIN_PERMISSIONS.packageManage}.`),
+      )) ||
     (permission === SKILLS_ADMIN_PERMISSIONS.marketplaceRead &&
       roleCodes.includes(SKILLS_ADMIN_ROLES.operator));
 

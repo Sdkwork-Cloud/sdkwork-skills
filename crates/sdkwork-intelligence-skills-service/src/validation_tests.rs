@@ -9,7 +9,7 @@ mod tests {
     fn sample_package(skill_id: &str) -> SkillPackageRecord {
         SkillPackageRecord {
             id: 0,
-            tenant_id: 1,
+            tenant_id: 100_001,
             organization_id: 0,
             owner_user_id: 0,
             skill_id: skill_id.to_string(),
@@ -27,7 +27,6 @@ mod tests {
             categories: vec![],
             tags: vec![],
             security_profile_id: None,
-            category_id: None,
             status: SkillLifecycleStatus::Active,
             visibility: SkillVisibility::Tenant,
             version: 1,

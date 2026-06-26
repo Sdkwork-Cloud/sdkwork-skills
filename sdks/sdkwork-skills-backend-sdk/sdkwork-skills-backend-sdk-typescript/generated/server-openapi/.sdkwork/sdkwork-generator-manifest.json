@@ -92,7 +92,7 @@
     },
     {
       "path": "src/types/create-skill-category-command.ts",
-      "sha256": "1484bacb99e247c98c52f06c5533296ba3a540596228e3d4f9d8c511bb8ecb1c"
+      "sha256": "d525d366b880d762cdd15906f67c4f4fb347eafd4b2734e4a693e02452ffa164"
     },
     {
       "path": "src/types/create-skill-package-command.ts",
@@ -120,7 +120,7 @@
     },
     {
       "path": "src/types/skill-category-record.ts",
-      "sha256": "8fa853430da4fd5bc75c8758073d767ed3f424d313764afcd434a465a801035a"
+      "sha256": "0a19fe8eb0e495f6fd7012401299a4ce71197c3b328e36fe60ca9430ab62d80e"
     },
     {
       "path": "src/types/skill-list-response.ts",
@@ -136,7 +136,7 @@
     },
     {
       "path": "src/types/skill-package-record.ts",
-      "sha256": "19e38c049b5d30a266f4a64a389169bd44d2294448f150344e8fdad108931fad"
+      "sha256": "b912c285635e1100c9055adabf775d9918a21f69726f6d54b6236717655ecfb7"
     },
     {
       "path": "src/types/skill-record-response.ts",
@@ -144,7 +144,7 @@
     },
     {
       "path": "src/types/skill-record.ts",
-      "sha256": "e4d6ed0e81e6c3c2d4b72f06f76bd383701cf542ed7e4b05abcb320ab8e4364b"
+      "sha256": "c2b90ea6363bcf8cef14b7eb8686c0acbb9f0128cb2a7219516d60e3cbfe8f89"
     },
     {
       "path": "src/types/user-skill-install-record-response.ts",

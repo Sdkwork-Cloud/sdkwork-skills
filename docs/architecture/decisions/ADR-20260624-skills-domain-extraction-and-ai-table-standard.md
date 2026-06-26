@@ -15,7 +15,8 @@ application root with PC Hub/Console/Admin surfaces.
 
 1. **`sdkwork-skills` is the application root** for skills marketplace system-of-record.
 2. **All skills tables use `ai_` prefix** (`ai_agent_skill`, `ai_agent_skill_package`, etc.).
-3. **Categories** use shared `c_category` with `skill_market` / `skills_collection` types.
+3. **Categories** use `ai_skill_category` with `skill_market` / `skills_collection` types and
+   category-scoped package permissions (`skills.admin.package.manage.<code>`).
 4. **`sdkwork-kernel` depends on `sdkwork-skills-contract`** and must not own skill persistence.
 5. **`sdkwork-skills-pc`** delivers Hub (`/skills-hub`), Console (`/console/skills`), and Admin
    (`/admin/skills`, `/admin/categories`) surfaces.

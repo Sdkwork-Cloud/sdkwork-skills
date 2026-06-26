@@ -115,7 +115,7 @@ export function resolveSdkworkSkillsPcRuntimeConfig(
   const sdkBaseUrl = envValue('VITE_SDKWORK_SKILLS_PC_SDK_BASE_URL');
   const sdkBaseUrls = parseSdkBaseUrls(sdkBaseUrl);
   const defaultTenantId =
-    envValue('VITE_SDKWORK_SKILLS_TENANT_ID') ?? manifest.backend?.tenantId ?? '1';
+    envValue('VITE_SDKWORK_SKILLS_TENANT_ID') ?? manifest.backend?.tenantId ?? '100001';
 
   return {
     appApiBaseUrl:

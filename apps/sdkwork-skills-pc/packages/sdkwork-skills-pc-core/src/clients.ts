@@ -48,8 +48,8 @@ function resolveDriveAppApiBaseUrl(config?: SkillsClientConfig): string {
 }
 
 function resolveTenantHeader(config?: SkillsClientConfig): string {
-  const tenantId = trim(config?.tenantId ?? readRuntimeEnv('VITE_SDKWORK_SKILLS_TENANT_ID') ?? '1');
-  return isBlank(tenantId) ? '1' : tenantId;
+  const tenantId = trim(config?.tenantId ?? readRuntimeEnv('VITE_SDKWORK_SKILLS_TENANT_ID') ?? '100001');
+  return isBlank(tenantId) ? '100001' : tenantId;
 }
 
 function createAuthenticatedClientConfig(

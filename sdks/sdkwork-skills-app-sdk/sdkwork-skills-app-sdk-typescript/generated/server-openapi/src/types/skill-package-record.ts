@@ -5,9 +5,11 @@ export interface SkillPackageRecord {
   display_name: string;
   summary?: string | null;
   invocation_kind: string;
-  /** Drive-backed package reference (sdkwork-drive). */
+  /** Canonical sdkwork-drive package reference. */
   package_ref: string;
   entrypoint: string;
   status: string;
   visibility: string;
+  categories?: string[];
+  tags?: string[];
 }

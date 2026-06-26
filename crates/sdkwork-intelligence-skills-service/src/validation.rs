@@ -1,12 +1,13 @@
 use sdkwork_drive_contract::DriveUri;
 use sdkwork_skills_contract::{
-    SkillCategoryRecord, SkillInvocationKind, SkillPackageRecord,
+    SkillCategoryRecord, SkillCategoryType, SkillInvocationKind, SkillPackageRecord,
 };
 use sdkwork_utils_rust::{is_blank, trim};
 
 use crate::{SkillsResult, SkillsServiceError};
 
 const SKILL_ID_PATTERN: &str = r"^skill\.[a-z0-9_-]+(\.[a-z0-9_-]+)*$";
+const CATEGORY_CODE_PATTERN: &str = r"^[a-z0-9_-]+$";
 
 pub fn validate_skill_id(skill_id: &str) -> SkillsResult<()> {
     let normalized = trim(skill_id);
@@ -57,6 +58,24 @@ pub fn validate_skill_package_record(record: &SkillPackageRecord) -> SkillsResul
     validate_invocation_kind(record.invocation_kind)?;
     validate_json_object(record.input_schema_json.as_str(), "input_schema_json")?;
     validate_json_object(record.output_schema_json.as_str(), "output_schema_json")?;
+    validate_category_codes(&record.categories)?;
+    Ok(())
+}
+
+pub fn validate_category_codes(categories: &[String]) -> SkillsResult<()> {
+    let pattern = regex_lite::Regex::new(CATEGORY_CODE_PATTERN)
+        .map_err(|error| SkillsServiceError::Repository(error.to_string()))?;
+    for code in categories {
+        let normalized = trim(code);
+        if normalized.is_empty() {
+            continue;
+        }
+        if !pattern.is_match(&normalized) {
+            return Err(SkillsServiceError::InvalidArgument(format!(
+                "category code must match {CATEGORY_CODE_PATTERN}: {code}"
+            )));
+        }
+    }
     Ok(())
 }
 
@@ -80,11 +99,19 @@ pub fn validate_category_record(record: &SkillCategoryRecord) -> SkillsResult<()
             "category name must not be empty".to_string(),
         ));
     }
-    if record.category_type != "skill_market" && record.category_type != "skills_collection" {
+    if record.category_type != SkillCategoryType::SkillMarket.as_str()
+        && record.category_type != SkillCategoryType::SkillsCollection.as_str()
+    {
         return Err(SkillsServiceError::InvalidArgument(format!(
             "unsupported category_type: {}",
             record.category_type
         )));
+    }
+    validate_category_codes(&[record.code.clone()])?;
+    if is_blank(Some(trim(record.permission_code.as_str()).as_str())) {
+        return Err(SkillsServiceError::InvalidArgument(
+            "permission_code must not be empty".to_string(),
+        ));
     }
     Ok(())
 }
@@ -111,7 +138,7 @@ mod tests {
     fn sample_package(package_ref: &str) -> SkillPackageRecord {
         SkillPackageRecord {
             id: 1,
-            tenant_id: 1,
+            tenant_id: 100_001,
             organization_id: 0,
             owner_user_id: 0,
             skill_id: "skill.demo.sample".to_string(),
@@ -129,7 +156,6 @@ mod tests {
             categories: vec![],
             tags: vec![],
             security_profile_id: None,
-            category_id: None,
             status: SkillLifecycleStatus::Active,
             visibility: SkillVisibility::Tenant,
             version: 1,

@@ -13,4 +13,5 @@ export interface SkillRecord {
   install_count: string;
   tags?: string[];
   capabilities?: string[];
+  categories?: string[];
 }

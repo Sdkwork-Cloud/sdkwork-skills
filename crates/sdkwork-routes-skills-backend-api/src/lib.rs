@@ -16,7 +16,7 @@ use axum::{
 use sdkwork_intelligence_skills_service::SkillsService;
 use sdkwork_skills_contract::{
     SkillCategoryRecord, SkillCategoryType, SkillInvocationKind, SkillLifecycleStatus,
-    SkillPackageRecord, SkillVisibility,
+    SkillPackageRecord, SkillVisibility, package_manage_permission_for_category,
 };
 use serde::Deserialize;
 use sqlx::PgPool;
@@ -148,7 +148,6 @@ struct CreatePackageRequest {
     categories: Vec<String>,
     tags: Vec<String>,
     security_profile_id: Option<String>,
-    category_id: Option<u64>,
     visibility: Option<SkillVisibility>,
 }
 
@@ -185,7 +184,6 @@ where
         categories: body.categories,
         tags: body.tags,
         security_profile_id: body.security_profile_id,
-        category_id: body.category_id,
         status: SkillLifecycleStatus::Active,
         visibility: body.visibility.unwrap_or(SkillVisibility::Tenant),
         version: 1,
@@ -213,7 +211,6 @@ struct UpdatePackageRequest {
     categories: Option<Vec<String>>,
     tags: Option<Vec<String>>,
     security_profile_id: Option<String>,
-    category_id: Option<u64>,
     status: Option<SkillLifecycleStatus>,
     visibility: Option<SkillVisibility>,
 }
@@ -276,9 +273,6 @@ where
     if let Some(value) = body.security_profile_id {
         record.security_profile_id = Some(value);
     }
-    if let Some(value) = body.category_id {
-        record.category_id = Some(value);
-    }
     if let Some(value) = body.status {
         record.status = value;
     }
@@ -310,6 +304,7 @@ struct CreateCategoryRequest {
     description: Option<String>,
     parent_id: Option<u64>,
     sort_weight: Option<i32>,
+    permission_code: Option<String>,
 }
 
 async fn create_category<R>(
@@ -327,11 +322,14 @@ where
         tenant_id,
         organization_id: 0,
         category_type: SkillCategoryType::SkillMarket.as_str().to_string(),
-        code: body.code,
+        code: body.code.clone(),
         name: body.name,
         description: body.description,
         parent_id: body.parent_id,
         sort_weight: body.sort_weight.unwrap_or(0),
+        permission_code: body
+            .permission_code
+            .unwrap_or_else(|| package_manage_permission_for_category(body.code.as_str())),
         visible: true,
         status: 1,
     };
@@ -345,6 +343,7 @@ struct UpdateCategoryRequest {
     description: Option<String>,
     parent_id: Option<u64>,
     sort_weight: Option<i32>,
+    permission_code: Option<String>,
     visible: Option<bool>,
     status: Option<i16>,
 }
@@ -379,6 +378,9 @@ where
     }
     if let Some(value) = body.sort_weight {
         record.sort_weight = value;
+    }
+    if let Some(value) = body.permission_code {
+        record.permission_code = value;
     }
     if let Some(value) = body.visible {
         record.visible = value;

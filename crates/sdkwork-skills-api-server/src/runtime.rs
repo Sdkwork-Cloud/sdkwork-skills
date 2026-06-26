@@ -23,7 +23,7 @@ impl SkillsRuntime {
         let default_tenant_id = std::env::var("SDKWORK_SKILLS_TENANT_ID")
             .ok()
             .and_then(|value| value.parse::<u64>().ok())
-            .unwrap_or(1);
+            .unwrap_or(100_001);
         Ok(Self {
             service,
             default_tenant_id,

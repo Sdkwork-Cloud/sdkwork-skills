@@ -549,6 +549,12 @@
             "items": {
               "type": "string"
             }
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -600,6 +606,18 @@
           },
           "visibility": {
             "type": "string"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -610,6 +628,8 @@
           "id",
           "code",
           "name",
+          "category_type",
+          "permission_code",
           "sort_weight",
           "visible",
           "status"
@@ -625,9 +645,20 @@
           "name": {
             "type": "string"
           },
+          "category_type": {
+            "type": "string"
+          },
           "description": {
             "type": "string",
             "nullable": true
+          },
+          "parent_id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "permission_code": {
+            "type": "string"
           },
           "sort_weight": {
             "type": "integer"
@@ -835,6 +866,9 @@
           },
           "sort_weight": {
             "type": "integer"
+          },
+          "permission_code": {
+            "type": "string"
           }
         }
       },

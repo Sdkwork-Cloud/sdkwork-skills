@@ -28,7 +28,7 @@ EXCEPTION WHEN others THEN
 END;
 $$;
 
-CREATE TABLE IF NOT EXISTS c_category (
+CREATE TABLE IF NOT EXISTS ai_skill_category (
     id BIGSERIAL PRIMARY KEY,
     uuid VARCHAR(96) NOT NULL,
     tenant_id BIGINT NOT NULL DEFAULT 0,
@@ -37,25 +37,25 @@ CREATE TABLE IF NOT EXISTS c_category (
     code VARCHAR(128) NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    parent_id BIGINT,
+    parent_id BIGINT REFERENCES ai_skill_category(id),
     path TEXT,
     sort_weight INTEGER NOT NULL DEFAULT 0,
-    icon TEXT,
+    permission_code VARCHAR(255) NOT NULL,
     visible SMALLINT NOT NULL DEFAULT 1,
     status SMALLINT NOT NULL DEFAULT 1,
     tags_json TEXT NOT NULL DEFAULT '[]',
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ,
-    CONSTRAINT uk_c_category_uuid UNIQUE (uuid),
-    CONSTRAINT uk_c_category_scope_code UNIQUE (tenant_id, organization_id, category_type, code),
-    CONSTRAINT ck_c_category_type CHECK (
+    CONSTRAINT uk_ai_skill_category_uuid UNIQUE (uuid),
+    CONSTRAINT uk_ai_skill_category_scope_code UNIQUE (tenant_id, organization_id, category_type, code),
+    CONSTRAINT ck_ai_skill_category_type CHECK (
         category_type IN ('skill_market', 'skills_collection')
     )
 );
 
-CREATE INDEX IF NOT EXISTS idx_c_category_tree
-    ON c_category (tenant_id, category_type, parent_id, sort_weight);
+CREATE INDEX IF NOT EXISTS idx_ai_skill_category_tree
+    ON ai_skill_category (tenant_id, category_type, parent_id, sort_weight);
 
 CREATE TABLE IF NOT EXISTS ai_agent_skill_package (
     id BIGSERIAL PRIMARY KEY,
@@ -78,7 +78,6 @@ CREATE TABLE IF NOT EXISTS ai_agent_skill_package (
     categories_json TEXT NOT NULL DEFAULT '[]',
     tags_json TEXT NOT NULL DEFAULT '[]',
     security_profile_id VARCHAR(128),
-    category_id BIGINT REFERENCES c_category(id),
     status SMALLINT NOT NULL DEFAULT 1,
     visibility SMALLINT NOT NULL DEFAULT 0,
     featured SMALLINT NOT NULL DEFAULT 0,
@@ -131,7 +130,7 @@ CREATE TABLE IF NOT EXISTS ai_agent_skill (
     market_status VARCHAR(64) NOT NULL DEFAULT 'published',
     visibility VARCHAR(64) NOT NULL DEFAULT 'public',
     review_status VARCHAR(64) NOT NULL DEFAULT 'approved',
-    category_id BIGINT REFERENCES c_category(id),
+    categories_json TEXT NOT NULL DEFAULT '[]',
     enabled SMALLINT NOT NULL DEFAULT 1,
     featured SMALLINT NOT NULL DEFAULT 0,
     recommend_weight INTEGER NOT NULL DEFAULT 0,

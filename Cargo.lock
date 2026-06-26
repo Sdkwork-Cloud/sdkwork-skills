@@ -62,6 +62,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.103"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
+
+[[package]]
 name = "argon2"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1589,16 +1595,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
-name = "sdkwork-iam-bootstrap"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "sdkwork-iam-context-service",
- "sdkwork-iam-module-registry",
- "sqlx",
-]
-
-[[package]]
 name = "sdkwork-database-config"
 version = "0.1.0"
 dependencies = [
@@ -1664,6 +1660,49 @@ dependencies = [
 ]
 
 [[package]]
+name = "sdkwork-drive-config"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "toml",
+]
+
+[[package]]
+name = "sdkwork-drive-contract"
+version = "0.1.0"
+dependencies = [
+ "sdkwork-drive-storage-contract",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "sdkwork-drive-storage-contract"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "sdkwork-drive-config",
+ "serde",
+]
+
+[[package]]
+name = "sdkwork-iam-bootstrap"
+version = "0.1.0"
+dependencies = [
+ "aes-gcm",
+ "base64",
+ "chrono",
+ "rand_core 0.6.4",
+ "sdkwork-iam-context-service",
+ "sdkwork-iam-module-registry",
+ "sdkwork-id-core",
+ "sha2",
+ "sqlx",
+ "uuid",
+]
+
+[[package]]
 name = "sdkwork-iam-context-service"
 version = "0.1.0"
 dependencies = [
@@ -1696,16 +1735,26 @@ dependencies = [
  "password-hash",
  "rand_core 0.6.4",
  "reqwest",
- "sdkwork-iam-bootstrap",
+ "sdkwork-database-config",
  "sdkwork-database-sqlx",
+ "sdkwork-iam-bootstrap",
  "sdkwork-iam-context-service",
  "sdkwork-utils-rust",
  "sdkwork-web-axum",
  "sdkwork-web-core",
  "serde",
  "serde_json",
+ "sha1",
  "sha2",
  "sqlx",
+ "urlencoding",
+ "uuid",
+]
+
+[[package]]
+name = "sdkwork-id-core"
+version = "0.1.0"
+dependencies = [
  "uuid",
 ]
 
@@ -1727,6 +1776,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "regex-lite",
+ "sdkwork-drive-contract",
  "sdkwork-skills-contract",
  "sdkwork-utils-rust",
  "serde_json",
@@ -1773,6 +1823,7 @@ dependencies = [
  "sdkwork-routes-skills-app-api",
  "sdkwork-routes-skills-backend-api",
  "sdkwork-skills-database-host",
+ "sdkwork-skills-gateway-assembly",
  "sqlx",
  "tokio",
  "tracing",
@@ -1798,6 +1849,16 @@ dependencies = [
  "sdkwork-database-spi",
  "sdkwork-database-sqlx",
  "sqlx",
+]
+
+[[package]]
+name = "sdkwork-skills-gateway-assembly"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "sdkwork-routes-skills-app-api",
+ "sdkwork-routes-skills-backend-api",
+ "tokio",
 ]
 
 [[package]]
@@ -1954,6 +2015,12 @@ dependencies = [
  "cpufeatures",
  "digest",
 ]
+
+[[package]]
+name = "sha1_smol"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbfa15b3dddfee50a0fff136974b3e1bde555604ba463834a7eb7deb6417705d"
 
 [[package]]
 name = "sha2"
@@ -2686,6 +2753,7 @@ checksum = "144d6b123cef80b301b8f72a9e2ca4370ddec21950d0a103dd22c437006d2db7"
 dependencies = [
  "getrandom 0.4.3",
  "js-sys",
+ "sha1_smol",
  "wasm-bindgen",
 ]
 

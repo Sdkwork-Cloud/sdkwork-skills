@@ -12,116 +12,34 @@
   "mode": "apply",
   "hasChanges": true,
   "hasDestructiveChanges": false,
-  "changeFingerprint": "5c7ee1298801ea3a2ff4bbde06939286d26417d89590ee52d24d3bc1de10c43d",
+  "changeFingerprint": "22c33686c86fda07a36c7e9d0e63d88fd2c2f86def43a7e5ef744c04cd8d0a54",
   "changeImpact": {
     "schemaVersion": 1,
     "areas": [
-      "api-surface",
-      "models",
-      "runtime",
-      "build-metadata",
-      "publish-workflow",
-      "documentation",
-      "custom-scaffold",
-      "unknown"
+      "models"
     ],
     "details": [
       {
-        "area": "api-surface",
-        "paths": [
-          "src/api/base.ts",
-          "src/api/index.ts",
-          "src/api/paths.ts",
-          "src/api/skills.ts",
-          "src/http/client.ts",
-          "src/sdk.ts"
-        ]
-      },
-      {
         "area": "models",
         "paths": [
-          "src/types/common.ts",
           "src/types/create-skill-category-command.ts",
-          "src/types/create-skill-package-command.ts",
-          "src/types/index.ts",
-          "src/types/install-skill-command.ts",
-          "src/types/problem-detail.ts",
-          "src/types/skill-category-list-response.ts",
-          "src/types/skill-category-record-response.ts",
           "src/types/skill-category-record.ts",
-          "src/types/skill-list-response.ts",
-          "src/types/skill-package-list-response.ts",
-          "src/types/skill-package-record-response.ts",
           "src/types/skill-package-record.ts",
-          "src/types/skill-record-response.ts",
-          "src/types/skill-record.ts",
-          "src/types/user-skill-install-record-response.ts",
-          "src/types/user-skill-install-record.ts"
-        ]
-      },
-      {
-        "area": "runtime",
-        "paths": [
-          "src/auth/index.ts",
-          "src/http/client.ts",
-          "src/http/index.ts"
-        ]
-      },
-      {
-        "area": "build-metadata",
-        "paths": [
-          "package.json",
-          "sdkwork-sdk.json",
-          "tsconfig.json"
-        ]
-      },
-      {
-        "area": "publish-workflow",
-        "paths": [
-          "bin/publish-core.mjs",
-          "bin/publish.ps1",
-          "bin/publish.sh",
-          "bin/sdk-gen.bat",
-          "bin/sdk-gen.sh"
-        ]
-      },
-      {
-        "area": "documentation",
-        "paths": [
-          "CHANGELOG.md",
-          "custom/README.md",
-          "README.md"
-        ]
-      },
-      {
-        "area": "custom-scaffold",
-        "paths": [
-          "custom/build-runtime.mjs",
-          "custom/README.md"
-        ]
-      },
-      {
-        "area": "unknown",
-        "paths": [
-          "LICENSE",
-          "src/index.ts"
+          "src/types/skill-record.ts"
         ]
       }
     ],
     "requiresVerification": true,
-    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown. Verification is required."
+    "summary": "Detected impact areas: models. Verification is required."
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "high",
+    "riskLevel": "medium",
     "nextAction": "verify",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
     "summary": "Changes have been applied. Run the required verification plan now.",
     "reasons": [
-      "manual-review-required",
-      "preserved-legacy-files",
-      "unknown-impact",
       "verification-required"
     ]
   },
@@ -133,7 +51,7 @@
         "id": "verify-check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: models.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -151,7 +69,7 @@
         "id": "verify-build",
         "title": "Unified package build",
         "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: models.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -170,13 +88,13 @@
   "verificationPlan": {
     "shouldRun": true,
     "runPhase": "now",
-    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "summary": "Detected impact areas: models. Verification is required. Run the required verification commands now against the generated SDK output.",
     "steps": [
       {
         "id": "check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: models.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -194,7 +112,7 @@
         "id": "build",
         "title": "Unified package build",
         "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: models.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -233,14 +151,21 @@
   "syncSummary": {
     "dryRun": false,
     "controlPlaneEnabled": true,
-    "writtenFiles": 39,
-    "skippedScaffoldFiles": 0,
-    "skippedUnchangedGeneratedFiles": 0,
+    "writtenFiles": 4,
+    "skippedScaffoldFiles": 2,
+    "skippedUnchangedGeneratedFiles": 33,
     "deletedGeneratedFiles": 0,
     "changeSummaryPath": ".sdkwork/sdkwork-generator-changes.json",
-    "changeFingerprint": "5c7ee1298801ea3a2ff4bbde06939286d26417d89590ee52d24d3bc1de10c43d",
+    "changeFingerprint": "22c33686c86fda07a36c7e9d0e63d88fd2c2f86def43a7e5ef744c04cd8d0a54",
     "changes": {
-      "createdGeneratedFiles": [
+      "createdGeneratedFiles": [],
+      "updatedGeneratedFiles": [
+        "src/types/create-skill-category-command.ts",
+        "src/types/skill-category-record.ts",
+        "src/types/skill-package-record.ts",
+        "src/types/skill-record.ts"
+      ],
+      "unchangedGeneratedFiles": [
         "bin/publish-core.mjs",
         "bin/publish.ps1",
         "bin/publish.sh",
@@ -261,142 +186,57 @@
         "src/index.ts",
         "src/sdk.ts",
         "src/types/common.ts",
-        "src/types/create-skill-category-command.ts",
         "src/types/create-skill-package-command.ts",
         "src/types/index.ts",
         "src/types/install-skill-command.ts",
         "src/types/problem-detail.ts",
         "src/types/skill-category-list-response.ts",
         "src/types/skill-category-record-response.ts",
-        "src/types/skill-category-record.ts",
         "src/types/skill-list-response.ts",
         "src/types/skill-package-list-response.ts",
         "src/types/skill-package-record-response.ts",
-        "src/types/skill-package-record.ts",
         "src/types/skill-record-response.ts",
-        "src/types/skill-record.ts",
         "src/types/user-skill-install-record-response.ts",
         "src/types/user-skill-install-record.ts",
         "tsconfig.json"
       ],
-      "updatedGeneratedFiles": [],
-      "unchangedGeneratedFiles": [],
       "deletedGeneratedFiles": [],
-      "scaffoldedFiles": [
+      "scaffoldedFiles": [],
+      "preservedScaffoldFiles": [
         "custom/build-runtime.mjs",
         "custom/README.md"
       ],
-      "preservedScaffoldFiles": [],
       "backedUpFiles": []
     },
     "impact": {
       "schemaVersion": 1,
       "areas": [
-        "api-surface",
-        "models",
-        "runtime",
-        "build-metadata",
-        "publish-workflow",
-        "documentation",
-        "custom-scaffold",
-        "unknown"
+        "models"
       ],
       "details": [
         {
-          "area": "api-surface",
-          "paths": [
-            "src/api/base.ts",
-            "src/api/index.ts",
-            "src/api/paths.ts",
-            "src/api/skills.ts",
-            "src/http/client.ts",
-            "src/sdk.ts"
-          ]
-        },
-        {
           "area": "models",
           "paths": [
-            "src/types/common.ts",
             "src/types/create-skill-category-command.ts",
-            "src/types/create-skill-package-command.ts",
-            "src/types/index.ts",
-            "src/types/install-skill-command.ts",
-            "src/types/problem-detail.ts",
-            "src/types/skill-category-list-response.ts",
-            "src/types/skill-category-record-response.ts",
             "src/types/skill-category-record.ts",
-            "src/types/skill-list-response.ts",
-            "src/types/skill-package-list-response.ts",
-            "src/types/skill-package-record-response.ts",
             "src/types/skill-package-record.ts",
-            "src/types/skill-record-response.ts",
-            "src/types/skill-record.ts",
-            "src/types/user-skill-install-record-response.ts",
-            "src/types/user-skill-install-record.ts"
-          ]
-        },
-        {
-          "area": "runtime",
-          "paths": [
-            "src/auth/index.ts",
-            "src/http/client.ts",
-            "src/http/index.ts"
-          ]
-        },
-        {
-          "area": "build-metadata",
-          "paths": [
-            "package.json",
-            "sdkwork-sdk.json",
-            "tsconfig.json"
-          ]
-        },
-        {
-          "area": "publish-workflow",
-          "paths": [
-            "bin/publish-core.mjs",
-            "bin/publish.ps1",
-            "bin/publish.sh",
-            "bin/sdk-gen.bat",
-            "bin/sdk-gen.sh"
-          ]
-        },
-        {
-          "area": "documentation",
-          "paths": [
-            "CHANGELOG.md",
-            "custom/README.md",
-            "README.md"
-          ]
-        },
-        {
-          "area": "custom-scaffold",
-          "paths": [
-            "custom/build-runtime.mjs",
-            "custom/README.md"
-          ]
-        },
-        {
-          "area": "unknown",
-          "paths": [
-            "LICENSE",
-            "src/index.ts"
+            "src/types/skill-record.ts"
           ]
         }
       ],
       "requiresVerification": true,
-      "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown. Verification is required."
+      "summary": "Detected impact areas: models. Verification is required."
     },
     "verificationPlan": {
       "shouldRun": true,
       "runPhase": "now",
-      "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown. Verification is required. Run the required verification commands now against the generated SDK output.",
+      "summary": "Detected impact areas: models. Verification is required. Run the required verification commands now against the generated SDK output.",
       "steps": [
         {
           "id": "check",
           "title": "Unified package check",
           "required": true,
-          "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+          "rationale": "Validate the generated package with the unified publish helper. Triggered by: models.",
           "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
           "command": "node",
           "args": [
@@ -414,7 +254,7 @@
           "id": "build",
           "title": "Unified package build",
           "required": true,
-          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: models.",
           "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
           "command": "node",
           "args": [
@@ -432,19 +272,16 @@
     },
     "executionDecision": {
       "schemaVersion": 1,
-      "riskLevel": "high",
+      "riskLevel": "medium",
       "nextAction": "verify",
       "requiresManualReview": false,
       "applyRequiresExpectedFingerprint": false,
       "summary": "Changes have been applied. Run the required verification plan now.",
       "reasons": [
-        "manual-review-required",
-        "preserved-legacy-files",
-        "unknown-impact",
         "verification-required"
       ]
     },
     "backedUpFiles": [],
-    "preservedLegacyFiles": true
+    "preservedLegacyFiles": false
   }
 }

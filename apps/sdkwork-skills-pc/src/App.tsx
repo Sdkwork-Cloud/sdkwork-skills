@@ -29,7 +29,10 @@ export function App() {
                   permission={SKILLS_ADMIN_PERMISSIONS.packageManage}
                   runtime={runtime}
                 >
-                  <AdminSkillsPage />
+                  <AdminSkillsPage
+                    grantedPermissions={runtime.session.getSnapshot().context?.permissionScope ?? []}
+                    roleCodes={runtime.session.getSnapshot().context?.standardRoleCodes ?? []}
+                  />
                 </AdminPermissionGate>
               }
             />

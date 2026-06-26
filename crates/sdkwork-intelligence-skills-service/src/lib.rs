@@ -5,8 +5,9 @@ mod validation_tests;
 
 use async_trait::async_trait;
 use sdkwork_skills_contract::{
-    SkillCategoryRecord, SkillPackageRecord, SkillRecord, UserSkillInstallRecord,
+    SkillCategoryRecord, SkillCategoryType, SkillPackageRecord, SkillRecord, UserSkillInstallRecord,
 };
+use sdkwork_utils_rust::trim;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -100,6 +101,8 @@ impl<R: SkillsRepository> SkillsService<R> {
         record: SkillPackageRecord,
     ) -> SkillsResult<SkillPackageRecord> {
         validation::validate_skill_package_record(&record)?;
+        self.validate_package_categories(record.tenant_id, &record.categories)
+            .await?;
         let saved = self.repository.upsert_skill_package(record).await?;
         self.repository.sync_skill_from_package(&saved).await?;
         Ok(saved)
@@ -132,6 +135,34 @@ impl<R: SkillsRepository> SkillsService<R> {
     ) -> SkillsResult<SkillCategoryRecord> {
         validation::validate_category_record(&record)?;
         self.repository.upsert_category(record).await
+    }
+
+    async fn validate_package_categories(
+        &self,
+        tenant_id: u64,
+        categories: &[String],
+    ) -> SkillsResult<()> {
+        if categories.is_empty() {
+            return Ok(());
+        }
+        let known = self
+            .repository
+            .list_categories(tenant_id, SkillCategoryType::SkillMarket.as_str())
+            .await?;
+        let known_codes: std::collections::HashSet<String> =
+            known.into_iter().map(|item| item.code).collect();
+        for code in categories {
+            let normalized = trim(code);
+            if normalized.is_empty() {
+                continue;
+            }
+            if !known_codes.contains(&normalized) {
+                return Err(SkillsServiceError::InvalidArgument(format!(
+                    "unknown skill category code: {normalized}"
+                )));
+            }
+        }
+        Ok(())
     }
 
     pub async fn install_skill(
