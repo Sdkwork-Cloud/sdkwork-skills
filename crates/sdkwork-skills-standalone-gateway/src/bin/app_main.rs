@@ -1,4 +1,4 @@
-use sdkwork_skills_api_server::{bootstrap_runtime, serve_backend_api};
+use sdkwork_skills_standalone_gateway::{bootstrap_runtime, serve_standalone_gateway};
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
@@ -10,7 +10,7 @@ async fn main() {
     let runtime = bootstrap_runtime()
         .await
         .expect("bootstrap sdkwork-skills runtime");
-    serve_backend_api(runtime)
+    serve_standalone_gateway(runtime)
         .await
-        .expect("serve sdkwork-skills backend api");
+        .expect("serve sdkwork-skills standalone gateway");
 }

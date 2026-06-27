@@ -6,7 +6,7 @@ members = [
     "crates/sdkwork-intelligence-skills-repository-sqlx",
     "crates/sdkwork-routes-skills-app-api",
     "crates/sdkwork-routes-skills-backend-api",
-    "crates/sdkwork-skills-api-server",
+    "crates/sdkwork-skills-standalone-gateway",
     "crates/sdkwork-skills-database-host",
 ]
 resolver = "2"

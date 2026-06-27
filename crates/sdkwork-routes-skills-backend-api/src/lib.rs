@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use sdkwork_web_core::HttpRouteManifest;
+
 mod handlers;
 mod health;
 pub mod http_route_manifest;

@@ -1,50 +1,30 @@
-use std::sync::Arc;
-
-mod runtime;
-
 use axum::Router;
+use sdkwork_skills_gateway_assembly::{
+    assemble_app_surface_router, assemble_application_business_router,
+    assemble_backend_surface_router,
+};
 use tokio::net::TcpListener;
 use tokio::signal;
 use tracing::info;
 
-use crate::runtime::SkillsRuntime;
+mod runtime;
 
-fn web_framework_enabled() -> bool {
-    std::env::var("SDKWORK_SKILLS_WEB_FRAMEWORK")
-        .map(|value| value != "0" && value != "false")
-        .unwrap_or(true)
-}
+use std::sync::Arc;
+
+use crate::runtime::SkillsRuntime;
 
 async fn build_app_router(runtime: Arc<SkillsRuntime>) -> Router {
     let service = runtime.service();
     let tenant_id = runtime.default_tenant_id();
     let pool = runtime.postgres_pool();
-    if web_framework_enabled() {
-        sdkwork_routes_skills_app_api::build_router_with_web_framework_from_env(
-            service,
-            tenant_id,
-            pool,
-        )
-        .await
-    } else {
-        sdkwork_routes_skills_app_api::build_router_with_readiness(service, tenant_id, pool)
-    }
+    assemble_app_surface_router(service, tenant_id, pool).await
 }
 
 async fn build_backend_router(runtime: Arc<SkillsRuntime>) -> Router {
     let service = runtime.service();
     let tenant_id = runtime.default_tenant_id();
     let pool = runtime.postgres_pool();
-    if web_framework_enabled() {
-        sdkwork_routes_skills_backend_api::build_router_with_web_framework_from_env(
-            service,
-            tenant_id,
-            pool,
-        )
-        .await
-    } else {
-        sdkwork_routes_skills_backend_api::build_router_with_readiness(service, tenant_id, pool)
-    }
+    assemble_backend_surface_router(service, tenant_id, pool).await
 }
 
 async fn serve_with_shutdown(app: Router, addr: &str, label: &str) -> Result<(), String> {
@@ -84,16 +64,28 @@ async fn shutdown_signal() {
 
 pub async fn serve_app_api(runtime: Arc<SkillsRuntime>) -> Result<(), String> {
     let addr = std::env::var("SDKWORK_SKILLS_APP_BIND")
-        .unwrap_or_else(|_| "127.0.0.1:18090".to_string());
+        .unwrap_or_else(|_| "127.0.0.1:18092".to_string());
     let app = build_app_router(runtime).await;
     serve_with_shutdown(app, addr.as_str(), "app api").await
 }
 
 pub async fn serve_backend_api(runtime: Arc<SkillsRuntime>) -> Result<(), String> {
     let addr = std::env::var("SDKWORK_SKILLS_BACKEND_BIND")
-        .unwrap_or_else(|_| "127.0.0.1:18091".to_string());
+        .unwrap_or_else(|_| "127.0.0.1:18093".to_string());
     let app = build_backend_router(runtime).await;
     serve_with_shutdown(app, addr.as_str(), "backend api").await
+}
+
+pub async fn serve_standalone_gateway(runtime: Arc<SkillsRuntime>) -> Result<(), String> {
+    let addr = std::env::var("SDKWORK_SKILLS_APPLICATION_PUBLIC_INGRESS_BIND")
+        .unwrap_or_else(|_| "127.0.0.1:18092".to_string());
+    let service = runtime.service();
+    let tenant_id = runtime.default_tenant_id();
+    let pool = runtime.postgres_pool();
+    let app = assemble_application_business_router(service, tenant_id, pool)
+        .await
+        .router;
+    serve_with_shutdown(app, addr.as_str(), "standalone gateway").await
 }
 
 pub async fn bootstrap_runtime() -> Result<Arc<SkillsRuntime>, String> {

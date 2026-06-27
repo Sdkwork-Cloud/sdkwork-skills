@@ -12,5 +12,8 @@ path = "src/lib.rs"
 [dependencies]
 axum.workspace = true
 tokio = { version = "1.48", features = ["macros", "rt-multi-thread"] }
+sqlx.workspace = true
+sdkwork-intelligence-skills-repository-sqlx = { path = "../sdkwork-intelligence-skills-repository-sqlx" }
+sdkwork-intelligence-skills-service = { path = "../sdkwork-intelligence-skills-service" }
 sdkwork_routes_skills_app_api = { package = "sdkwork-routes-skills-app-api", path = "../sdkwork-routes-skills-app-api" }
 sdkwork_routes_skills_backend_api = { package = "sdkwork-routes-skills-backend-api", path = "../sdkwork-routes-skills-backend-api" }
