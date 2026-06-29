@@ -2,10 +2,9 @@ export type {
   SkillRecord,
   SkillPackageRecord,
   SkillCategoryRecord,
-  SkillListResponse,
-  SkillPackageListResponse,
-  SkillCategoryListResponse,
 } from 'sdkwork-skills-app-sdk-generated-typescript/src/types';
+
+export type { SdkWorkPageData, PageInfo } from '@sdkwork/utils';
 
 export type {
   CreateSkillPackageCommand as CreatePackageInput,
@@ -13,9 +12,9 @@ export type {
 } from 'sdkwork-skills-backend-sdk-generated-typescript/src/types';
 
 export {
-  createSkillsClients,
-  getSkillsClients,
-  resetSkillsClients,
+  createSkillsAppClients,
+  type SkillsAppClients,
+  type SkillsAppClientConfig,
   type SkillsClients,
   type SkillsClientConfig,
 } from './clients';
@@ -28,3 +27,11 @@ export {
 } from './session';
 
 export { SkillsClientsProvider, useSkillsClients } from './context';
+
+export {
+  installUserSkill,
+  listPublishedSkills,
+  listSkillCategories,
+  listSkillPackages,
+  retrievePublishedSkill,
+} from './services';

@@ -26,14 +26,61 @@
         ],
         "summary": "Skills skills.management.list",
         "operationId": "skills.management.list",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "One-based page index for offset pagination. Default 1.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "description": "Page size for offset pagination. Default 20, maximum 200.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Opaque cursor token from a previous list response pageInfo.nextCursor.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Generic free-text search keyword.",
+            "schema": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SkillListResponse"
+                  "$ref": "#/components/schemas/SkillsManagementListResponse"
                 }
               }
             }
@@ -91,14 +138,61 @@
         ],
         "summary": "Skills skillPackages.management.list",
         "operationId": "skillPackages.management.list",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "One-based page index for offset pagination. Default 1.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "description": "Page size for offset pagination. Default 20, maximum 200.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Opaque cursor token from a previous list response pageInfo.nextCursor.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Generic free-text search keyword.",
+            "schema": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SkillPackageListResponse"
+                  "$ref": "#/components/schemas/SkillPackagesManagementListResponse"
                 }
               }
             }
@@ -171,7 +265,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SkillPackageRecordResponse"
+                  "$ref": "#/components/schemas/SkillPackagesCreateResponse"
                 }
               }
             }
@@ -244,7 +338,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSkillPackageCommand"
+                "$ref": "#/components/schemas/UpdateSkillPackageCommand"
               }
             }
           }
@@ -255,7 +349,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SkillPackageRecordResponse"
+                  "$ref": "#/components/schemas/SkillPackagesUpdateResponse"
                 }
               }
             }
@@ -327,7 +421,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SkillPackageRecordResponse"
+                  "$ref": "#/components/schemas/SkillPackagesDeleteResponse"
                 }
               }
             }
@@ -385,14 +479,61 @@
         ],
         "summary": "Skills categories.management.list",
         "operationId": "categories.management.list",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "One-based page index for offset pagination. Default 1.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "description": "Page size for offset pagination. Default 20, maximum 200.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Opaque cursor token from a previous list response pageInfo.nextCursor.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Generic free-text search keyword.",
+            "schema": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SkillCategoryListResponse"
+                  "$ref": "#/components/schemas/CategoriesManagementListResponse"
                 }
               }
             }
@@ -465,7 +606,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SkillCategoryRecordResponse"
+                  "$ref": "#/components/schemas/CategoriesCreateResponse"
                 }
               }
             }
@@ -529,8 +670,11 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string",
+              "format": "int64",
+              "pattern": "^-?[0-9]+$",
+              "x-sdkwork-int64-string": true,
+              "x-sdkwork-rust-type": "i64"
             }
           }
         ],
@@ -539,7 +683,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSkillCategoryCommand"
+                "$ref": "#/components/schemas/UpdateSkillCategoryCommand"
               }
             }
           }
@@ -550,7 +694,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SkillCategoryRecordResponse"
+                  "$ref": "#/components/schemas/CategoriesUpdateResponse"
                 }
               }
             }
@@ -616,13 +760,146 @@
       }
     },
     "schemas": {
+      "SdkWorkApiResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "data",
+          "traceId"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+              0
+            ],
+            "default": 0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "data": {
+            "description": "Operation-specific payload typed per response schema."
+          },
+          "traceId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          }
+        }
+      },
+      "SdkWorkResourceData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Typed domain resource for the operation."
+          }
+        }
+      },
+      "SdkWorkPageData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "SdkWorkCommandData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "accepted"
+        ],
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "const": true
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "PageInfo": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "mode"
+        ],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "offset",
+              "cursor"
+            ]
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "totalItems": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SdkWorkPlatformErrorCode": {
+        "type": "integer",
+        "format": "int32",
+        "minimum": 40001,
+        "maximum": 79999,
+        "description": "Platform or domain error code per API_SPEC.md §15.3."
+      },
       "ProblemDetail": {
         "type": "object",
         "additionalProperties": true,
         "required": [
           "type",
           "title",
-          "status"
+          "status",
+          "code",
+          "traceId"
         ],
         "properties": {
           "type": {
@@ -640,11 +917,100 @@
           "detail": {
             "type": "string"
           },
-          "requestId": {
+          "instance": {
+            "type": "string"
+          },
+          "code": {
+            "$ref": "#/components/schemas/SdkWorkPlatformErrorCode"
+          },
+          "traceId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            }
           }
         }
+      },
+      "FieldError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "message"
+        ],
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 40011,
+            "maximum": 40099
+          }
+        }
+      },
+      "SdkWorkResourceResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SdkWorkResourceData"
+              }
+            }
+          }
+        ]
+      },
+      "SdkWorkListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SdkWorkPageData"
+              }
+            }
+          }
+        ]
+      },
+      "SdkWorkCommandResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SdkWorkCommandData"
+              }
+            }
+          }
+        ]
       },
       "SkillRecord": {
         "type": "object",
@@ -661,8 +1027,11 @@
         ],
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "format": "int64",
+            "pattern": "^-?[0-9]+$",
+            "x-sdkwork-int64-string": true,
+            "x-sdkwork-rust-type": "i64"
           },
           "skill_key": {
             "type": "string"
@@ -699,8 +1068,11 @@
             "type": "boolean"
           },
           "install_count": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "format": "int64",
+            "pattern": "^-?[0-9]+$",
+            "x-sdkwork-int64-string": true,
+            "x-sdkwork-rust-type": "i64"
           },
           "tags": {
             "type": "array",
@@ -738,8 +1110,11 @@
         ],
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "format": "int64",
+            "pattern": "^-?[0-9]+$",
+            "x-sdkwork-int64-string": true,
+            "x-sdkwork-rust-type": "i64"
           },
           "skill_id": {
             "type": "string"
@@ -800,8 +1175,11 @@
         ],
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "format": "int64",
+            "pattern": "^-?[0-9]+$",
+            "x-sdkwork-int64-string": true,
+            "x-sdkwork-rust-type": "i64"
           },
           "code": {
             "type": "string"
@@ -817,8 +1195,11 @@
             "nullable": true
           },
           "parent_id": {
-            "type": "integer",
+            "type": "string",
             "format": "int64",
+            "pattern": "^-?[0-9]+$",
+            "x-sdkwork-int64-string": true,
+            "x-sdkwork-rust-type": "i64",
             "nullable": true
           },
           "permission_code": {
@@ -846,111 +1227,24 @@
         ],
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "format": "int64",
+            "pattern": "^-?[0-9]+$",
+            "x-sdkwork-int64-string": true,
+            "x-sdkwork-rust-type": "i64"
           },
           "skill_id": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "format": "int64",
+            "pattern": "^-?[0-9]+$",
+            "x-sdkwork-int64-string": true,
+            "x-sdkwork-rust-type": "i64"
           },
           "install_status": {
             "type": "string"
           },
           "enabled": {
             "type": "boolean"
-          }
-        }
-      },
-      "SkillListResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "items"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SkillRecord"
-            }
-          }
-        }
-      },
-      "SkillPackageListResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "items"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SkillPackageRecord"
-            }
-          }
-        }
-      },
-      "SkillCategoryListResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "items"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SkillCategoryRecord"
-            }
-          }
-        }
-      },
-      "SkillRecordResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "data"
-        ],
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/SkillRecord"
-          }
-        }
-      },
-      "SkillPackageRecordResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "data"
-        ],
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/SkillPackageRecord"
-          }
-        }
-      },
-      "SkillCategoryRecordResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "data"
-        ],
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/SkillCategoryRecord"
-          }
-        }
-      },
-      "UserSkillInstallRecordResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "data"
-        ],
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/UserSkillInstallRecord"
           }
         }
       },
@@ -1044,14 +1338,579 @@
         ],
         "properties": {
           "skill_id": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "format": "int64",
+            "pattern": "^-?[0-9]+$",
+            "x-sdkwork-int64-string": true,
+            "x-sdkwork-rust-type": "i64"
           },
           "package_id": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "format": "int64",
+            "pattern": "^-?[0-9]+$",
+            "x-sdkwork-int64-string": true,
+            "x-sdkwork-rust-type": "i64"
           }
         }
+      },
+      "UpdateSkillPackageCommand": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "package_key": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "invocation_kind": {
+            "type": "string"
+          },
+          "package_ref": {
+            "type": "string",
+            "pattern": "^drive://spaces/[^/]+/nodes/[^/]+$"
+          },
+          "entrypoint": {
+            "type": "string"
+          },
+          "capability_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "visibility": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateSkillCategoryCommand": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "sort_weight": {
+            "type": "integer"
+          },
+          "permission_code": {
+            "type": "string"
+          }
+        }
+      },
+      "SkillsPageData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillRecord"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "SkillsListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SkillsPageData"
+              }
+            }
+          }
+        ]
+      },
+      "SkillPackagesPageData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillPackageRecord"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "SkillPackagesListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SkillPackagesPageData"
+              }
+            }
+          }
+        ]
+      },
+      "CategoriesPageData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillCategoryRecord"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "CategoriesListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/CategoriesPageData"
+              }
+            }
+          }
+        ]
+      },
+      "SkillsManagementPageData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillRecord"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "SkillsManagementListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SkillsManagementPageData"
+              }
+            }
+          }
+        ]
+      },
+      "SkillPackagesManagementPageData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillPackageRecord"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "SkillPackagesManagementListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SkillPackagesManagementPageData"
+              }
+            }
+          }
+        ]
+      },
+      "CategoriesManagementPageData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillCategoryRecord"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "CategoriesManagementListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/CategoriesManagementPageData"
+              }
+            }
+          }
+        ]
+      },
+      "SkillsResourceData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/SkillRecord"
+          }
+        }
+      },
+      "SkillsResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SkillsResourceData"
+              }
+            }
+          }
+        ]
+      },
+      "SkillPackagesResourceData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/SkillPackageRecord"
+          }
+        }
+      },
+      "SkillPackagesResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SkillPackagesResourceData"
+              }
+            }
+          }
+        ]
+      },
+      "CategoriesResourceData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/SkillCategoryRecord"
+          }
+        }
+      },
+      "CategoriesResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/CategoriesResourceData"
+              }
+            }
+          }
+        ]
+      },
+      "UserSkillsInstallResourceData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/UserSkillInstallRecord"
+          }
+        }
+      },
+      "UserSkillsInstallResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/UserSkillsInstallResourceData"
+              }
+            }
+          }
+        ]
+      },
+      "SkillPackagesCreateResourceData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/SkillPackageRecord"
+          }
+        }
+      },
+      "SkillPackagesCreateResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SkillPackagesCreateResourceData"
+              }
+            }
+          }
+        ]
+      },
+      "SkillPackagesUpdateResourceData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/SkillPackageRecord"
+          }
+        }
+      },
+      "SkillPackagesUpdateResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SkillPackagesUpdateResourceData"
+              }
+            }
+          }
+        ]
+      },
+      "SkillPackagesDeleteResourceData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/SkillPackageRecord"
+          }
+        }
+      },
+      "SkillPackagesDeleteResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SkillPackagesDeleteResourceData"
+              }
+            }
+          }
+        ]
+      },
+      "CategoriesCreateResourceData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/SkillCategoryRecord"
+          }
+        }
+      },
+      "CategoriesCreateResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/CategoriesCreateResourceData"
+              }
+            }
+          }
+        ]
+      },
+      "CategoriesUpdateResourceData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/SkillCategoryRecord"
+          }
+        }
+      },
+      "CategoriesUpdateResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/CategoriesUpdateResourceData"
+              }
+            }
+          }
+        ]
       }
     }
   },

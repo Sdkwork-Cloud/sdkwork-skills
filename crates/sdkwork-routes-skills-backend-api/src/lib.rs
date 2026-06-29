@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use sdkwork_web_core::HttpRouteManifest;
 
-mod handlers;
 mod health;
 pub mod http_route_manifest;
 mod paths;
@@ -10,23 +9,29 @@ mod ports;
 mod web_bootstrap;
 
 use axum::{
-    extract::{Extension, Path, State},
+    extract::{Extension, Path, Query, State},
     http::{HeaderMap, StatusCode},
+    response::Response,
     routing::{delete, get, post, put},
     Json, Router,
 };
 use sdkwork_intelligence_skills_service::SkillsService;
 use sdkwork_skills_contract::{
-    SkillCategoryRecord, SkillCategoryType, SkillInvocationKind, SkillLifecycleStatus,
-    SkillPackageRecord, SkillVisibility, package_manage_permission_for_category,
+    SkillCategoryRecord, SkillCategoryType, SkillLifecycleStatus, SkillPackageRecord,
+    SkillVisibility, package_manage_permission_for_category,
 };
-use serde::Deserialize;
+use sdkwork_web_core::WebRequestContext;
 use sqlx::PgPool;
 
-pub use handlers::{
-    delete_skill_package, list_categories, list_hub_skills, list_skill_packages, resolve_tenant_id,
-    upsert_category, upsert_skill_package, SharedSkillsService,
+pub use sdkwork_routes_skills_common::{
+    delete_skill_package, finish_api_json, list_categories, list_hub_skills, list_skill_packages,
+    ok_json, resolve_tenant_id, upsert_category, upsert_skill_package, ApiProblem,
+    CreateSkillCategoryCommand, CreateSkillPackageCommand, SdkWorkListQuery,
+    UpdateSkillCategoryCommand, UpdateSkillPackageCommand,
 };
+pub type SharedSkillsService<R> = std::sync::Arc<
+    sdkwork_intelligence_skills_service::SkillsService<R>,
+>;
 pub use health::DbReadinessCheck;
 pub use http_route_manifest::backend_route_manifest;
 pub use ports::SkillsBackendRequestContext;
@@ -90,308 +95,298 @@ fn resolve_request_tenant_id(
 }
 
 async fn list_admin_skills<R>(
+    ctx: WebRequestContext,
     State(state): State<BackendState<R>>,
     headers: HeaderMap,
+    Query(query): Query<SdkWorkListQuery>,
     context: Option<Extension<SkillsBackendRequestContext>>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let payload = list_hub_skills(state.service.as_ref(), tenant_id).await?;
-    Ok(Json(payload))
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            ok_json(
+                list_hub_skills(state.service.as_ref(), tenant_id, &query).await?,
+            )
+        }
+        .await,
+    )
 }
 
 async fn list_admin_packages<R>(
+    ctx: WebRequestContext,
     State(state): State<BackendState<R>>,
     headers: HeaderMap,
+    Query(query): Query<SdkWorkListQuery>,
     context: Option<Extension<SkillsBackendRequestContext>>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let payload = list_skill_packages(state.service.as_ref(), tenant_id).await?;
-    Ok(Json(payload))
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            ok_json(
+                list_skill_packages(state.service.as_ref(), tenant_id, &query).await?,
+            )
+        }
+        .await,
+    )
 }
 
 async fn list_admin_categories<R>(
+    ctx: WebRequestContext,
     State(state): State<BackendState<R>>,
     headers: HeaderMap,
+    Query(query): Query<SdkWorkListQuery>,
     context: Option<Extension<SkillsBackendRequestContext>>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let payload = list_categories(
-        state.service.as_ref(),
-        tenant_id,
-        SkillCategoryType::SkillMarket.as_str(),
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            ok_json(
+                list_categories(
+                    state.service.as_ref(),
+                    tenant_id,
+                    SkillCategoryType::SkillMarket.as_str(),
+                    &query,
+                )
+                .await?,
+            )
+        }
+        .await,
     )
-    .await?;
-    Ok(Json(payload))
-}
-
-#[derive(Debug, Deserialize)]
-struct CreatePackageRequest {
-    skill_id: String,
-    package_key: String,
-    code: String,
-    display_name: String,
-    summary: Option<String>,
-    description: Option<String>,
-    invocation_kind: SkillInvocationKind,
-    package_ref: String,
-    entrypoint: String,
-    input_schema_json: Option<String>,
-    output_schema_json: Option<String>,
-    capability_ids: Vec<String>,
-    categories: Vec<String>,
-    tags: Vec<String>,
-    security_profile_id: Option<String>,
-    visibility: Option<SkillVisibility>,
 }
 
 async fn create_package<R>(
+    ctx: WebRequestContext,
     State(state): State<BackendState<R>>,
     headers: HeaderMap,
     context: Option<Extension<SkillsBackendRequestContext>>,
-    Json(body): Json<CreatePackageRequest>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+    Json(body): Json<CreateSkillPackageCommand>,
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let record = SkillPackageRecord {
-        id: 0,
-        tenant_id,
-        organization_id: 0,
-        owner_user_id: context
-            .as_ref()
-            .and_then(|value| value.0.operator_id)
-            .unwrap_or(0),
-        skill_id: body.skill_id,
-        package_key: body.package_key,
-        code: body.code,
-        display_name: body.display_name,
-        summary: body.summary,
-        description: body.description,
-        invocation_kind: body.invocation_kind,
-        package_ref: body.package_ref,
-        entrypoint: body.entrypoint,
-        input_schema_json: body.input_schema_json.unwrap_or_else(|| "{}".to_string()),
-        output_schema_json: body.output_schema_json.unwrap_or_else(|| "{}".to_string()),
-        capability_ids: body.capability_ids,
-        categories: body.categories,
-        tags: body.tags,
-        security_profile_id: body.security_profile_id,
-        status: SkillLifecycleStatus::Active,
-        visibility: body.visibility.unwrap_or(SkillVisibility::Tenant),
-        version: 1,
-        created_at: String::new(),
-        updated_at: String::new(),
-        deleted_at: None,
-    };
-    let payload = upsert_skill_package(state.service.as_ref(), record).await?;
-    Ok(Json(payload))
-}
-
-#[derive(Debug, Deserialize)]
-struct UpdatePackageRequest {
-    package_key: Option<String>,
-    code: Option<String>,
-    display_name: Option<String>,
-    summary: Option<String>,
-    description: Option<String>,
-    invocation_kind: Option<SkillInvocationKind>,
-    package_ref: Option<String>,
-    entrypoint: Option<String>,
-    input_schema_json: Option<String>,
-    output_schema_json: Option<String>,
-    capability_ids: Option<Vec<String>>,
-    categories: Option<Vec<String>>,
-    tags: Option<Vec<String>>,
-    security_profile_id: Option<String>,
-    status: Option<SkillLifecycleStatus>,
-    visibility: Option<SkillVisibility>,
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            let package_key = body.resolved_package_key();
+            let capability_ids = body.resolved_capability_ids();
+            let categories = body.resolved_categories();
+            let tags = body.resolved_tags();
+            let record = SkillPackageRecord {
+                id: 0,
+                tenant_id,
+                organization_id: 0,
+                owner_user_id: context
+                    .as_ref()
+                    .and_then(|value| value.0.operator_id)
+                    .unwrap_or(0),
+                skill_id: body.skill_id,
+                package_key,
+                code: body.code,
+                display_name: body.display_name,
+                summary: body.summary,
+                description: None,
+                invocation_kind: body.invocation_kind,
+                package_ref: body.package_ref,
+                entrypoint: body.entrypoint,
+                input_schema_json: "{}".to_string(),
+                output_schema_json: "{}".to_string(),
+                capability_ids,
+                categories,
+                tags,
+                security_profile_id: None,
+                status: SkillLifecycleStatus::Active,
+                visibility: SkillVisibility::Tenant,
+                version: 1,
+                created_at: String::new(),
+                updated_at: String::new(),
+                deleted_at: None,
+            };
+            ok_json(upsert_skill_package(state.service.as_ref(), record).await?)
+        }
+        .await,
+    )
 }
 
 async fn update_package<R>(
+    ctx: WebRequestContext,
     State(state): State<BackendState<R>>,
     headers: HeaderMap,
     Path(skill_id): Path<String>,
     context: Option<Extension<SkillsBackendRequestContext>>,
-    Json(body): Json<UpdatePackageRequest>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+    Json(body): Json<UpdateSkillPackageCommand>,
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let mut record = state
-        .service
-        .get_skill_package(tenant_id, skill_id.as_str())
-        .await
-        .map_err(crate::handlers::service_error_response)?;
-    if let Some(value) = body.package_key {
-        record.package_key = value;
-    }
-    if let Some(value) = body.code {
-        record.code = value;
-    }
-    if let Some(value) = body.display_name {
-        record.display_name = value;
-    }
-    if let Some(value) = body.summary {
-        record.summary = Some(value);
-    }
-    if let Some(value) = body.description {
-        record.description = Some(value);
-    }
-    if let Some(value) = body.invocation_kind {
-        record.invocation_kind = value;
-    }
-    if let Some(value) = body.package_ref {
-        record.package_ref = value;
-    }
-    if let Some(value) = body.entrypoint {
-        record.entrypoint = value;
-    }
-    if let Some(value) = body.input_schema_json {
-        record.input_schema_json = value;
-    }
-    if let Some(value) = body.output_schema_json {
-        record.output_schema_json = value;
-    }
-    if let Some(value) = body.capability_ids {
-        record.capability_ids = value;
-    }
-    if let Some(value) = body.categories {
-        record.categories = value;
-    }
-    if let Some(value) = body.tags {
-        record.tags = value;
-    }
-    if let Some(value) = body.security_profile_id {
-        record.security_profile_id = Some(value);
-    }
-    if let Some(value) = body.status {
-        record.status = value;
-    }
-    if let Some(value) = body.visibility {
-        record.visibility = value;
-    }
-    let payload = upsert_skill_package(state.service.as_ref(), record).await?;
-    Ok(Json(payload))
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            let mut record = state
+                .service
+                .get_skill_package(tenant_id, skill_id.as_str())
+                .await
+                .map_err(ApiProblem::from)?;
+            if let Some(value) = body.package_key {
+                record.package_key = value;
+            }
+            if let Some(value) = body.code {
+                record.code = value;
+            }
+            if let Some(value) = body.display_name {
+                record.display_name = value;
+            }
+            if let Some(value) = body.summary {
+                record.summary = Some(value);
+            }
+            if let Some(value) = body.invocation_kind {
+                record.invocation_kind = value;
+            }
+            if let Some(value) = body.package_ref {
+                record.package_ref = value;
+            }
+            if let Some(value) = body.entrypoint {
+                record.entrypoint = value;
+            }
+            if let Some(value) = body.capability_ids {
+                record.capability_ids = value;
+            }
+            if let Some(value) = body.categories {
+                record.categories = value;
+            }
+            if let Some(value) = body.tags {
+                record.tags = value;
+            }
+            if let Some(value) = body.visibility {
+                record.visibility = value;
+            }
+            ok_json(upsert_skill_package(state.service.as_ref(), record).await?)
+        }
+        .await,
+    )
 }
 
 async fn delete_package<R>(
+    ctx: WebRequestContext,
     State(state): State<BackendState<R>>,
     headers: HeaderMap,
     Path(skill_id): Path<String>,
     context: Option<Extension<SkillsBackendRequestContext>>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let payload = delete_skill_package(state.service.as_ref(), tenant_id, skill_id.as_str()).await?;
-    Ok(Json(payload))
-}
-
-#[derive(Debug, Deserialize)]
-struct CreateCategoryRequest {
-    code: String,
-    name: String,
-    description: Option<String>,
-    parent_id: Option<u64>,
-    sort_weight: Option<i32>,
-    permission_code: Option<String>,
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            ok_json(
+                delete_skill_package(state.service.as_ref(), tenant_id, skill_id.as_str()).await?,
+            )
+        }
+        .await,
+    )
 }
 
 async fn create_category<R>(
+    ctx: WebRequestContext,
     State(state): State<BackendState<R>>,
     headers: HeaderMap,
     context: Option<Extension<SkillsBackendRequestContext>>,
-    Json(body): Json<CreateCategoryRequest>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+    Json(body): Json<CreateSkillCategoryCommand>,
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let record = SkillCategoryRecord {
-        id: 0,
-        tenant_id,
-        organization_id: 0,
-        category_type: SkillCategoryType::SkillMarket.as_str().to_string(),
-        code: body.code.clone(),
-        name: body.name,
-        description: body.description,
-        parent_id: body.parent_id,
-        sort_weight: body.sort_weight.unwrap_or(0),
-        permission_code: body
-            .permission_code
-            .unwrap_or_else(|| package_manage_permission_for_category(body.code.as_str())),
-        visible: true,
-        status: 1,
-    };
-    let payload = upsert_category(state.service.as_ref(), record).await?;
-    Ok(Json(payload))
-}
-
-#[derive(Debug, Deserialize)]
-struct UpdateCategoryRequest {
-    name: Option<String>,
-    description: Option<String>,
-    parent_id: Option<u64>,
-    sort_weight: Option<i32>,
-    permission_code: Option<String>,
-    visible: Option<bool>,
-    status: Option<i16>,
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            let record = SkillCategoryRecord {
+                id: 0,
+                tenant_id,
+                organization_id: 0,
+                category_type: SkillCategoryType::SkillMarket.as_str().to_string(),
+                code: body.code.clone(),
+                name: body.name,
+                description: body.description,
+                parent_id: None,
+                sort_weight: body.sort_weight.unwrap_or(0),
+                permission_code: body
+                    .permission_code
+                    .unwrap_or_else(|| package_manage_permission_for_category(body.code.as_str())),
+                visible: true,
+                status: 1,
+            };
+            ok_json(upsert_category(state.service.as_ref(), record).await?)
+        }
+        .await,
+    )
 }
 
 async fn update_category<R>(
+    ctx: WebRequestContext,
     State(state): State<BackendState<R>>,
     headers: HeaderMap,
     Path(category_id): Path<u64>,
     context: Option<Extension<SkillsBackendRequestContext>>,
-    Json(body): Json<UpdateCategoryRequest>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+    Json(body): Json<UpdateSkillCategoryCommand>,
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let categories = state
-        .service
-        .list_categories(tenant_id, SkillCategoryType::SkillMarket.as_str())
-        .await
-        .map_err(crate::handlers::service_error_response)?;
-    let Some(mut record) = categories.into_iter().find(|item| item.id == category_id) else {
-        return Err((StatusCode::NOT_FOUND, format!("category {category_id} not found")));
-    };
-    if let Some(value) = body.name {
-        record.name = value;
-    }
-    if let Some(value) = body.description {
-        record.description = Some(value);
-    }
-    if let Some(value) = body.parent_id {
-        record.parent_id = Some(value);
-    }
-    if let Some(value) = body.sort_weight {
-        record.sort_weight = value;
-    }
-    if let Some(value) = body.permission_code {
-        record.permission_code = value;
-    }
-    if let Some(value) = body.visible {
-        record.visible = value;
-    }
-    if let Some(value) = body.status {
-        record.status = value;
-    }
-    let payload = upsert_category(state.service.as_ref(), record).await?;
-    Ok(Json(payload))
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            let categories = state
+                .service
+                .list_categories(tenant_id, SkillCategoryType::SkillMarket.as_str())
+                .await
+                .map_err(ApiProblem::from)?;
+            let Some(mut record) = categories.into_iter().find(|item| item.id == category_id)
+            else {
+                return Err(ApiProblem::not_found(format!(
+                    "category {category_id} not found"
+                )));
+            };
+            if let Some(value) = body.name {
+                record.name = value;
+            }
+            if let Some(value) = body.description {
+                record.description = Some(value);
+            }
+            if let Some(value) = body.sort_weight {
+                record.sort_weight = value;
+            }
+            if let Some(value) = body.permission_code {
+                record.permission_code = value;
+            }
+            ok_json(upsert_category(state.service.as_ref(), record).await?)
+        }
+        .await,
+    )
 }
 
 pub fn build_router<R>(service: Arc<SkillsService<R>>, default_tenant_id: u64) -> Router

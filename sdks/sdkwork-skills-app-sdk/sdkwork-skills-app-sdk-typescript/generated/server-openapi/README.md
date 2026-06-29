@@ -27,7 +27,13 @@ client.setAuthToken('your-auth-token');
 client.setAccessToken('your-access-token');
 
 // Use the SDK
-const result = await client.skills.list();
+const params = {
+  page: 1,
+  page_size: 2,
+  cursor: 'cursor',
+  q: 'q',
+};
+const result = await client.skills.list(params);
 ```
 
 ## Authentication
@@ -62,7 +68,13 @@ const client = new SdkworkAppClient({
 
 ```typescript
 // Skills skills.list
-const result = await client.skills.list();
+const params = {
+  page: 1,
+  page_size: 2,
+  cursor: 'cursor',
+  q: 'q',
+};
+const result = await client.skills.list(params);
 ```
 
 ## Error Handling
@@ -71,7 +83,13 @@ const result = await client.skills.list();
 import { SdkworkAppClient, NetworkError, TimeoutError, AuthenticationError } from 'sdkwork-skills-app-sdk-generated-typescript';
 
 try {
-  const result = await client.skills.list();
+  const params = {
+    page: 1,
+    page_size: 2,
+    cursor: 'cursor',
+    q: 'q',
+  };
+  const result = await client.skills.list(params);
 } catch (error) {
   if (error instanceof AuthenticationError) {
     console.error('Authentication failed:', error.message);

@@ -8,6 +8,7 @@ license.workspace = true
 axum.workspace = true
 sdkwork-iam-web-adapter.workspace = true
 sdkwork-intelligence-skills-service = { path = "../sdkwork-intelligence-skills-service" }
+sdkwork-routes-skills-common.workspace = true
 sdkwork-skills-contract.workspace = true
 sdkwork-web-axum.workspace = true
 sdkwork-web-core.workspace = true

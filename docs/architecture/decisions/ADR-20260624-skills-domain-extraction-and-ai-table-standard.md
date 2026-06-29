@@ -3,7 +3,6 @@
 Status: accepted
 Date: 2026-06-24
 Deciders: SDKWork maintainers
-Supersedes: ADR-20260624-legacy-skills-pointer-and-framework-exemptions.md
 
 ## Context
 

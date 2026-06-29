@@ -1,4 +1,3 @@
-version: 1
-agent:
-  short_description: "Legacy pointer to sdkwork-skills-private app email skill."
-  default_prompt: "Use sdkwork-skills-private/sdkwork-skills-app and sdkwork-skills-framework for $sdkwork-email. Do not implement email clients in the public sdkwork-skills repository."
+interface:
+  short_description: "Skills platform email via SDKWork services, not local scripts."
+  default_prompt: "Skills does not host email transport. Use the owning SDKWork platform email capability through approved SDK families when notifications are required."

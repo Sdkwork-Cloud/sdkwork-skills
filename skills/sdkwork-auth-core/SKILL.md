@@ -1,22 +1,14 @@
 ---
 name: sdkwork-auth-core
-description: Use when an app skill against legacy-java-plus-app-api needs reusable login, refresh, per-app session storage, or backend-bound access-token headers.
+description: Use when Skills PC or backend surfaces need IAM login, session tokens, or dual-token HTTP auth through SDKWork standards.
 ---
 
-# SDKWORK Auth Core
+# SDKWORK Auth Core (Skills)
 
-The active implementation is in `sdkwork-skills-private/sdkwork-skills-app`.
+Skills PC auth is composed in `apps/sdkwork-skills-pc/src/bootstrap/iamRuntime.ts` via:
 
-Use the shared script:
+- `@sdkwork/auth-runtime-pc-react` for session lifecycle
+- `@sdkwork/iam-app-sdk` for IAM app API calls
+- Generated Skills app/backend SDK clients with `AuthTokenManager`
 
-`sdkwork-skills-private/sdkwork-skills-app/.sdkwork-skills-app-shared/scripts/sdkwork_auth_client.mjs`
-
-Runtime is provided by `sdkwork-skills-private/sdkwork-skills-framework`.
-
-Persist state only under:
-
-- `~/.sdkwork/app/<appId>/config.json`
-- `~/.sdkwork/app/<appId>/profiles.json`
-- `~/.sdkwork/app/<appId>/session.json`
-
-Do not add auth client logic to this legacy public repository.
+Do not add ad-hoc auth headers or raw HTTP login flows in Skills packages. Follow `sdkwork-specs/IAM_LOGIN_INTEGRATION_SPEC.md` and `sdkwork-specs/APP_SDK_INTEGRATION_SPEC.md`.

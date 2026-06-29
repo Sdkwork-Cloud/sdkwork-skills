@@ -1,4 +1,4 @@
-export { createSkillsClients, getSkillsClients, resetSkillsClients } from '../clients';
+export { createSkillsAppClients } from '../clients';
 export {
   createSkillsTokenManager,
   hasStoredSession,
@@ -6,4 +6,9 @@ export {
   readStoredAuthToken,
   readStoredAccessToken,
 } from '../session';
-export type { SkillsClients, SkillsClientConfig } from '../clients';
+export type {
+  SkillsAppClients,
+  SkillsAppClientConfig,
+  SkillsClients,
+  SkillsClientConfig,
+} from '../clients';

@@ -1,4 +1,3 @@
-version: 1
-agent:
-  short_description: "Legacy pointer to sdkwork-skills-private app auth skill."
-  default_prompt: "Use sdkwork-skills-private/sdkwork-skills-app and sdkwork-skills-framework for $sdkwork-auth-core. Do not implement auth clients in the public sdkwork-skills repository."
+interface:
+  short_description: "Skills PC IAM login and dual-token SDK integration."
+  default_prompt: "Use apps/sdkwork-skills-pc bootstrap iamRuntime and @sdkwork/auth-runtime-pc-react for Skills auth. Follow sdkwork-specs/IAM_LOGIN_INTEGRATION_SPEC.md."

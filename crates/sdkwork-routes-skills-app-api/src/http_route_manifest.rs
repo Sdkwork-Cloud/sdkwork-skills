@@ -5,37 +5,37 @@ const HTTP_ROUTES: &[HttpRoute] = &[
         HttpMethod::Get,
         "/app/v3/api/skills",
         "skills",
-        "skills.listSkills",
+        "skills.list",
     ),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/app/v3/api/skills/{skillKey}",
         "skills",
-        "skills.getSkill",
+        "skills.retrieve",
     ),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/app/v3/api/skill_packages",
         "skills",
-        "skills.listSkillPackages",
+        "skillPackages.list",
     ),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/app/v3/api/skill_packages/{skillId}",
         "skills",
-        "skills.getSkillPackage",
+        "skillPackages.retrieve",
     ),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/app/v3/api/categories",
         "skills",
-        "skills.listCategories",
+        "categories.list",
     ),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/app/v3/api/user/skills/install",
         "skills",
-        "skills.installSkill",
+        "userSkills.install",
     ),
 ];
 

@@ -7,7 +7,23 @@
     {
       "surface": "app",
       "corePackage": "@sdkwork/skills-pc-core",
-      "sdkClients": [],
+      "sdkClients": [
+        {
+          "id": "driveApp",
+          "workspace": "sdkwork-drive-app-sdk",
+          "surface": "app-api",
+          "credentialMode": "authenticated-app-api",
+          "role": "dependency",
+          "sdkDependencyRef": "sdkwork-drive-app-sdk"
+        },
+        {
+          "id": "skillsApp",
+          "workspace": "sdkwork-skills-app-sdk",
+          "surface": "app-api",
+          "credentialMode": "authenticated-app-api",
+          "role": "application-owned"
+        }
+      ],
       "reusableModules": [],
       "hostAdapters": [],
       "dependencyApiExports": [],
@@ -16,7 +32,15 @@
     {
       "surface": "backend-admin",
       "corePackage": "@sdkwork/skills-pc-admin-core",
-      "sdkClients": [],
+      "sdkClients": [
+        {
+          "id": "skillsBackend",
+          "workspace": "sdkwork-skills-backend-sdk",
+          "surface": "backend-api",
+          "credentialMode": "authenticated-backend-admin",
+          "role": "application-owned"
+        }
+      ],
       "reusableModules": [],
       "hostAdapters": [],
       "dependencyApiExports": [],

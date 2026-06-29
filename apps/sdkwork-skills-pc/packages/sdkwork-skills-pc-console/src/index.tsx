@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSkillsClients, type SkillPackageRecord } from '@sdkwork/skills-pc-core';
+import { listSkillPackages, useSkillsClients, type SkillPackageRecord } from '@sdkwork/skills-pc-core';
 
 export function ConsoleSkillsPage() {
   const clients = useSkillsClients();
@@ -7,9 +7,8 @@ export function ConsoleSkillsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    clients.app.skills.skillPackages
-      .list()
-      .then((response: { items: SkillPackageRecord[] }) => setPackages(response.items))
+    listSkillPackages(clients)
+      .then((page) => setPackages(page.items))
       .catch((cause: Error) => setError(cause.message));
   }, [clients]);
 

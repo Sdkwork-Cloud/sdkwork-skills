@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "@sdkwork/skills-pc-admin-core",
+    "displayName": "Skills PC Admin Core",
+    "version": "0.1.0",
+    "type": "react-package",
+    "root": ".",
+    "domain": "skills",
+    "capability": "pc-admin-core",
+    "surface": "backend-admin",
+    "languages": ["typescript", "react"],
+    "generated": false,
+    "manifests": ["package.json"]
+  },
+  "contracts": {
+    "publicExports": [".", "./composition", "./host", "./modules", "./sdk", "./session"],
+    "runtimeEntrypoints": [],
+    "routeManifest": null,
+    "sdkClients": [],
+    "events": [],
+    "configKeys": [],
+    "sdkDependencies": [
+      {
+        "workspace": "sdkwork-skills-backend-sdk",
+        "role": "skills-backend-capability",
+        "required": true,
+        "dependencyMode": "consumer-sdk",
+        "apiPrefix": "/backend/v3/api",
+        "apiAuthority": "sdkwork-skills.backend",
+        "generatedTransportImportPolicy": "forbidden",
+        "packageByLanguage": {
+          "typescript": "sdkwork-skills-backend-sdk-generated-typescript"
+        }
+      }
+    ],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "dependencyComposition": "../../../specs/dependency.composition.json"
+  },
+  "verification": {
+    "commands": ["pnpm typecheck"]
+  }
+}

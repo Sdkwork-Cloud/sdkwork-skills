@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use sdkwork_web_core::HttpRouteManifest;
 
-mod handlers;
 mod health;
 pub mod http_route_manifest;
 mod paths;
@@ -10,20 +9,25 @@ mod ports;
 mod web_bootstrap;
 
 use axum::{
-    extract::{Extension, Path, State},
-    http::{HeaderMap, StatusCode},
+    extract::{Extension, Path, Query, State},
+    http::StatusCode,
+    response::Response,
     routing::{get, post},
     Json, Router,
 };
 use sdkwork_intelligence_skills_service::SkillsService;
 use sdkwork_skills_contract::{SkillCategoryType, UserSkillInstallRecord};
-use serde::Deserialize;
+use sdkwork_web_core::WebRequestContext;
 use sqlx::PgPool;
 
-pub use handlers::{
-    get_skill_package, install_skill, list_categories, list_hub_skills, list_skill_packages,
-    resolve_tenant_id, SharedSkillsService,
+pub use sdkwork_routes_skills_common::{
+    finish_api_json, get_skill, get_skill_package, install_skill, list_categories,
+    list_hub_skills, list_skill_packages, ok_json, resolve_tenant_id, InstallSkillCommand,
+    SdkWorkListQuery,
 };
+pub type SharedSkillsService<R> = std::sync::Arc<
+    sdkwork_intelligence_skills_service::SkillsService<R>,
+>;
 pub use health::DbReadinessCheck;
 pub use http_route_manifest::app_route_manifest;
 pub use ports::SkillsAppRequestContext;
@@ -58,7 +62,7 @@ where
 
 async fn readyz_handler<R>(
     State(state): State<AppState<R>>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)>
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
@@ -76,7 +80,7 @@ where
 
 fn resolve_request_tenant_id(
     context: Option<&Extension<SkillsAppRequestContext>>,
-    headers: &HeaderMap,
+    headers: &axum::http::HeaderMap,
     default_tenant_id: u64,
 ) -> u64 {
     context
@@ -85,118 +89,167 @@ fn resolve_request_tenant_id(
 }
 
 async fn list_skills_handler<R>(
+    ctx: WebRequestContext,
     State(state): State<AppState<R>>,
-    headers: HeaderMap,
+    headers: axum::http::HeaderMap,
+    Query(query): Query<SdkWorkListQuery>,
     context: Option<Extension<SkillsAppRequestContext>>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let payload = list_hub_skills(state.service.as_ref(), tenant_id).await?;
-    Ok(Json(payload))
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            ok_json(
+                list_hub_skills(state.service.as_ref(), tenant_id, &query).await?,
+            )
+        }
+        .await,
+    )
 }
 
 async fn get_skill_handler<R>(
+    ctx: WebRequestContext,
     State(state): State<AppState<R>>,
-    headers: HeaderMap,
+    headers: axum::http::HeaderMap,
     Path(skill_key): Path<String>,
     context: Option<Extension<SkillsAppRequestContext>>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let record = state
-        .service
-        .get_skill(tenant_id, skill_key.as_str())
-        .await
-        .map_err(crate::handlers::service_error_response)?;
-    Ok(Json(crate::handlers::record_response(record)))
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            ok_json(get_skill(state.service.as_ref(), tenant_id, skill_key.as_str()).await?)
+        }
+        .await,
+    )
 }
 
 async fn list_skill_packages_handler<R>(
+    ctx: WebRequestContext,
     State(state): State<AppState<R>>,
-    headers: HeaderMap,
+    headers: axum::http::HeaderMap,
+    Query(query): Query<SdkWorkListQuery>,
     context: Option<Extension<SkillsAppRequestContext>>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let payload = list_skill_packages(state.service.as_ref(), tenant_id).await?;
-    Ok(Json(payload))
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            ok_json(
+                list_skill_packages(state.service.as_ref(), tenant_id, &query).await?,
+            )
+        }
+        .await,
+    )
 }
 
 async fn get_skill_package_handler<R>(
+    ctx: WebRequestContext,
     State(state): State<AppState<R>>,
-    headers: HeaderMap,
+    headers: axum::http::HeaderMap,
     Path(skill_id): Path<String>,
     context: Option<Extension<SkillsAppRequestContext>>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let payload = get_skill_package(state.service.as_ref(), tenant_id, skill_id.as_str()).await?;
-    Ok(Json(payload))
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            ok_json(
+                get_skill_package(state.service.as_ref(), tenant_id, skill_id.as_str()).await?,
+            )
+        }
+        .await,
+    )
 }
 
 async fn list_categories_handler<R>(
+    ctx: WebRequestContext,
     State(state): State<AppState<R>>,
-    headers: HeaderMap,
+    headers: axum::http::HeaderMap,
+    Query(query): Query<SdkWorkListQuery>,
     context: Option<Extension<SkillsAppRequestContext>>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let payload = list_categories(
-        state.service.as_ref(),
-        tenant_id,
-        SkillCategoryType::SkillMarket.as_str(),
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            ok_json(
+                list_categories(
+                    state.service.as_ref(),
+                    tenant_id,
+                    SkillCategoryType::SkillMarket.as_str(),
+                    &query,
+                )
+                .await?,
+            )
+        }
+        .await,
     )
-    .await?;
-    Ok(Json(payload))
-}
-
-#[derive(Debug, Deserialize)]
-struct InstallSkillRequest {
-    user_id: u64,
-    skill_id: u64,
-    package_id: Option<u64>,
-    config_json: Option<String>,
 }
 
 async fn install_skill_handler<R>(
+    ctx: WebRequestContext,
     State(state): State<AppState<R>>,
-    headers: HeaderMap,
+    headers: axum::http::HeaderMap,
     context: Option<Extension<SkillsAppRequestContext>>,
-    Json(body): Json<InstallSkillRequest>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)>
+    Json(body): Json<InstallSkillCommand>,
+) -> Response
 where
     R: sdkwork_intelligence_skills_service::SkillsRepository + Send + Sync,
 {
-    let tenant_id = resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
-    let actor_id = context
-        .as_ref()
-        .and_then(|value| value.0.actor_id)
-        .unwrap_or(body.user_id);
-    let record = UserSkillInstallRecord {
-        id: 0,
-        tenant_id,
-        organization_id: 0,
-        user_id: actor_id,
-        skill_id: body.skill_id,
-        package_id: body.package_id,
-        install_status: "installed".to_string(),
-        enabled: true,
-        config_json: body.config_json.unwrap_or_else(|| "{}".to_string()),
-        installed_at: String::new(),
-        updated_at: String::new(),
-    };
-    let payload = install_skill(state.service.as_ref(), record).await?;
-    Ok(Json(payload))
+    finish_api_json(
+        &ctx,
+        async {
+            let tenant_id =
+                resolve_request_tenant_id(context.as_ref(), &headers, state.default_tenant_id);
+            let actor_id = context
+                .as_ref()
+                .and_then(|value| value.0.actor_id)
+                .ok_or_else(|| {
+                    sdkwork_routes_skills_common::ApiProblem::bad_request(
+                        "authenticated actor id is required",
+                    )
+                })?;
+            let record = UserSkillInstallRecord {
+                id: 0,
+                tenant_id,
+                organization_id: context
+                    .as_ref()
+                    .and_then(|value| value.0.organization_id)
+                    .unwrap_or(0),
+                user_id: actor_id,
+                skill_id: body.skill_id as u64,
+                package_id: body.package_id.map(|value| value as u64),
+                install_status: "installed".to_string(),
+                enabled: true,
+                config_json: "{}".to_string(),
+                installed_at: String::new(),
+                updated_at: String::new(),
+            };
+            ok_json(install_skill(state.service.as_ref(), record).await?)
+        }
+        .await,
+    )
 }
 
 pub fn build_router<R>(service: Arc<SkillsService<R>>, default_tenant_id: u64) -> Router

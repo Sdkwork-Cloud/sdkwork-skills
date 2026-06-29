@@ -9,15 +9,10 @@
     "protocol": "http",
     "packageName": "sdkwork-skills-backend-sdk-generated-typescript"
   },
-  "changeFingerprint": "ee94d5e322a9974cb0e033e7007dd8c4cbee4a777f628e89a56632aa25c1b84e",
+  "changeFingerprint": "fc212645da9cc8980365fec93b0e21b5ae65652bb29d49e4e6f0dcf49804354d",
   "changes": {
     "createdGeneratedFiles": [],
-    "updatedGeneratedFiles": [
-      "src/types/create-skill-category-command.ts",
-      "src/types/skill-category-record.ts",
-      "src/types/skill-package-record.ts",
-      "src/types/skill-record.ts"
-    ],
+    "updatedGeneratedFiles": [],
     "unchangedGeneratedFiles": [
       "bin/publish-core.mjs",
       "bin/publish.ps1",
@@ -38,19 +33,58 @@
       "src/http/index.ts",
       "src/index.ts",
       "src/sdk.ts",
+      "src/types/categories-create-resource-data.ts",
+      "src/types/categories-create-response.ts",
+      "src/types/categories-list-response.ts",
+      "src/types/categories-management-list-response.ts",
+      "src/types/categories-management-page-data.ts",
+      "src/types/categories-page-data.ts",
+      "src/types/categories-resource-data.ts",
+      "src/types/categories-response.ts",
+      "src/types/categories-update-resource-data.ts",
+      "src/types/categories-update-response.ts",
       "src/types/common.ts",
+      "src/types/create-skill-category-command.ts",
       "src/types/create-skill-package-command.ts",
+      "src/types/field-error.ts",
       "src/types/index.ts",
       "src/types/install-skill-command.ts",
+      "src/types/page-info.ts",
       "src/types/problem-detail.ts",
-      "src/types/skill-category-list-response.ts",
-      "src/types/skill-category-record-response.ts",
-      "src/types/skill-list-response.ts",
-      "src/types/skill-package-list-response.ts",
-      "src/types/skill-package-record-response.ts",
-      "src/types/skill-record-response.ts",
-      "src/types/user-skill-install-record-response.ts",
+      "src/types/sdk-work-api-response.ts",
+      "src/types/sdk-work-command-data.ts",
+      "src/types/sdk-work-command-response.ts",
+      "src/types/sdk-work-list-response.ts",
+      "src/types/sdk-work-page-data.ts",
+      "src/types/sdk-work-platform-error-code.ts",
+      "src/types/sdk-work-resource-data.ts",
+      "src/types/sdk-work-resource-response.ts",
+      "src/types/skill-category-record.ts",
+      "src/types/skill-package-record.ts",
+      "src/types/skill-packages-create-resource-data.ts",
+      "src/types/skill-packages-create-response.ts",
+      "src/types/skill-packages-delete-resource-data.ts",
+      "src/types/skill-packages-delete-response.ts",
+      "src/types/skill-packages-list-response.ts",
+      "src/types/skill-packages-management-list-response.ts",
+      "src/types/skill-packages-management-page-data.ts",
+      "src/types/skill-packages-page-data.ts",
+      "src/types/skill-packages-resource-data.ts",
+      "src/types/skill-packages-response.ts",
+      "src/types/skill-packages-update-resource-data.ts",
+      "src/types/skill-packages-update-response.ts",
+      "src/types/skill-record.ts",
+      "src/types/skills-list-response.ts",
+      "src/types/skills-management-list-response.ts",
+      "src/types/skills-management-page-data.ts",
+      "src/types/skills-page-data.ts",
+      "src/types/skills-resource-data.ts",
+      "src/types/skills-response.ts",
+      "src/types/update-skill-category-command.ts",
+      "src/types/update-skill-package-command.ts",
       "src/types/user-skill-install-record.ts",
+      "src/types/user-skills-install-resource-data.ts",
+      "src/types/user-skills-install-response.ts",
       "tsconfig.json"
     ],
     "deletedGeneratedFiles": [],
@@ -63,75 +97,26 @@
   },
   "impact": {
     "schemaVersion": 1,
-    "areas": [
-      "models"
-    ],
-    "details": [
-      {
-        "area": "models",
-        "paths": [
-          "src/types/create-skill-category-command.ts",
-          "src/types/skill-category-record.ts",
-          "src/types/skill-package-record.ts",
-          "src/types/skill-record.ts"
-        ]
-      }
-    ],
-    "requiresVerification": true,
-    "summary": "Detected impact areas: models. Verification is required."
+    "areas": [],
+    "details": [],
+    "requiresVerification": false,
+    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped."
   },
   "verificationPlan": {
-    "shouldRun": true,
-    "runPhase": "now",
-    "summary": "Detected impact areas: models. Verification is required. Run the required verification commands now against the generated SDK output.",
-    "steps": [
-      {
-        "id": "check",
-        "title": "Unified package check",
-        "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: models.",
-        "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-backend-sdk\\sdkwork-skills-backend-sdk-typescript\\generated\\server-openapi",
-        "command": "node",
-        "args": [
-          "./bin/publish-core.mjs",
-          "--language",
-          "typescript",
-          "--project-dir",
-          ".",
-          "--action",
-          "check"
-        ],
-        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action check"
-      },
-      {
-        "id": "build",
-        "title": "Unified package build",
-        "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: models.",
-        "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-backend-sdk\\sdkwork-skills-backend-sdk-typescript\\generated\\server-openapi",
-        "command": "node",
-        "args": [
-          "./bin/publish-core.mjs",
-          "--language",
-          "typescript",
-          "--project-dir",
-          ".",
-          "--action",
-          "build"
-        ],
-        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action build"
-      }
-    ]
+    "shouldRun": false,
+    "runPhase": "skip",
+    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped.",
+    "steps": []
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "medium",
-    "nextAction": "verify",
+    "riskLevel": "low",
+    "nextAction": "skip",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
-    "summary": "Changes have been applied. Run the required verification plan now.",
+    "summary": "No actionable changes were detected. No apply or verification step is required.",
     "reasons": [
-      "verification-required"
+      "no-actionable-changes"
     ]
   },
   "preservedLegacyFiles": false

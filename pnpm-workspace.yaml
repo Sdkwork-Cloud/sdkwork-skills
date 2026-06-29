@@ -14,6 +14,7 @@ packages:
   - ../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-auth-pc-react
   - ../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-auth-runtime-pc-react
   - ../sdkwork-iam/apps/sdkwork-iam-common/packages/sdkwork-iam-contracts
+  - ../sdkwork-iam/apps/sdkwork-iam-common/packages/sdkwork-iam-credential-entry
   - ../sdkwork-iam/apps/sdkwork-iam-common/packages/sdkwork-iam-sdk-adapter
   - ../sdkwork-iam/apps/sdkwork-iam-common/packages/sdkwork-iam-runtime
   - ../sdkwork-iam/apps/sdkwork-iam-common/packages/sdkwork-iam-sdk-ports

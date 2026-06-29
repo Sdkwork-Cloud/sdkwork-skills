@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useSkillsClients, type SkillRecord } from '@sdkwork/skills-pc-core';
+import {
+  installUserSkill,
+  listPublishedSkills,
+  retrievePublishedSkill,
+  useSkillsClients,
+  type SkillRecord,
+} from '@sdkwork/skills-pc-core';
 
 export function SkillsHubPage() {
   const clients = useSkillsClients();
@@ -10,11 +16,10 @@ export function SkillsHubPage() {
 
   useEffect(() => {
     let active = true;
-    clients.app.skills
-      .list()
-      .then((response: { items: SkillRecord[] }) => {
+    listPublishedSkills(clients)
+      .then((page) => {
         if (active) {
-          setSkills(response.items);
+          setSkills(page.items);
           setError(null);
         }
       })
@@ -68,11 +73,10 @@ export function SkillDetailPage() {
       return;
     }
     let active = true;
-    clients.app.skills
-      .retrieve(skillId)
-      .then((response: { data: SkillRecord }) => {
+    retrievePublishedSkill(clients, skillId)
+      .then((nextSkill) => {
         if (active) {
-          setSkill(response.data);
+          setSkill(nextSkill);
           setError(null);
         }
       })
@@ -108,6 +112,40 @@ export function SkillDetailPage() {
       <p>
         <strong>Capabilities:</strong> {skill.capabilities?.join(', ') || 'none'}
       </p>
+      <InstallSkillButton clients={clients} skillId={skill.id} />
     </section>
+  );
+}
+
+function InstallSkillButton({
+  clients,
+  skillId,
+}: {
+  clients: ReturnType<typeof useSkillsClients>;
+  skillId: string;
+}) {
+  const [status, setStatus] = useState<'idle' | 'installing' | 'done' | 'error'>('idle');
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function onInstall() {
+    setStatus('installing');
+    setMessage(null);
+    try {
+      await installUserSkill(clients, skillId);
+      setStatus('done');
+      setMessage('Skill installed.');
+    } catch (cause) {
+      setStatus('error');
+      setMessage(cause instanceof Error ? cause.message : String(cause));
+    }
+  }
+
+  return (
+    <div>
+      <button type="button" onClick={onInstall} disabled={status === 'installing' || status === 'done'}>
+        {status === 'done' ? 'Installed' : status === 'installing' ? 'Installing…' : 'Install Skill'}
+      </button>
+      {message ? <p role="status">{message}</p> : null}
+    </div>
   );
 }

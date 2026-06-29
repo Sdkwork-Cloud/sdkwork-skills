@@ -4,15 +4,14 @@ import {
   type SdkworkAppbasePcAuthRuntimeComposition,
   type SdkworkAppbasePcAuthRuntimeSdkClient,
 } from '@sdkwork/auth-runtime-pc-react';
-import { createClient as createDriveSdkClient, type SdkworkDriveAppClient } from '@sdkwork/drive-app-sdk';
+import type { SdkworkDriveAppClient } from '@sdkwork/drive-app-sdk';
 import type { IamAppContext, IamDeploymentMode, IamEnvironment } from '@sdkwork/iam-contracts';
 import type { IamRuntime } from '@sdkwork/iam-runtime';
 import { normalizeSdkworkApiBaseUrl } from '@sdkwork/runtime-bootstrap';
-import { createClient as createSkillsAppSdkClient, type SdkworkAppClient as SkillsAppClient } from 'sdkwork-skills-app-sdk-generated-typescript/src/sdk';
-import {
-  createClient as createSkillsBackendSdkClient,
-  type SdkworkBackendClient,
-} from 'sdkwork-skills-backend-sdk-generated-typescript/src/sdk';
+import { createSkillsBackendClients } from '@sdkwork/skills-pc-admin-core';
+import { createSkillsAppClients } from '@sdkwork/skills-pc-core';
+import type { SdkworkAppClient as SkillsAppClient } from 'sdkwork-skills-app-sdk-generated-typescript/src/sdk';
+import type { SdkworkBackendClient } from 'sdkwork-skills-backend-sdk-generated-typescript/src/sdk';
 
 import {
   resolveAppbaseAppApiBaseUrl,
@@ -94,35 +93,30 @@ export function createSdkworkSkillsPcSdkClientsWithTokenManager(
   config: SdkworkSkillsPcRuntimeConfig,
   tokenManager: ReturnType<typeof createSdkworkSkillsPcSessionTokenManager>,
 ): SdkworkSkillsPcSdkClientInventory {
-  const tenantHeader = config.defaultTenantId;
-  const authenticatedConfig = (baseUrl: string) => ({
-    authMode: 'dual-token' as const,
-    baseUrl: normalizeGeneratedSdkBaseUrl(baseUrl, APP_API_PREFIX),
-    headers: {
-      'x-sdkwork-tenant-id': tenantHeader,
-    },
-    platform: 'pc' as const,
+  const appApiBaseUrl = normalizeGeneratedSdkBaseUrl(
+    normalizeSdkworkApiBaseUrl(config.appApiBaseUrl, 'app'),
+    APP_API_PREFIX,
+  );
+  const backendApiBaseUrl = normalizeGeneratedSdkBaseUrl(
+    normalizeSdkworkApiBaseUrl(config.backendApiBaseUrl, 'backend'),
+    BACKEND_API_PREFIX,
+  );
+  const driveAppApiBaseUrl = normalizeGeneratedSdkBaseUrl(
+    normalizeSdkworkApiBaseUrl(config.driveAppApiBaseUrl, 'app'),
+    APP_API_PREFIX,
+  );
+
+  const { app, drive } = createSkillsAppClients({
+    appApiBaseUrl,
+    driveAppApiBaseUrl,
+    tenantId: config.defaultTenantId,
     tokenManager,
   });
-
-  const app = createSkillsAppSdkClient(
-    authenticatedConfig(normalizeSdkworkApiBaseUrl(config.appApiBaseUrl, 'app')),
-  );
-  app.setTokenManager(tokenManager);
-
-  const backend = createSkillsBackendSdkClient({
-    ...authenticatedConfig(normalizeSdkworkApiBaseUrl(config.backendApiBaseUrl, 'backend')),
-    baseUrl: normalizeGeneratedSdkBaseUrl(
-      normalizeSdkworkApiBaseUrl(config.backendApiBaseUrl, 'backend'),
-      BACKEND_API_PREFIX,
-    ),
+  const { backend } = createSkillsBackendClients({
+    backendApiBaseUrl,
+    tenantId: config.defaultTenantId,
+    tokenManager,
   });
-  backend.setTokenManager(tokenManager);
-
-  const drive = createDriveSdkClient(
-    authenticatedConfig(normalizeSdkworkApiBaseUrl(config.driveAppApiBaseUrl, 'app')),
-  );
-  drive.setTokenManager(tokenManager);
 
   return {
     appApiBaseUrl: normalizeSdkworkApiBaseUrl(config.appApiBaseUrl, 'app'),

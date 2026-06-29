@@ -4,6 +4,7 @@ members = [
     "crates/sdkwork-skills-contract",
     "crates/sdkwork-intelligence-skills-service",
     "crates/sdkwork-intelligence-skills-repository-sqlx",
+    "crates/sdkwork-routes-skills-common",
     "crates/sdkwork-routes-skills-app-api",
     "crates/sdkwork-routes-skills-backend-api",
     "crates/sdkwork-skills-standalone-gateway",
@@ -29,6 +30,7 @@ sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chron
 sdkwork-skills-contract = { path = "crates/sdkwork-skills-contract" }
 sdkwork-intelligence-skills-service = { path = "crates/sdkwork-intelligence-skills-service" }
 sdkwork-intelligence-skills-repository-sqlx = { path = "crates/sdkwork-intelligence-skills-repository-sqlx" }
+sdkwork-routes-skills-common = { path = "crates/sdkwork-routes-skills-common" }
 sdkwork-web-axum = { path = "../sdkwork-web-framework/crates/sdkwork-web-axum" }
 sdkwork-web-core = { path = "../sdkwork-web-framework/crates/sdkwork-web-core" }
 sdkwork-iam-web-adapter = { path = "../sdkwork-iam/crates/sdkwork-iam-web-adapter" }

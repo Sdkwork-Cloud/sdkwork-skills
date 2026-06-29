@@ -2,61 +2,70 @@
 
 ## Overview
 
-Integrators consuming SDKWork app-surface skills should use the **private implementation
-monorepo** `sdkwork-skills-private`, not this legacy public pointer.
+Integrate with Skills marketplace APIs through generated SDK families in `sdks/`. Wire contracts
+from `apis/app-api/skills/` (user-facing Hub) and `apis/backend-api/skills/` (admin Console).
 
-## Canonical Skill Packs
+Application authority: `sdkwork-skills.app` (app-api), `sdkwork-skills.backend` (backend-api).
 
-| Surface | Pack | External API target |
+## SDK Families
+
+| Surface | SDK | OpenAPI |
 | --- | --- | --- |
-| App | `sdkwork-skills-app` | `legacy-java-plus-app-api` |
-| Backend/ops | `sdkwork-skills-ops-admin` | `legacy-java-plus-backend-api` |
+| App (Hub, user install) | `sdks/sdkwork-skills-app-sdk/` | `apis/app-api/skills/skills-app-api.openapi.json` |
+| Backend (Admin CRUD) | `sdks/sdkwork-skills-backend-sdk/` | `apis/backend-api/skills/skills-backend-api.openapi.json` |
+| Cross-domain contract | `crates/sdkwork-skills-contract/` | Rust types shared with kernel |
 
-Both packs share `sdkwork-skills-framework` for:
+Generate TypeScript SDKs:
 
-- profile and session JSON storage under `~/.sdkwork/`
-- dual-token request headers and refresh recovery
-- CLI commands for login, preview, and authenticated requests
-
-## Runtime State Contract
-
-App-scoped state:
-
-```text
-~/.sdkwork/app/<appId>/
-  config.json
-  profiles.json
-  session.json
+```bash
+pnpm sdk:generate
 ```
 
-Backend-scoped state:
+Standard profile: `sdkwork-v3` (success envelope unwrap enabled in HTTP clients).
 
-```text
-~/.sdkwork/backend/
-  config.json
-  profiles.json
-  session.json
+## Authentication
+
+Dual-token model (`AuthToken` bearer + `Access-Token` header) per SDKWork IAM. Route manifests
+in `crates/sdkwork-routes-skills-*/src/http_route_manifest.rs` declare IAM operation IDs aligned
+with OpenAPI `operationId` values.
+
+## Response Envelope
+
+HTTP 2xx JSON:
+
+```json
+{
+  "code": 0,
+  "data": { "items": [], "pageInfo": { "mode": "offset", "page": 1 } },
+  "traceId": "<uuid>"
+}
 ```
 
-Governed by `RUNTIME_DIRECTORY_SPEC.md`.
+Single resource:
 
-## Legacy Public Pointers
+```json
+{
+  "code": 0,
+  "data": { "item": { } },
+  "traceId": "<uuid>"
+}
+```
 
-If integration docs still link to `sdkwork-skills/skills/*`, follow the redirect in each
-`SKILL.md` to the canonical script under `sdkwork-skills-app` in the private monorepo.
+Errors: HTTP 4xx/5xx with `application/problem+json` including numeric `code` and `traceId`.
 
-## API Integration
+## Kernel Integration
 
-- Use generated SDKs and framework HTTP adapters in the private monorepo; do not add raw HTTP
-  wrappers in this repository
-- Protected calls must follow `SECURITY_SPEC.md` and `IAM_LOGIN_INTEGRATION_SPEC.md` through
-  the framework token resolver
+`sdkwork-kernel` references skills by ID through `sdkwork-skills-contract`. Skill package
+persistence and CRUD remain in this repository only.
 
-## Not Applicable At This Root
+## Verification
 
-- `sdkwork-web-framework` (no owned HTTP server)
-- `sdkwork-database` (no persistence)
-- `sdkwork-discovery` (no RPC; integrate in private monorepo when RPC skills are added)
-- `@sdkwork/utils` (no authored TypeScript package here)
+```bash
+pnpm api:check
+pnpm verify
+node ../sdkwork-specs/tools/check-api-response-envelope.mjs --workspace .
+node ../sdkwork-specs/tools/check-dependency-composition.mjs --workspace ..
+```
 
-See [TECH_ARCHITECTURE.md](../../architecture/tech/TECH_ARCHITECTURE.md) section 8.
+`pnpm api:check` materializes OpenAPI, runs `tools/skills_schema_quality_gate.mjs` (envelope,
+list query params, OpenAPI ↔ route manifest parity), and validates generated SDK drift.

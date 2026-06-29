@@ -28,3 +28,11 @@ export interface AuthGateProps {
 }
 
 export function AuthGate(props: AuthGateProps): ReactElement | null;
+
+export interface SdkworkSessionAuthBrowserRootProps {
+  children: ReactNode;
+}
+
+export function SdkworkSessionAuthBrowserRoot(
+  props: SdkworkSessionAuthBrowserRootProps,
+): ReactElement | null;

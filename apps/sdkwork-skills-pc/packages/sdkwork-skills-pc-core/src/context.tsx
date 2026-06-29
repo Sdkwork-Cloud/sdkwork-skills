@@ -1,6 +1,6 @@
 import { createContext, useContext, type ReactNode } from 'react';
 
-import { createSkillsClients, type SkillsClients } from './clients';
+import type { SkillsClients } from './clients';
 
 const SkillsClientsContext = createContext<SkillsClients | null>(null);
 
@@ -8,11 +8,10 @@ export function SkillsClientsProvider({
   clients,
   children,
 }: {
-  clients?: SkillsClients;
+  clients: SkillsClients;
   children: ReactNode;
 }) {
-  const value = clients ?? createSkillsClients();
-  return <SkillsClientsContext.Provider value={value}>{children}</SkillsClientsContext.Provider>;
+  return <SkillsClientsContext.Provider value={clients}>{children}</SkillsClientsContext.Provider>;
 }
 
 export function useSkillsClients(): SkillsClients {

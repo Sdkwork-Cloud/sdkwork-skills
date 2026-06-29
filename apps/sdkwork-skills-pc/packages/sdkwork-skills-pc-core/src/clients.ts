@@ -1,44 +1,40 @@
 import { createClient as createDriveSdkClient, type SdkworkDriveAppClient } from '@sdkwork/drive-app-sdk';
 import type { AuthTokenManager } from '@sdkwork/sdk-common';
 import { createClient as createAppSdkClient, type SdkworkAppClient } from 'sdkwork-skills-app-sdk-generated-typescript/src/sdk';
-import {
-  createClient as createBackendSdkClient,
-  type SdkworkBackendClient,
-} from 'sdkwork-skills-backend-sdk-generated-typescript/src/sdk';
+import type { SdkworkBackendClient } from 'sdkwork-skills-backend-sdk-generated-typescript/src/sdk';
 import { isBlank, trim } from '@sdkwork/utils';
 import { normalizeApiBaseUrl, readRuntimeEnv } from '@sdkwork/skills-pc-commons/runtime';
 
 import { createSkillsTokenManager } from './session';
 
-export type SkillsClientConfig = {
+export type SkillsAppClientConfig = {
   appApiBaseUrl?: string;
-  backendApiBaseUrl?: string;
   driveAppApiBaseUrl?: string;
   tenantId?: string;
   tokenManager?: AuthTokenManager;
 };
 
-export type SkillsClients = {
+export type SkillsAppClients = {
   app: SdkworkAppClient;
-  backend: SdkworkBackendClient;
   drive: SdkworkDriveAppClient;
 };
 
-let cachedClients: SkillsClients | null = null;
+/** Full PC runtime client inventory (app bootstrap composes app + backend surfaces). */
+export type SkillsClients = SkillsAppClients & {
+  backend: SdkworkBackendClient;
+};
 
-function resolveAppApiBaseUrl(config?: SkillsClientConfig): string {
+export type SkillsClientConfig = SkillsAppClientConfig & {
+  backendApiBaseUrl?: string;
+};
+
+function resolveAppApiBaseUrl(config?: SkillsAppClientConfig): string {
   return normalizeApiBaseUrl(
     config?.appApiBaseUrl ?? readRuntimeEnv('VITE_SDKWORK_SKILLS_APP_API_BASE_URL') ?? '',
   );
 }
 
-function resolveBackendApiBaseUrl(config?: SkillsClientConfig): string {
-  return normalizeApiBaseUrl(
-    config?.backendApiBaseUrl ?? readRuntimeEnv('VITE_SDKWORK_SKILLS_BACKEND_API_BASE_URL') ?? '',
-  );
-}
-
-function resolveDriveAppApiBaseUrl(config?: SkillsClientConfig): string {
+function resolveDriveAppApiBaseUrl(config?: SkillsAppClientConfig): string {
   return normalizeApiBaseUrl(
     config?.driveAppApiBaseUrl ??
       readRuntimeEnv('VITE_SDKWORK_DRIVE_APP_API_BASE_URL') ??
@@ -47,13 +43,13 @@ function resolveDriveAppApiBaseUrl(config?: SkillsClientConfig): string {
   );
 }
 
-function resolveTenantHeader(config?: SkillsClientConfig): string {
+function resolveTenantHeader(config?: SkillsAppClientConfig): string {
   const tenantId = trim(config?.tenantId ?? readRuntimeEnv('VITE_SDKWORK_SKILLS_TENANT_ID') ?? '100001');
   return isBlank(tenantId) ? '100001' : tenantId;
 }
 
 function createAuthenticatedClientConfig(
-  config: SkillsClientConfig,
+  config: SkillsAppClientConfig,
   baseUrl: string,
   tokenManager: AuthTokenManager,
 ) {
@@ -68,7 +64,7 @@ function createAuthenticatedClientConfig(
   };
 }
 
-export function createSkillsClients(config: SkillsClientConfig = {}): SkillsClients {
+export function createSkillsAppClients(config: SkillsAppClientConfig = {}): SkillsAppClients {
   const tokenManager = config.tokenManager ?? createSkillsTokenManager();
 
   const app = createAppSdkClient(
@@ -76,26 +72,10 @@ export function createSkillsClients(config: SkillsClientConfig = {}): SkillsClie
   );
   app.setTokenManager(tokenManager);
 
-  const backend = createBackendSdkClient(
-    createAuthenticatedClientConfig(config, resolveBackendApiBaseUrl(config), tokenManager),
-  );
-  backend.setTokenManager(tokenManager);
-
   const drive = createDriveSdkClient(
     createAuthenticatedClientConfig(config, resolveDriveAppApiBaseUrl(config), tokenManager),
   );
   drive.setTokenManager(tokenManager);
 
-  return { app, backend, drive };
-}
-
-export function getSkillsClients(): SkillsClients {
-  if (!cachedClients) {
-    cachedClients = createSkillsClients();
-  }
-  return cachedClients;
-}
-
-export function resetSkillsClients(): void {
-  cachedClients = null;
+  return { app, drive };
 }

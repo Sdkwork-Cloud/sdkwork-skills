@@ -10,6 +10,11 @@ import {
 } from '@sdkwork/skills-pc-core';
 import {
   canManagePackagesInCategories,
+  createSkillCategory,
+  createSkillPackage,
+  deleteSkillPackage,
+  listManagedSkillCategories,
+  listManagedSkillPackages,
   packageManagePermissionForCategory,
 } from '@sdkwork/skills-pc-admin-core';
 
@@ -44,12 +49,12 @@ export function AdminSkillsPage({
   });
 
   async function reload() {
-    const [packageResponse, categoryResponse] = await Promise.all([
-      clients.backend.skills.skillPackages.management.list(),
-      clients.backend.skills.categories.management.list(),
+    const [packagePage, categoryPage] = await Promise.all([
+      listManagedSkillPackages(clients),
+      listManagedSkillCategories(clients),
     ]);
-    setPackages(packageResponse.items);
-    setCategories(categoryResponse.items);
+    setPackages(packagePage.items);
+    setCategories(categoryPage.items);
   }
 
   useEffect(() => {
@@ -95,7 +100,7 @@ export function AdminSkillsPage({
       return;
     }
     try {
-      await clients.backend.skills.skillPackages.create(form);
+      await createSkillPackage(clients, form);
       await reload();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -105,7 +110,7 @@ export function AdminSkillsPage({
   async function onDelete(skillId: string) {
     setError(null);
     try {
-      await clients.backend.skills.skillPackages.delete(skillId);
+      await deleteSkillPackage(clients, skillId);
       await reload();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -197,8 +202,8 @@ export function AdminCategoriesPage() {
   });
 
   async function reload() {
-    const response = await clients.backend.skills.categories.management.list();
-    setCategories(response.items);
+    const page = await listManagedSkillCategories(clients);
+    setCategories(page.items);
   }
 
   useEffect(() => {
@@ -209,7 +214,7 @@ export function AdminCategoriesPage() {
     event.preventDefault();
     setError(null);
     try {
-      await clients.backend.skills.categories.create(form);
+      await createSkillCategory(clients, form);
       await reload();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));

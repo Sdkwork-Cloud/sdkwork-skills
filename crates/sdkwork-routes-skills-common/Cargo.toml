@@ -1,0 +1,16 @@
+[package]
+name = "sdkwork-routes-skills-common"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+axum.workspace = true
+sdkwork-intelligence-skills-service = { path = "../sdkwork-intelligence-skills-service" }
+sdkwork-skills-contract.workspace = true
+sdkwork-utils-rust.workspace = true
+sdkwork-web-core.workspace = true
+serde.workspace = true
+
+[lib]
+path = "src/lib.rs"

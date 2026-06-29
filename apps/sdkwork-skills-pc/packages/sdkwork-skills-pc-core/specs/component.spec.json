@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "@sdkwork/skills-pc-core",
+    "displayName": "Skills PC Core",
+    "version": "0.1.0",
+    "type": "react-package",
+    "root": ".",
+    "domain": "skills",
+    "capability": "pc-core",
+    "languages": ["typescript", "react"],
+    "generated": false,
+    "manifests": ["package.json"]
+  },
+  "contracts": {
+    "publicExports": [".", "./bootstrap", "./composition", "./host", "./modules", "./sdk", "./session"],
+    "runtimeEntrypoints": [],
+    "routeManifest": null,
+    "sdkClients": [],
+    "events": [],
+    "configKeys": [],
+    "sdkDependencies": [
+      {
+        "workspace": "sdkwork-skills-app-sdk",
+        "role": "skills-app-capability",
+        "required": true,
+        "dependencyMode": "consumer-sdk",
+        "apiPrefix": "/app/v3/api",
+        "apiAuthority": "sdkwork-skills.app",
+        "generatedTransportImportPolicy": "forbidden",
+        "packageByLanguage": {
+          "typescript": "sdkwork-skills-app-sdk-generated-typescript"
+        }
+      },
+      {
+        "workspace": "sdkwork-drive-app-sdk",
+        "role": "drive-app-capability",
+        "required": true,
+        "dependencyMode": "consumer-sdk",
+        "apiPrefix": "/app/v3/api",
+        "apiAuthority": "sdkwork-drive.app",
+        "generatedTransportImportPolicy": "forbidden",
+        "packageByLanguage": {
+          "typescript": "@sdkwork/drive-app-sdk"
+        }
+      }
+    ],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "dependencyComposition": "../../../specs/dependency.composition.json"
+  },
+  "verification": {
+    "commands": ["pnpm typecheck"]
+  }
+}

@@ -2,6 +2,9 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  sdkWorkEnvelopeComponentSchemas,
+} from "../../sdkwork-specs/tools/lib/openapi-envelope-schemas.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(scriptDir, "..");
@@ -9,25 +12,13 @@ const OWNER = "sdkwork-skills";
 const DOMAIN = "skills";
 const TAG = "skills";
 
-const schemas = {
-  ProblemDetail: {
-    type: "object",
-    additionalProperties: true,
-    required: ["type", "title", "status"],
-    properties: {
-      type: { type: "string", format: "uri-reference" },
-      title: { type: "string" },
-      status: { type: "integer", minimum: 100, maximum: 599 },
-      detail: { type: "string" },
-      requestId: { type: "string", format: "uuid" },
-    },
-  },
+const domainSchemas = {
   SkillRecord: {
     type: "object",
     additionalProperties: true,
     required: ["id", "skill_key", "name", "market_status", "visibility", "enabled", "featured", "install_count"],
     properties: {
-      id: { type: "integer", format: "int64" },
+      id: int64StringProperty(),
       skill_key: { type: "string" },
       name: { type: "string" },
       summary: { type: "string", nullable: true },
@@ -38,7 +29,7 @@ const schemas = {
       visibility: { type: "string" },
       enabled: { type: "boolean" },
       featured: { type: "boolean" },
-      install_count: { type: "integer", format: "int64" },
+      install_count: int64StringProperty(),
       tags: { type: "array", items: { type: "string" } },
       capabilities: { type: "array", items: { type: "string" } },
       categories: { type: "array", items: { type: "string" } },
@@ -49,7 +40,7 @@ const schemas = {
     additionalProperties: true,
     required: ["id", "skill_id", "code", "display_name", "invocation_kind", "package_ref", "entrypoint", "status", "visibility"],
     properties: {
-      id: { type: "integer", format: "int64" },
+      id: int64StringProperty(),
       skill_id: { type: "string" },
       code: { type: "string" },
       display_name: { type: "string" },
@@ -72,12 +63,12 @@ const schemas = {
     additionalProperties: true,
     required: ["id", "code", "name", "category_type", "permission_code", "sort_weight", "visible", "status"],
     properties: {
-      id: { type: "integer", format: "int64" },
+      id: int64StringProperty(),
       code: { type: "string" },
       name: { type: "string" },
       category_type: { type: "string" },
       description: { type: "string", nullable: true },
-      parent_id: { type: "integer", format: "int64", nullable: true },
+      parent_id: { ...int64StringProperty(), nullable: true },
       permission_code: { type: "string" },
       sort_weight: { type: "integer" },
       visible: { type: "boolean" },
@@ -89,66 +80,10 @@ const schemas = {
     additionalProperties: true,
     required: ["id", "skill_id", "install_status", "enabled"],
     properties: {
-      id: { type: "integer", format: "int64" },
-      skill_id: { type: "integer", format: "int64" },
+      id: int64StringProperty(),
+      skill_id: int64StringProperty(),
       install_status: { type: "string" },
       enabled: { type: "boolean" },
-    },
-  },
-  SkillListResponse: {
-    type: "object",
-    additionalProperties: false,
-    required: ["items"],
-    properties: {
-      items: { type: "array", items: { $ref: "#/components/schemas/SkillRecord" } },
-    },
-  },
-  SkillPackageListResponse: {
-    type: "object",
-    additionalProperties: false,
-    required: ["items"],
-    properties: {
-      items: { type: "array", items: { $ref: "#/components/schemas/SkillPackageRecord" } },
-    },
-  },
-  SkillCategoryListResponse: {
-    type: "object",
-    additionalProperties: false,
-    required: ["items"],
-    properties: {
-      items: { type: "array", items: { $ref: "#/components/schemas/SkillCategoryRecord" } },
-    },
-  },
-  SkillRecordResponse: {
-    type: "object",
-    additionalProperties: false,
-    required: ["data"],
-    properties: {
-      data: { $ref: "#/components/schemas/SkillRecord" },
-    },
-  },
-  SkillPackageRecordResponse: {
-    type: "object",
-    additionalProperties: false,
-    required: ["data"],
-    properties: {
-      data: { $ref: "#/components/schemas/SkillPackageRecord" },
-    },
-  },
-  SkillCategoryRecordResponse: {
-    type: "object",
-    additionalProperties: false,
-    required: ["data"],
-    properties: {
-      data: { $ref: "#/components/schemas/SkillCategoryRecord" },
-    },
-  },
-  UserSkillInstallRecordResponse: {
-    type: "object",
-    additionalProperties: false,
-    required: ["data"],
-    properties: {
-      data: { $ref: "#/components/schemas/UserSkillInstallRecord" },
     },
   },
   CreateSkillPackageCommand: {
@@ -186,42 +121,198 @@ const schemas = {
     additionalProperties: true,
     required: ["skill_id"],
     properties: {
-      skill_id: { type: "integer", format: "int64" },
-      package_id: { type: "integer", format: "int64" },
+      skill_id: int64StringProperty(),
+      package_id: int64StringProperty(),
+    },
+  },
+  UpdateSkillPackageCommand: {
+    type: "object",
+    additionalProperties: true,
+    properties: {
+      package_key: { type: "string" },
+      code: { type: "string" },
+      display_name: { type: "string" },
+      summary: { type: "string" },
+      invocation_kind: { type: "string" },
+      package_ref: { type: "string", pattern: "^drive://spaces/[^/]+/nodes/[^/]+$" },
+      entrypoint: { type: "string" },
+      capability_ids: { type: "array", items: { type: "string" } },
+      categories: { type: "array", items: { type: "string" } },
+      tags: { type: "array", items: { type: "string" } },
+      visibility: { type: "string" },
+    },
+  },
+  UpdateSkillCategoryCommand: {
+    type: "object",
+    additionalProperties: true,
+    properties: {
+      name: { type: "string" },
+      description: { type: "string" },
+      sort_weight: { type: "integer" },
+      permission_code: { type: "string" },
     },
   },
 };
 
+function int64StringProperty() {
+  return {
+    type: "string",
+    format: "int64",
+    pattern: "^-?[0-9]+$",
+    "x-sdkwork-int64-string": true,
+    "x-sdkwork-rust-type": "i64",
+  };
+}
+
+function listQueryParameters() {
+  return [
+    {
+      name: "page",
+      in: "query",
+      required: false,
+      description: "One-based page index for offset pagination. Default 1.",
+      schema: { type: "integer", format: "int32", minimum: 1, default: 1 },
+    },
+    {
+      name: "page_size",
+      in: "query",
+      required: false,
+      description: "Page size for offset pagination. Default 20, maximum 200.",
+      schema: { type: "integer", format: "int32", minimum: 1, maximum: 200, default: 20 },
+    },
+    {
+      name: "cursor",
+      in: "query",
+      required: false,
+      description: "Opaque cursor token from a previous list response pageInfo.nextCursor.",
+      schema: { type: "string", minLength: 1, maxLength: 512 },
+    },
+    {
+      name: "q",
+      in: "query",
+      required: false,
+      description: "Generic free-text search keyword.",
+      schema: { type: "string", maxLength: 256 },
+    },
+  ];
+}
+
+function registerNamedListSchemas(prefix, itemSchemaName) {
+  const pageSchemaName = `${prefix}PageData`;
+  const responseSchemaName = `${prefix}ListResponse`;
+  return {
+    [pageSchemaName]: {
+      type: "object",
+      additionalProperties: false,
+      required: ["items", "pageInfo"],
+      properties: {
+        items: { type: "array", items: { $ref: `#/components/schemas/${itemSchemaName}` } },
+        pageInfo: { $ref: "#/components/schemas/PageInfo" },
+      },
+    },
+    [responseSchemaName]: {
+      allOf: [
+        { $ref: "#/components/schemas/SdkWorkApiResponse" },
+        {
+          type: "object",
+          required: ["data"],
+          properties: {
+            data: { $ref: `#/components/schemas/${pageSchemaName}` },
+          },
+        },
+      ],
+    },
+  };
+}
+
+function registerNamedResourceSchemas(prefix, itemSchemaName) {
+  const dataSchemaName = `${prefix}ResourceData`;
+  const responseSchemaName = `${prefix}Response`;
+  return {
+    [dataSchemaName]: {
+      type: "object",
+      additionalProperties: false,
+      required: ["item"],
+      properties: {
+        item: { $ref: `#/components/schemas/${itemSchemaName}` },
+      },
+    },
+    [responseSchemaName]: {
+      allOf: [
+        { $ref: "#/components/schemas/SdkWorkApiResponse" },
+        {
+          type: "object",
+          required: ["data"],
+          properties: {
+            data: { $ref: `#/components/schemas/${dataSchemaName}` },
+          },
+        },
+      ],
+    },
+  };
+}
+
+const listResponseSchemas = {
+  ...registerNamedListSchemas("Skills", "SkillRecord"),
+  ...registerNamedListSchemas("SkillPackages", "SkillPackageRecord"),
+  ...registerNamedListSchemas("Categories", "SkillCategoryRecord"),
+  ...registerNamedListSchemas("SkillsManagement", "SkillRecord"),
+  ...registerNamedListSchemas("SkillPackagesManagement", "SkillPackageRecord"),
+  ...registerNamedListSchemas("CategoriesManagement", "SkillCategoryRecord"),
+};
+
+const resourceResponseSchemas = {
+  ...registerNamedResourceSchemas("Skills", "SkillRecord"),
+  ...registerNamedResourceSchemas("SkillPackages", "SkillPackageRecord"),
+  ...registerNamedResourceSchemas("Categories", "SkillCategoryRecord"),
+  ...registerNamedResourceSchemas("UserSkillsInstall", "UserSkillInstallRecord"),
+  ...registerNamedResourceSchemas("SkillPackagesCreate", "SkillPackageRecord"),
+  ...registerNamedResourceSchemas("SkillPackagesUpdate", "SkillPackageRecord"),
+  ...registerNamedResourceSchemas("SkillPackagesDelete", "SkillPackageRecord"),
+  ...registerNamedResourceSchemas("CategoriesCreate", "SkillCategoryRecord"),
+  ...registerNamedResourceSchemas("CategoriesUpdate", "SkillCategoryRecord"),
+};
+
+const schemas = {
+  ...structuredClone(sdkWorkEnvelopeComponentSchemas),
+  ...domainSchemas,
+  ...listResponseSchemas,
+  ...resourceResponseSchemas,
+};
+
+function listResponse(responseSchemaName) {
+  return { $ref: `#/components/schemas/${responseSchemaName}` };
+}
+
+function resourceResponse(responseSchemaName) {
+  return { $ref: `#/components/schemas/${responseSchemaName}` };
+}
 const appRoutes = [
-  route("get", "/app/v3/api/skills", "skills.list", ref("SkillListResponse")),
-  route("get", "/app/v3/api/skills/{skillKey}", "skills.retrieve", ref("SkillRecordResponse"), [pathParam("skillKey")]),
-  route("get", "/app/v3/api/skill_packages", "skillPackages.list", ref("SkillPackageListResponse")),
-  route("get", "/app/v3/api/skill_packages/{skillId}", "skillPackages.retrieve", ref("SkillPackageRecordResponse"), [pathParam("skillId")]),
-  route("get", "/app/v3/api/categories", "categories.list", ref("SkillCategoryListResponse")),
-  route("post", "/app/v3/api/user/skills/install", "userSkills.install", ref("UserSkillInstallRecordResponse"), [], "InstallSkillCommand"),
+  route("get", "/app/v3/api/skills", "skills.list", listResponse("SkillsListResponse"), listQueryParameters()),
+  route("get", "/app/v3/api/skills/{skillKey}", "skills.retrieve", resourceResponse("SkillsResponse"), [pathParam("skillKey")]),
+  route("get", "/app/v3/api/skill_packages", "skillPackages.list", listResponse("SkillPackagesListResponse"), listQueryParameters()),
+  route("get", "/app/v3/api/skill_packages/{skillId}", "skillPackages.retrieve", resourceResponse("SkillPackagesResponse"), [pathParam("skillId")]),
+  route("get", "/app/v3/api/categories", "categories.list", listResponse("CategoriesListResponse"), listQueryParameters()),
+  route("post", "/app/v3/api/user/skills/install", "userSkills.install", resourceResponse("UserSkillsInstallResponse"), [], "InstallSkillCommand"),
 ];
 
 const backendRoutes = [
-  route("get", "/backend/v3/api/skill", "skills.management.list", ref("SkillListResponse")),
-  route("get", "/backend/v3/api/skill/package", "skillPackages.management.list", ref("SkillPackageListResponse")),
-  route("post", "/backend/v3/api/skill/package", "skillPackages.create", ref("SkillPackageRecordResponse"), [], "CreateSkillPackageCommand"),
-  route("put", "/backend/v3/api/skill/package/{skillId}", "skillPackages.update", ref("SkillPackageRecordResponse"), [pathParam("skillId")], "CreateSkillPackageCommand"),
-  route("delete", "/backend/v3/api/skill/package/{skillId}", "skillPackages.delete", ref("SkillPackageRecordResponse"), [pathParam("skillId")]),
-  route("get", "/backend/v3/api/category", "categories.management.list", ref("SkillCategoryListResponse")),
-  route("post", "/backend/v3/api/category", "categories.create", ref("SkillCategoryRecordResponse"), [], "CreateSkillCategoryCommand"),
-  route("put", "/backend/v3/api/category/{categoryId}", "categories.update", ref("SkillCategoryRecordResponse"), [pathParamInt("categoryId")], "CreateSkillCategoryCommand"),
+  route("get", "/backend/v3/api/skill", "skills.management.list", listResponse("SkillsManagementListResponse"), listQueryParameters()),
+  route("get", "/backend/v3/api/skill/package", "skillPackages.management.list", listResponse("SkillPackagesManagementListResponse"), listQueryParameters()),
+  route("post", "/backend/v3/api/skill/package", "skillPackages.create", resourceResponse("SkillPackagesCreateResponse"), [], "CreateSkillPackageCommand"),
+  route("put", "/backend/v3/api/skill/package/{skillId}", "skillPackages.update", resourceResponse("SkillPackagesUpdateResponse"), [pathParam("skillId")], "UpdateSkillPackageCommand"),
+  route("delete", "/backend/v3/api/skill/package/{skillId}", "skillPackages.delete", resourceResponse("SkillPackagesDeleteResponse"), [pathParam("skillId")]),
+  route("get", "/backend/v3/api/category", "categories.management.list", listResponse("CategoriesManagementListResponse"), listQueryParameters()),
+  route("post", "/backend/v3/api/category", "categories.create", resourceResponse("CategoriesCreateResponse"), [], "CreateSkillCategoryCommand"),
+  route("put", "/backend/v3/api/category/{categoryId}", "categories.update", resourceResponse("CategoriesUpdateResponse"), [pathParamInt("categoryId")], "UpdateSkillCategoryCommand"),
 ];
-
-function ref(name) {
-  return { $ref: `#/components/schemas/${name}` };
-}
 
 function pathParam(name) {
   return { name, in: "path", required: true, schema: { type: "string" } };
 }
 
 function pathParamInt(name) {
-  return { name, in: "path", required: true, schema: { type: "integer", format: "int64" } };
+  return { name, in: "path", required: true, schema: int64StringProperty() };
 }
 
 function problemResponse() {
@@ -229,7 +320,7 @@ function problemResponse() {
     description: "Problem detail",
     content: {
       "application/problem+json": {
-        schema: ref("ProblemDetail"),
+        schema: { $ref: "#/components/schemas/ProblemDetail" },
       },
     },
   };
@@ -250,7 +341,7 @@ function route(method, pathKey, operationId, responseSchema, parameters = [], bo
               required: true,
               content: {
                 "application/json": {
-                  schema: ref(bodySchemaName),
+                  schema: { $ref: `#/components/schemas/${bodySchemaName}` },
                 },
               },
             },

@@ -45,7 +45,10 @@
       "package.json#scripts.dev",
       "package.json#scripts.verify"
     ],
-    "routeManifest": null,
+    "routeManifest": [
+      "crates/sdkwork-routes-skills-app-api/src/http_route_manifest.rs",
+      "crates/sdkwork-routes-skills-backend-api/src/http_route_manifest.rs"
+    ],
     "sdkClients": [
       "sdkwork-skills-app-sdk",
       "sdkwork-skills-backend-sdk"

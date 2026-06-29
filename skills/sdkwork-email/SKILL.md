@@ -1,17 +1,10 @@
 ---
 name: sdkwork-email
-description: Use when an app workflow against legacy-java-plus-app-api needs SDKWORK email operations through the shared app auth runtime.
+description: Use when a Skills workflow needs outbound email; integrate through SDKWork platform services, not local scripts.
 ---
 
-# SDKWORK Email
+# SDKWORK Email (Skills)
 
-The active implementation is in `sdkwork-skills-private/sdkwork-skills-app`.
+The Skills application root does not host email transport. Use the SDKWork platform email capability from the owning application or shared service contract when a Skills feature requires notifications.
 
-Use the shared script:
-
-`sdkwork-skills-private/sdkwork-skills-app/.sdkwork-skills-app-shared/scripts/sdkwork_email_client.mjs`
-
-Reuse the same app-scoped state under `~/.sdkwork/app/<appId>/` via
-`sdkwork-skills-private/sdkwork-skills-framework`.
-
-Do not add email client logic to this legacy public repository.
+Do not add email client scripts or legacy Java API wrappers in this repository. Wire through approved SDK families and runtime config from `sdkwork.app.config.json`.
