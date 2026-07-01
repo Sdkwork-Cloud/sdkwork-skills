@@ -64,7 +64,7 @@ persistence and CRUD remain in this repository only.
 pnpm api:check
 pnpm verify
 node ../sdkwork-specs/tools/check-api-response-envelope.mjs --workspace .
-node ../sdkwork-specs/tools/check-dependency-composition.mjs --workspace ..
+node ../sdkwork-specs/tools/verify-repo.mjs --root .
 ```
 
 `pnpm api:check` materializes OpenAPI, runs `tools/skills_schema_quality_gate.mjs` (envelope,

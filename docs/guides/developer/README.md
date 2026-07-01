@@ -44,7 +44,7 @@ Authority: [ADR-20260624-skills-domain-extraction-and-ai-table-standard.md](../a
 ```bash
 pnpm verify
 node ../sdkwork-specs/tools/check-api-response-envelope.mjs --workspace .
-node ../sdkwork-specs/tools/check-dependency-composition.mjs --workspace ..
+node ../sdkwork-specs/tools/verify-repo.mjs --root .
 node ../sdkwork-specs/tools/check-repository-docs-standard.mjs --root .
 ```
 

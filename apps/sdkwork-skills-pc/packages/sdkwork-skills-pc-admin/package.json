@@ -9,11 +9,11 @@
     ".": "./src/index.tsx"
   },
   "dependencies": {
-    "@sdkwork/drive-app-sdk": "file:../../../../../sdkwork-drive/sdks/sdkwork-drive-app-sdk/sdkwork-drive-app-sdk-typescript",
+    "@sdkwork/drive-app-sdk": "workspace:*",
     "@sdkwork/skills-pc-admin-core": "workspace:*",
     "@sdkwork/skills-pc-commons": "workspace:*",
     "@sdkwork/skills-pc-core": "workspace:*",
-    "@sdkwork/utils": "file:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript",
+    "@sdkwork/utils": "workspace:*",
     "react": "^19.1.0"
   }
 }

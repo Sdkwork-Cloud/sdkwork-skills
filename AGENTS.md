@@ -82,7 +82,7 @@ Build scripts, dev runners, and `pnpm clean` must follow `CODE_STYLE_SPEC.md` §
 Use canonical root package scripts from `PNPM_SCRIPT_SPEC.md`:
 
 - `pnpm dev`, `pnpm build`, `pnpm test`, `pnpm check`, `pnpm verify`, `pnpm clean`
-- `pnpm check:pnpm-script-standard`, `pnpm check:agent-workflow-standard`
+- `pnpm check:pnpm-script-standard`, `pnpm check:agent-workflow-standard`, `pnpm check:app-composition`
 - `cargo test --workspace`
 
 Run the narrowest relevant check first, then broader verification when API contracts, SDK generation, persistence, security, packaging, or cross-package boundaries change.

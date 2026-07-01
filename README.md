@@ -1,4 +1,5 @@
 # SDKWork Skills
+repository-kind: application
 
 Skills Hub application root with PC client, Rust APIs, and `ai_*` intelligence-domain tables.
 

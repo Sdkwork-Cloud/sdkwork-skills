@@ -9,6 +9,6 @@
     "./driveUri": "./src/driveUri.ts"
   },
   "dependencies": {
-    "@sdkwork/utils": "file:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript"
+    "@sdkwork/utils": "workspace:*"
   }
 }

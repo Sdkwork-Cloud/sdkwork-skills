@@ -9,12 +9,20 @@
     "root": ".",
     "domain": "skills",
     "capability": "pc",
-    "languages": ["typescript", "react"],
+    "languages": [
+      "typescript",
+      "react"
+    ],
     "generated": false,
-    "manifests": ["package.json", "sdkwork.app.config.json"]
+    "manifests": [
+      "package.json",
+      "sdkwork.app.config.json"
+    ]
   },
   "contracts": {
-    "publicExports": ["."],
+    "publicExports": [
+      "."
+    ],
     "runtimeEntrypoints": [
       "package.json#scripts.dev",
       "package.json#scripts.typecheck",
@@ -75,10 +83,11 @@
       }
     ],
     "dependencyApiExports": [],
-    "dependencyApiSurfaces": [],
-    "dependencyComposition": "specs/dependency.composition.json"
+    "dependencyApiSurfaces": []
   },
   "verification": {
-    "commands": ["pnpm typecheck"]
+    "commands": [
+      "pnpm typecheck"
+    ]
   }
 }

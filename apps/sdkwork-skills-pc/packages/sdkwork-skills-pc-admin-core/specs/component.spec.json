@@ -10,12 +10,24 @@
     "domain": "skills",
     "capability": "pc-admin-core",
     "surface": "backend-admin",
-    "languages": ["typescript", "react"],
+    "languages": [
+      "typescript",
+      "react"
+    ],
     "generated": false,
-    "manifests": ["package.json"]
+    "manifests": [
+      "package.json"
+    ]
   },
   "contracts": {
-    "publicExports": [".", "./composition", "./host", "./modules", "./sdk", "./session"],
+    "publicExports": [
+      ".",
+      "./composition",
+      "./host",
+      "./modules",
+      "./sdk",
+      "./session"
+    ],
     "runtimeEntrypoints": [],
     "routeManifest": null,
     "sdkClients": [],
@@ -32,14 +44,17 @@
         "generatedTransportImportPolicy": "forbidden",
         "packageByLanguage": {
           "typescript": "sdkwork-skills-backend-sdk-generated-typescript"
-        }
+        },
+        "surface": "backend-api",
+        "credentialMode": "authenticated-backend-admin"
       }
     ],
     "dependencyApiExports": [],
-    "dependencyApiSurfaces": [],
-    "dependencyComposition": "../../../specs/dependency.composition.json"
+    "dependencyApiSurfaces": []
   },
   "verification": {
-    "commands": ["pnpm typecheck"]
+    "commands": [
+      "pnpm typecheck"
+    ]
   }
 }

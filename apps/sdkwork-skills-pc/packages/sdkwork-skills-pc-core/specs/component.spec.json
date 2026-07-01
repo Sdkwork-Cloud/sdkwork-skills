@@ -9,30 +9,31 @@
     "root": ".",
     "domain": "skills",
     "capability": "pc-core",
-    "languages": ["typescript", "react"],
+    "languages": [
+      "typescript",
+      "react"
+    ],
     "generated": false,
-    "manifests": ["package.json"]
+    "manifests": [
+      "package.json"
+    ]
   },
   "contracts": {
-    "publicExports": [".", "./bootstrap", "./composition", "./host", "./modules", "./sdk", "./session"],
+    "publicExports": [
+      ".",
+      "./bootstrap",
+      "./composition",
+      "./host",
+      "./modules",
+      "./sdk",
+      "./session"
+    ],
     "runtimeEntrypoints": [],
     "routeManifest": null,
     "sdkClients": [],
     "events": [],
     "configKeys": [],
     "sdkDependencies": [
-      {
-        "workspace": "sdkwork-skills-app-sdk",
-        "role": "skills-app-capability",
-        "required": true,
-        "dependencyMode": "consumer-sdk",
-        "apiPrefix": "/app/v3/api",
-        "apiAuthority": "sdkwork-skills.app",
-        "generatedTransportImportPolicy": "forbidden",
-        "packageByLanguage": {
-          "typescript": "sdkwork-skills-app-sdk-generated-typescript"
-        }
-      },
       {
         "workspace": "sdkwork-drive-app-sdk",
         "role": "drive-app-capability",
@@ -43,14 +44,31 @@
         "generatedTransportImportPolicy": "forbidden",
         "packageByLanguage": {
           "typescript": "@sdkwork/drive-app-sdk"
-        }
+        },
+        "surface": "app-api",
+        "credentialMode": "authenticated-app-api"
+      },
+      {
+        "workspace": "sdkwork-skills-app-sdk",
+        "role": "skills-app-capability",
+        "required": true,
+        "dependencyMode": "consumer-sdk",
+        "apiPrefix": "/app/v3/api",
+        "apiAuthority": "sdkwork-skills.app",
+        "generatedTransportImportPolicy": "forbidden",
+        "packageByLanguage": {
+          "typescript": "sdkwork-skills-app-sdk-generated-typescript"
+        },
+        "surface": "app-api",
+        "credentialMode": "authenticated-app-api"
       }
     ],
     "dependencyApiExports": [],
-    "dependencyApiSurfaces": [],
-    "dependencyComposition": "../../../specs/dependency.composition.json"
+    "dependencyApiSurfaces": []
   },
   "verification": {
-    "commands": ["pnpm typecheck"]
+    "commands": [
+      "pnpm typecheck"
+    ]
   }
 }

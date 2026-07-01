@@ -1,6 +1,6 @@
 packages:
-  - apps/sdkwork-skills-pc
-  - apps/sdkwork-skills-pc/packages/*
+  - "apps/sdkwork-skills-pc"
+  - "apps/sdkwork-skills-pc/packages/*"
   - sdks/sdkwork-skills-app-sdk/sdkwork-skills-app-sdk-typescript/generated/server-openapi
   - sdks/sdkwork-skills-backend-sdk/sdkwork-skills-backend-sdk-typescript/generated/server-openapi
   - ../sdkwork-drive/sdks/sdkwork-drive-app-sdk/sdkwork-drive-app-sdk-typescript

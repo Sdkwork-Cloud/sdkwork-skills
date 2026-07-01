@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.composition.resolved",
+  "repository": "sdkwork-skills",
+  "integrations": [
+    {
+      "workspace": "sdkwork-drive-app-sdk",
+      "surface": "app-api",
+      "apiPrefix": "/app/v3/api",
+      "connectivityPlane": "application",
+      "runtimeMode": "same-origin-embedded",
+      "mountStatus": null,
+      "envKey": "VITE_SDKWORK_DRIVE_APP_API_BASE_URL",
+      "forbidProductSameOriginFallback": false,
+      "corePackage": "@sdkwork/skills-pc-core",
+      "source": "apps/sdkwork-skills-pc/packages/sdkwork-skills-pc-core/specs/component.spec.json"
+    },
+    {
+      "workspace": "sdkwork-skills-app-sdk",
+      "surface": "app-api",
+      "apiPrefix": "/app/v3/api",
+      "connectivityPlane": "application",
+      "runtimeMode": "same-origin-embedded",
+      "mountStatus": null,
+      "envKey": "VITE_SDKWORK_SKILLS_APP_API_BASE_URL",
+      "forbidProductSameOriginFallback": false,
+      "corePackage": "@sdkwork/skills-pc-core",
+      "source": "apps/sdkwork-skills-pc/packages/sdkwork-skills-pc-core/specs/component.spec.json"
+    },
+    {
+      "workspace": "sdkwork-skills-backend-sdk",
+      "surface": "backend-api",
+      "apiPrefix": "/backend/v3/api",
+      "connectivityPlane": "application",
+      "runtimeMode": "same-origin-embedded",
+      "mountStatus": null,
+      "envKey": "VITE_SDKWORK_SKILLS_BACKEND_API_BASE_URL",
+      "forbidProductSameOriginFallback": false,
+      "corePackage": "@sdkwork/skills-pc-admin-core",
+      "source": "apps/sdkwork-skills-pc/packages/sdkwork-skills-pc-admin-core/specs/component.spec.json"
+    }
+  ],
+  "permissions": {
+    "inheritanceMode": "module-catalog-with-overrides",
+    "inheritedManifests": []
+  },
+  "env": {},
+  "requiresPlatformGatewayProcess": false,
+  "issues": [],
+  "meta": {
+    "resolver": "sdkwork-specs/tools/lib/composition-resolver.mjs",
+    "credentialModes": {
+      "sdkwork-drive-app-sdk": "authenticated-app-api",
+      "sdkwork-skills-app-sdk": "authenticated-app-api",
+      "sdkwork-skills-backend-sdk": "authenticated-backend-admin"
+    }
+  }
+}
