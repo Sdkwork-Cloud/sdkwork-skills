@@ -1,5 +1,5 @@
-import type { SdkworkAppClient as SkillsAppClient } from 'sdkwork-skills-app-sdk-generated-typescript/src/sdk';
-import type { SdkworkBackendClient } from 'sdkwork-skills-backend-sdk-generated-typescript/src/sdk';
+import type { SdkworkAppClient as SkillsAppClient } from '@sdkwork/skills-app-sdk';
+import type { SdkworkBackendClient } from '@sdkwork/skills-backend-sdk';
 import type { SdkworkDriveAppClient } from '@sdkwork/drive-app-sdk';
 
 export interface SdkworkSkillsPcSdkClientInventory {

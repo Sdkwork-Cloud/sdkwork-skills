@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
-        '@sdkwork/iam-app-sdk': path.resolve(iamRoot, 'sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/generated/server-openapi/src/index.ts',
+        '@sdkwork/iam-app-sdk': path.resolve(iamRoot, 'sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/src/index.ts',
         ),
         '@sdkwork/auth-pc-react': path.resolve(iamRoot, 'apps/sdkwork-iam-pc/packages/sdkwork-auth-pc-react/src/index.ts',
         ),
@@ -61,13 +61,13 @@ export default defineConfig(({ mode }) => {
           repoRoot,
           '../sdkwork-utils/packages/sdkwork-utils-typescript/src/index.ts',
         ),
-        'sdkwork-skills-app-sdk-generated-typescript/src': path.resolve(
+        '@sdkwork/skills-app-sdk': path.resolve(
           repoRoot,
-          'sdks/sdkwork-skills-app-sdk/sdkwork-skills-app-sdk-typescript/generated/server-openapi/src',
+          'sdks/sdkwork-skills-app-sdk/sdkwork-skills-app-sdk-typescript/src/index.ts',
         ),
-        'sdkwork-skills-backend-sdk-generated-typescript/src': path.resolve(
+        '@sdkwork/skills-backend-sdk/src': path.resolve(
           repoRoot,
-          'sdks/sdkwork-skills-backend-sdk/sdkwork-skills-backend-sdk-typescript/generated/server-openapi/src',
+          'sdks/sdkwork-skills-backend-sdk/sdkwork-skills-backend-sdk-typescript/src/index.ts',
         ),
       },
     },

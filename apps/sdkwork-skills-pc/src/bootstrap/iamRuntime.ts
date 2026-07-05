@@ -10,8 +10,8 @@ import type { IamRuntime } from '@sdkwork/iam-runtime';
 import { normalizeSdkworkApiBaseUrl } from '@sdkwork/runtime-bootstrap';
 import { createSkillsBackendClients } from '@sdkwork/skills-pc-admin-core';
 import { createSkillsAppClients } from '@sdkwork/skills-pc-core';
-import type { SdkworkAppClient as SkillsAppClient } from 'sdkwork-skills-app-sdk-generated-typescript/src/sdk';
-import type { SdkworkBackendClient } from 'sdkwork-skills-backend-sdk-generated-typescript/src/sdk';
+import type { SdkworkAppClient as SkillsAppClient } from '@sdkwork/skills-app-sdk';
+import type { SdkworkBackendClient } from '@sdkwork/skills-backend-sdk';
 
 import {
   resolveAppbaseAppApiBaseUrl,

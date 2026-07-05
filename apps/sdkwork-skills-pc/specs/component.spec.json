@@ -54,7 +54,7 @@
         "apiAuthority": "sdkwork-skills.app",
         "generatedTransportImportPolicy": "forbidden",
         "packageByLanguage": {
-          "typescript": "sdkwork-skills-app-sdk-generated-typescript"
+          "typescript": "@sdkwork/skills-app-sdk"
         }
       },
       {
@@ -66,7 +66,7 @@
         "apiAuthority": "sdkwork-skills.backend",
         "generatedTransportImportPolicy": "forbidden",
         "packageByLanguage": {
-          "typescript": "sdkwork-skills-backend-sdk-generated-typescript"
+          "typescript": "@sdkwork/skills-backend-sdk"
         }
       },
       {

@@ -35,8 +35,8 @@
     "react-dom": "^19.1.0",
     "react-i18next": "catalog:",
     "react-router-dom": "^7.6.0",
-    "sdkwork-skills-app-sdk-generated-typescript": "workspace:*",
-    "sdkwork-skills-backend-sdk-generated-typescript": "workspace:*",
+    "@sdkwork/skills-app-sdk": "workspace:*",
+    "@sdkwork/skills-backend-sdk": "workspace:*",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.1.14"
   },
@@ -53,5 +53,12 @@
     "domain": "intelligence",
     "capability": "skills",
     "status": "ready"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
   }
 }

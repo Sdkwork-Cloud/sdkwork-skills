@@ -20,10 +20,10 @@
       "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime.d.ts"],
       "react/jsx-dev-runtime": ["./node_modules/@types/react/jsx-dev-runtime.d.ts"],
       "@sdkwork/iam-app-sdk": [
-        "../../../sdkwork-iam/sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/generated/server-openapi/src/index.ts"
+        "../../../sdkwork-iam/sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/src/index.ts"
       ],
       "@sdkwork/iam-backend-sdk": [
-        "../../../sdkwork-iam/sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript/generated/server-openapi/src/index.ts"
+        "../../../sdkwork-iam/sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript/src/index.ts"
       ],
       "@sdkwork/auth-pc-react": ["./src/bootstrap/sdkworkAuthPcReactShim.d.ts"],
       "@sdkwork/auth-runtime-pc-react": [
@@ -50,11 +50,11 @@
       "@sdkwork/utils": [
         "../../../sdkwork-utils/packages/sdkwork-utils-typescript/src/index.ts"
       ],
-      "sdkwork-skills-app-sdk-generated-typescript/src/*": [
-        "../../sdks/sdkwork-skills-app-sdk/sdkwork-skills-app-sdk-typescript/generated/server-openapi/src/*"
+      "@sdkwork/skills-app-sdk": [
+        "../../sdks/sdkwork-skills-app-sdk/sdkwork-skills-app-sdk-typescript/src/index.ts"
       ],
-      "sdkwork-skills-backend-sdk-generated-typescript/src/*": [
-        "../../sdks/sdkwork-skills-backend-sdk/sdkwork-skills-backend-sdk-typescript/generated/server-openapi/src/*"
+      "@sdkwork/skills-backend-sdk/src/*": [
+        "../../sdks/sdkwork-skills-backend-sdk/sdkwork-skills-backend-sdk-typescript/src/index.ts/*"
       ]
     }
   },

@@ -4,7 +4,7 @@ import type {
   SkillRecord,
   SkillsPageData,
   UserSkillInstallRecord,
-} from 'sdkwork-skills-app-sdk-generated-typescript/src/types';
+} from '@sdkwork/skills-app-sdk';
 
 import type { SkillsAppClients } from '../clients';
 

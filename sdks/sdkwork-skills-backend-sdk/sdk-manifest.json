@@ -63,5 +63,30 @@
       "path": "/backend/v3/api/skill"
     }
   ],
-  "managedBy": "tools/skills_sdk_generator_runner.mjs"
+  "managedBy": "tools/skills_sdk_generator_runner.mjs",
+  "packageName": "@sdkwork/skills-backend-sdk",
+  "transportPackageName": "sdkwork-skills-backend-sdk-generated-typescript",
+  "typescript": {
+    "composedRoot": "sdkwork-skills-backend-sdk-typescript",
+    "composedEntry": "sdkwork-skills-backend-sdk-typescript/src/index.ts",
+    "transportRoot": "sdkwork-skills-backend-sdk-typescript/generated/server-openapi",
+    "transportEntry": "sdkwork-skills-backend-sdk-typescript/generated/server-openapi/src/index.ts"
+  },
+  "workspace": "sdkwork-skills-backend-sdk",
+  "title": "SDKWork Skills Backend API SDK",
+  "apiVersion": "0.1.0",
+  "openapiVersion": "3.1.2",
+  "authoritySpec": "../../apis/backend-api/skills/skills-backend-api.openapi.json",
+  "derivedSpecs": {
+    "default": "../../apis/backend-api/skills/skills-backend-api.openapi.json"
+  },
+  "discoverySurface": {
+    "sdkTarget": "backend",
+    "apiPrefix": "/backend/v3/api",
+    "schemaUrl": "/backend/v3/openapi.json",
+    "generatedProtocols": [
+      "http-openapi"
+    ],
+    "manualTransports": []
+  }
 }

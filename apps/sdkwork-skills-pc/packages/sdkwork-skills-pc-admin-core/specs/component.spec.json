@@ -43,7 +43,7 @@
         "apiAuthority": "sdkwork-skills.backend",
         "generatedTransportImportPolicy": "forbidden",
         "packageByLanguage": {
-          "typescript": "sdkwork-skills-backend-sdk-generated-typescript"
+          "typescript": "@sdkwork/skills-backend-sdk"
         },
         "surface": "backend-api",
         "credentialMode": "authenticated-backend-admin"

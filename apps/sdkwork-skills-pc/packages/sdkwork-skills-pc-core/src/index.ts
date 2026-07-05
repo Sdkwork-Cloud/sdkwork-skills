@@ -2,14 +2,14 @@ export type {
   SkillRecord,
   SkillPackageRecord,
   SkillCategoryRecord,
-} from 'sdkwork-skills-app-sdk-generated-typescript/src/types';
+} from '@sdkwork/skills-app-sdk';
 
 export type { SdkWorkPageData, PageInfo } from '@sdkwork/utils';
 
 export type {
   CreateSkillPackageCommand as CreatePackageInput,
   CreateSkillCategoryCommand as CreateCategoryInput,
-} from 'sdkwork-skills-backend-sdk-generated-typescript/src/types';
+} from '@sdkwork/skills-backend-sdk';
 
 export {
   createSkillsAppClients,

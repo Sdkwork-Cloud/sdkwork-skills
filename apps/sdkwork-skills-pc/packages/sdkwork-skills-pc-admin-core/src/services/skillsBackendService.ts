@@ -5,7 +5,7 @@ import type {
   SkillCategoryRecord,
   SkillPackageRecord,
   SkillPackagesManagementPageData,
-} from 'sdkwork-skills-backend-sdk-generated-typescript/src/types';
+} from '@sdkwork/skills-backend-sdk';
 
 import type { SkillsBackendClients } from '../clients';
 

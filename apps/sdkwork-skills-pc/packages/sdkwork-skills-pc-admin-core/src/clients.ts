@@ -2,7 +2,7 @@ import type { AuthTokenManager } from '@sdkwork/sdk-common';
 import {
   createClient as createBackendSdkClient,
   type SdkworkBackendClient,
-} from 'sdkwork-skills-backend-sdk-generated-typescript/src/sdk';
+} from '@sdkwork/skills-backend-sdk';
 import { isBlank, trim } from '@sdkwork/utils';
 import { normalizeApiBaseUrl, readRuntimeEnv } from '@sdkwork/skills-pc-commons/runtime';
 
