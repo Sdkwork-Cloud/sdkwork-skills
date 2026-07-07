@@ -3,7 +3,7 @@
 Status: active
 Owner: SDKWork maintainers
 Application: sdkwork-skills
-Updated: 2026-06-29
+Updated: 2026-07-06
 Specs: REQUIREMENTS_SPEC.md, DOCUMENTATION_SPEC.md
 
 ## 1. Background And Problem
@@ -27,7 +27,7 @@ must not live in `sdkwork-kernel`; this application is the system-of-record.
 - Skills Hub with list, detail, and install flows backed by app-api.
 - Admin backend-api for package and category CRUD with drive-backed `package_ref`.
 - `ai_*` PostgreSQL tables as sole persistence; kernel reads contract types only.
-- SDKWork-standard HTTP envelopes, ProblemDetail errors, generated SDKs, IAM route manifests.
+- SDKWork-standard HTTP envelopes, ProblemDetail errors, generated SDKs, IMF permissions (`specs/iam.module.manifest.json`), and route-level RBAC via `sdkwork-web-framework`.
 
 **Non-Goals**
 
@@ -47,9 +47,8 @@ must not live in `sdkwork-kernel`; this application is the system-of-record.
 
 ## 6. Success Metrics
 
-- `pnpm verify` green; envelope checker passes.
-- No raw HTTP in PC production surfaces; SDK unwrap matches handler envelopes.
-- IAM operation IDs match OpenAPI and route manifests.
+- `pnpm verify` green; `pnpm check` includes envelope, topology, gateway, and database contract gates.
+- IMF permissions: `skills.marketplace.read`, `skills.packages.install`, `skills.packages.manage`, `skills.categories.manage`.
 
 ## 7. Phases
 

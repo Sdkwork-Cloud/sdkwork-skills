@@ -1,41 +1,51 @@
-use sdkwork_web_core::{HttpMethod, HttpRoute, HttpRouteManifest};
+use sdkwork_web_core::{HttpMethod, HttpRoute, HttpRouteManifest, RateLimitTier};
+
+const fn skills_route(
+    method: HttpMethod,
+    path: &'static str,
+    operation_id: &'static str,
+    permission: &'static str,
+) -> HttpRoute {
+    HttpRoute::dual_token(method, path, "skills", operation_id)
+        .with_required_permission(permission)
+}
 
 const HTTP_ROUTES: &[HttpRoute] = &[
-    HttpRoute::dual_token(
+    skills_route(
         HttpMethod::Get,
         "/app/v3/api/skills",
-        "skills",
         "skills.list",
+        "skills.marketplace.read",
     ),
-    HttpRoute::dual_token(
+    skills_route(
         HttpMethod::Get,
         "/app/v3/api/skills/{skillKey}",
-        "skills",
         "skills.retrieve",
+        "skills.marketplace.read",
     ),
-    HttpRoute::dual_token(
+    skills_route(
         HttpMethod::Get,
         "/app/v3/api/skill_packages",
-        "skills",
         "skillPackages.list",
+        "skills.marketplace.read",
     ),
-    HttpRoute::dual_token(
+    skills_route(
         HttpMethod::Get,
         "/app/v3/api/skill_packages/{skillId}",
-        "skills",
         "skillPackages.retrieve",
+        "skills.marketplace.read",
     ),
-    HttpRoute::dual_token(
+    skills_route(
         HttpMethod::Get,
         "/app/v3/api/categories",
-        "skills",
         "categories.list",
+        "skills.marketplace.read",
     ),
-    HttpRoute::dual_token(
+    skills_route(
         HttpMethod::Post,
         "/app/v3/api/user/skills/install",
-        "skills",
         "userSkills.install",
+        "skills.packages.install",
     ),
 ];
 

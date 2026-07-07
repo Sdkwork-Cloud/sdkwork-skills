@@ -9,6 +9,7 @@ use sdkwork_intelligence_skills_service::{SkillsRepository, SkillsResult};
 use sdkwork_skills_contract::{
     SkillCategoryRecord, SkillPackageRecord, SkillRecord, UserSkillInstallRecord,
 };
+use sdkwork_utils_rust::OffsetListPageParams;
 use sqlx::PgPool;
 
 #[derive(Clone)]
@@ -28,11 +29,13 @@ impl SqlxSkillsRepository {
 
 #[async_trait]
 impl SkillsRepository for SqlxSkillsRepository {
-    async fn list_skill_packages(
+    async fn list_skill_packages_page(
         &self,
         tenant_id: u64,
-    ) -> SkillsResult<Vec<SkillPackageRecord>> {
-        postgres::list_skill_packages(&self.pool, tenant_id).await
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillPackageRecord>, i64)> {
+        postgres::list_skill_packages_page(&self.pool, tenant_id, params, keyword).await
     }
 
     async fn get_skill_package(
@@ -50,8 +53,13 @@ impl SkillsRepository for SqlxSkillsRepository {
         postgres::upsert_skill_package(&self.pool, record).await
     }
 
-    async fn list_skills(&self, tenant_id: u64) -> SkillsResult<Vec<SkillRecord>> {
-        postgres::list_skills(&self.pool, tenant_id).await
+    async fn list_skills_page(
+        &self,
+        tenant_id: u64,
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillRecord>, i64)> {
+        postgres::list_skills_page(&self.pool, tenant_id, params, keyword).await
     }
 
     async fn get_skill(&self, tenant_id: u64, skill_key: &str) -> SkillsResult<SkillRecord> {
@@ -64,6 +72,16 @@ impl SkillsRepository for SqlxSkillsRepository {
         category_type: &str,
     ) -> SkillsResult<Vec<SkillCategoryRecord>> {
         postgres::list_categories(&self.pool, tenant_id, category_type).await
+    }
+
+    async fn list_categories_page(
+        &self,
+        tenant_id: u64,
+        category_type: &str,
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillCategoryRecord>, i64)> {
+        postgres::list_categories_page(&self.pool, tenant_id, category_type, params, keyword).await
     }
 
     async fn upsert_category(

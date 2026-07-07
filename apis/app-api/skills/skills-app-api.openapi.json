@@ -105,6 +105,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -128,7 +138,8 @@
         "x-sdkwork-resource": "skills",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.marketplace.read"
       }
     },
     "/app/v3/api/skills/{skillKey}": {
@@ -179,6 +190,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -202,7 +223,8 @@
         "x-sdkwork-resource": "skills",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.marketplace.read"
       }
     },
     "/app/v3/api/skill_packages": {
@@ -291,6 +313,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -314,7 +346,8 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.marketplace.read"
       }
     },
     "/app/v3/api/skill_packages/{skillId}": {
@@ -365,6 +398,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -388,7 +431,8 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.marketplace.read"
       }
     },
     "/app/v3/api/categories": {
@@ -477,6 +521,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -500,7 +554,8 @@
         "x-sdkwork-resource": "categories",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.marketplace.read"
       }
     },
     "/app/v3/api/user/skills/install": {
@@ -552,6 +607,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -575,7 +640,8 @@
         "x-sdkwork-resource": "userSkills",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.packages.install"
       }
     }
   },

@@ -42,14 +42,25 @@ function operationKey(method, pathKey, operationId) {
 function parseRustRouteManifest(manifestPath) {
   const content = readText(manifestPath);
   const routes = [];
-  const pattern =
-    /HttpMethod::(\w+),\s*"([^"]+)",\s*"[^"]+",\s*"([^"]+)"/gu;
-  for (const match of content.matchAll(pattern)) {
-    routes.push({
-      method: match[1].toLowerCase(),
-      pathKey: match[2],
-      operationId: match[3],
-    });
+  const patterns = [
+    /skills_(?:admin_abuse_|admin_)?route\(\s*HttpMethod::(\w+),\s*"([^"]+)",\s*"([^"]+)"/gu,
+    /HttpRoute::dual_token\(\s*HttpMethod::(\w+),\s*"([^"]+)",\s*"[^"]+",\s*"([^"]+)"/gu,
+  ];
+  const seen = new Set();
+  for (const pattern of patterns) {
+    for (const match of content.matchAll(pattern)) {
+      const route = {
+        method: match[1].toLowerCase(),
+        pathKey: match[2],
+        operationId: match[3],
+      };
+      const key = operationKey(route.method, route.pathKey, route.operationId);
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      routes.push(route);
+    }
   }
   if (routes.length === 0) {
     fail(`${manifestPath} declares no HttpRoute entries`);

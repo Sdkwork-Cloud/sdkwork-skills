@@ -53,30 +53,5 @@
       "path": "/app/v3/api/user/skills/install"
     }
   ],
-  "managedBy": "tools/skills_sdk_generator_runner.mjs",
-  "packageName": "@sdkwork/skills-app-sdk",
-  "transportPackageName": "sdkwork-skills-app-sdk-generated-typescript",
-  "typescript": {
-    "composedRoot": "sdkwork-skills-app-sdk-typescript",
-    "composedEntry": "sdkwork-skills-app-sdk-typescript/src/index.ts",
-    "transportRoot": "sdkwork-skills-app-sdk-typescript/generated/server-openapi",
-    "transportEntry": "sdkwork-skills-app-sdk-typescript/generated/server-openapi/src/index.ts"
-  },
-  "workspace": "sdkwork-skills-app-sdk",
-  "title": "SDKWork Skills App API SDK",
-  "apiVersion": "0.1.0",
-  "openapiVersion": "3.1.2",
-  "authoritySpec": "../../apis/app-api/skills/skills-app-api.openapi.json",
-  "derivedSpecs": {
-    "default": "../../apis/app-api/skills/skills-app-api.openapi.json"
-  },
-  "discoverySurface": {
-    "sdkTarget": "app",
-    "apiPrefix": "/app/v3/api",
-    "schemaUrl": "/app/v3/openapi.json",
-    "generatedProtocols": [
-      "http-openapi"
-    ],
-    "manualTransports": []
-  }
+  "managedBy": "tools/skills_sdk_generator_runner.mjs"
 }

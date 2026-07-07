@@ -19,7 +19,7 @@ VALUES
     '默认分类',
     'Skills Hub 默认市场分类',
     0,
-    'skills.admin.package.manage.default'
+    'skills.packages.manage.default'
   ),
   (
     'cat.skill.collection.official',
@@ -30,6 +30,6 @@ VALUES
     '官方精选',
     '官方技能合集',
     0,
-    'skills.admin.package.manage.official'
+    'skills.packages.manage.official'
   )
 ON CONFLICT DO NOTHING;

@@ -4,8 +4,8 @@
   "prefixes": [
     {
       "prefix": "ai_",
-      "domain": "intelligence",
-      "owner": "skills-platform"
+      "owner": "skills-platform",
+      "domain": "skills"
     }
   ]
 }

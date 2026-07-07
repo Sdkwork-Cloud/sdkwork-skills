@@ -288,23 +288,23 @@ function resourceResponse(responseSchemaName) {
   return { $ref: `#/components/schemas/${responseSchemaName}` };
 }
 const appRoutes = [
-  route("get", "/app/v3/api/skills", "skills.list", listResponse("SkillsListResponse"), listQueryParameters()),
-  route("get", "/app/v3/api/skills/{skillKey}", "skills.retrieve", resourceResponse("SkillsResponse"), [pathParam("skillKey")]),
-  route("get", "/app/v3/api/skill_packages", "skillPackages.list", listResponse("SkillPackagesListResponse"), listQueryParameters()),
-  route("get", "/app/v3/api/skill_packages/{skillId}", "skillPackages.retrieve", resourceResponse("SkillPackagesResponse"), [pathParam("skillId")]),
-  route("get", "/app/v3/api/categories", "categories.list", listResponse("CategoriesListResponse"), listQueryParameters()),
-  route("post", "/app/v3/api/user/skills/install", "userSkills.install", resourceResponse("UserSkillsInstallResponse"), [], "InstallSkillCommand"),
+  route("get", "/app/v3/api/skills", "skills.list", listResponse("SkillsListResponse"), listQueryParameters(), null, "skills.marketplace.read"),
+  route("get", "/app/v3/api/skills/{skillKey}", "skills.retrieve", resourceResponse("SkillsResponse"), [pathParam("skillKey")], null, "skills.marketplace.read"),
+  route("get", "/app/v3/api/skill_packages", "skillPackages.list", listResponse("SkillPackagesListResponse"), listQueryParameters(), null, "skills.marketplace.read"),
+  route("get", "/app/v3/api/skill_packages/{skillId}", "skillPackages.retrieve", resourceResponse("SkillPackagesResponse"), [pathParam("skillId")], null, "skills.marketplace.read"),
+  route("get", "/app/v3/api/categories", "categories.list", listResponse("CategoriesListResponse"), listQueryParameters(), null, "skills.marketplace.read"),
+  route("post", "/app/v3/api/user/skills/install", "userSkills.install", resourceResponse("UserSkillsInstallResponse"), [], "InstallSkillCommand", "skills.packages.install"),
 ];
 
 const backendRoutes = [
-  route("get", "/backend/v3/api/skill", "skills.management.list", listResponse("SkillsManagementListResponse"), listQueryParameters()),
-  route("get", "/backend/v3/api/skill/package", "skillPackages.management.list", listResponse("SkillPackagesManagementListResponse"), listQueryParameters()),
-  route("post", "/backend/v3/api/skill/package", "skillPackages.create", resourceResponse("SkillPackagesCreateResponse"), [], "CreateSkillPackageCommand"),
-  route("put", "/backend/v3/api/skill/package/{skillId}", "skillPackages.update", resourceResponse("SkillPackagesUpdateResponse"), [pathParam("skillId")], "UpdateSkillPackageCommand"),
-  route("delete", "/backend/v3/api/skill/package/{skillId}", "skillPackages.delete", resourceResponse("SkillPackagesDeleteResponse"), [pathParam("skillId")]),
-  route("get", "/backend/v3/api/category", "categories.management.list", listResponse("CategoriesManagementListResponse"), listQueryParameters()),
-  route("post", "/backend/v3/api/category", "categories.create", resourceResponse("CategoriesCreateResponse"), [], "CreateSkillCategoryCommand"),
-  route("put", "/backend/v3/api/category/{categoryId}", "categories.update", resourceResponse("CategoriesUpdateResponse"), [pathParamInt("categoryId")], "UpdateSkillCategoryCommand"),
+  route("get", "/backend/v3/api/skill", "skills.management.list", listResponse("SkillsManagementListResponse"), listQueryParameters(), null, "skills.marketplace.read"),
+  route("get", "/backend/v3/api/skill/package", "skillPackages.management.list", listResponse("SkillPackagesManagementListResponse"), listQueryParameters(), null, "skills.packages.manage"),
+  route("post", "/backend/v3/api/skill/package", "skillPackages.create", resourceResponse("SkillPackagesCreateResponse"), [], "CreateSkillPackageCommand", "skills.packages.manage"),
+  route("put", "/backend/v3/api/skill/package/{skillId}", "skillPackages.update", resourceResponse("SkillPackagesUpdateResponse"), [pathParam("skillId")], "UpdateSkillPackageCommand", "skills.packages.manage"),
+  route("delete", "/backend/v3/api/skill/package/{skillId}", "skillPackages.delete", resourceResponse("SkillPackagesDeleteResponse"), [pathParam("skillId")], null, "skills.packages.manage"),
+  route("get", "/backend/v3/api/category", "categories.management.list", listResponse("CategoriesManagementListResponse"), listQueryParameters(), null, "skills.categories.manage"),
+  route("post", "/backend/v3/api/category", "categories.create", resourceResponse("CategoriesCreateResponse"), [], "CreateSkillCategoryCommand", "skills.categories.manage"),
+  route("put", "/backend/v3/api/category/{categoryId}", "categories.update", resourceResponse("CategoriesUpdateResponse"), [pathParamInt("categoryId")], "UpdateSkillCategoryCommand", "skills.categories.manage"),
 ];
 
 function pathParam(name) {
@@ -326,7 +326,7 @@ function problemResponse() {
   };
 }
 
-function route(method, pathKey, operationId, responseSchema, parameters = [], bodySchemaName = null) {
+function route(method, pathKey, operationId, responseSchema, parameters = [], bodySchemaName = null, permission = null) {
   return {
     method,
     path: pathKey,
@@ -358,6 +358,7 @@ function route(method, pathKey, operationId, responseSchema, parameters = [], bo
         },
         400: problemResponse(),
         401: problemResponse(),
+        403: problemResponse(),
         404: problemResponse(),
       },
       security: [{ AuthToken: [], AccessToken: [] }],
@@ -368,6 +369,7 @@ function route(method, pathKey, operationId, responseSchema, parameters = [], bo
       "x-sdkwork-public": false,
       "x-sdkwork-api-surface": "",
       "x-sdkwork-request-context": "WebRequestContext",
+      ...(permission ? { "x-sdkwork-permission": permission } : {}),
     },
   };
 }

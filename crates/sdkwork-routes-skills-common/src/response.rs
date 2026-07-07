@@ -3,45 +3,16 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use sdkwork_utils_rust::{
-    PageInfo, PageMode, SdkWorkApiResponse, SdkWorkPageData, SdkWorkResourceData,
-};
+use sdkwork_utils_rust::{SdkWorkApiResponse, SdkWorkResourceData};
 use sdkwork_web_core::{
     problem_response, WebFrameworkError, WebFrameworkErrorKind, WebRequestContext,
 };
 use serde::Serialize;
 
-use crate::list_query::SdkWorkListQuery;
-
 pub type ApiResult<T> = Result<T, ApiProblem>;
 
 pub fn ok_json<T>(data: T) -> ApiResult<T> {
     Ok(data)
-}
-
-pub fn paginate_items<T>(items: Vec<T>, query: &SdkWorkListQuery) -> SdkWorkPageData<T> {
-    let total = items.len();
-    let page_size = query.effective_page_size() as usize;
-    let page = query.effective_page() as usize;
-    let total_pages = if total == 0 {
-        0
-    } else {
-        total.div_ceil(page_size) as i32
-    };
-    let start = (page.saturating_sub(1)).saturating_mul(page_size);
-    let page_items: Vec<T> = items.into_iter().skip(start).take(page_size).collect();
-    SdkWorkPageData {
-        items: page_items,
-        page_info: PageInfo {
-            mode: PageMode::Offset,
-            page: Some(page as i32),
-            page_size: Some(page_size as i32),
-            total_items: Some(total.to_string()),
-            total_pages: Some(total_pages),
-            next_cursor: None,
-            has_more: Some((page * page_size) < total),
-        },
-    }
 }
 
 pub fn item_data<T>(item: T) -> SdkWorkResourceData<T> {

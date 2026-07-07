@@ -1,3 +1,4 @@
+import { trim } from '@sdkwork/utils';
 import type { Location } from 'react-router-dom';
 
 import {
@@ -114,7 +115,7 @@ function isAuthRoute(pathname: string): boolean {
 }
 
 function normalizePathname(pathname: string): string {
-  const normalized = pathname.trim();
+  const normalized = trim(pathname);
   if (!normalized) {
     return '/';
   }

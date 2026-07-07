@@ -1,0 +1,19 @@
+{
+  "workspace": "sdkwork-skills-backend-sdk",
+  "sdkOwner": "sdkwork-skills",
+  "apiAuthority": "sdkwork-skills.backend",
+  "authoritySpec": "../../apis/backend-api/skills/skills-backend-api.openapi.json",
+  "generationInputSpec": "../../apis/backend-api/skills/skills-backend-api.openapi.json",
+  "sdkDependencies": [],
+  "derivedSpecs": {
+    "default": "../../apis/backend-api/skills/skills-backend-api.openapi.json"
+  },
+  "discoverySurface": {
+    "sdkTarget": "backend",
+    "apiPrefix": "/backend/v3/api",
+    "generatedProtocols": [
+      "http-openapi"
+    ],
+    "manualTransports": []
+  }
+}

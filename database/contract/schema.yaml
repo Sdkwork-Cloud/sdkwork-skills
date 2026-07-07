@@ -1,14 +1,31 @@
-schemaVersion: 1
-moduleId: skills
-engine: postgres
+schema_version: 1
+kind: sdkwork.database.schema
+module_id: skills
+contract_version: 1.0.0
+owner_team: skills-platform
+compliance_level: L2
+engines:
+  - postgres
+table_prefix: ai_
 tables:
-  - ai_skill_category
-  - ai_agent_skill_package
-  - ai_agent_skill
-  - ai_user_agent_skill
-  - ai_skill_asset
-  - ai_skill_artifact
-  - ai_skill_action
-prefixes:
-  - ai_
-baseline: database/ddl/baseline/postgres/0001_skills_baseline.sql
+  - name: ai_skill_category
+    lifecycle_status: active
+    owner: skills-platform
+  - name: ai_agent_skill_package
+    lifecycle_status: active
+    owner: skills-platform
+  - name: ai_agent_skill
+    lifecycle_status: active
+    owner: skills-platform
+  - name: ai_user_agent_skill
+    lifecycle_status: active
+    owner: skills-platform
+  - name: ai_skill_asset
+    lifecycle_status: active
+    owner: skills-platform
+  - name: ai_skill_artifact
+    lifecycle_status: active
+    owner: skills-platform
+  - name: ai_skill_action
+    lifecycle_status: active
+    owner: skills-platform

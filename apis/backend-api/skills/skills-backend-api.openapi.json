@@ -105,6 +105,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -128,7 +138,8 @@
         "x-sdkwork-resource": "skills",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "backend-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.marketplace.read"
       }
     },
     "/backend/v3/api/skill/package": {
@@ -217,6 +228,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -240,7 +261,8 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "backend-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.packages.manage"
       },
       "post": {
         "tags": [
@@ -290,6 +312,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -313,7 +345,8 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "backend-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.packages.manage"
       }
     },
     "/backend/v3/api/skill/package/{skillId}": {
@@ -374,6 +407,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -397,7 +440,8 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "backend-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.packages.manage"
       },
       "delete": {
         "tags": [
@@ -446,6 +490,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -469,7 +523,8 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "backend-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.packages.manage"
       }
     },
     "/backend/v3/api/category": {
@@ -558,6 +613,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -581,7 +646,8 @@
         "x-sdkwork-resource": "categories",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "backend-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.categories.manage"
       },
       "post": {
         "tags": [
@@ -631,6 +697,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -654,7 +730,8 @@
         "x-sdkwork-resource": "categories",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "backend-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.categories.manage"
       }
     },
     "/backend/v3/api/category/{categoryId}": {
@@ -719,6 +796,16 @@
               }
             }
           },
+          "403": {
+            "description": "Problem detail",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Problem detail",
             "content": {
@@ -742,7 +829,8 @@
         "x-sdkwork-resource": "categories",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "backend-api",
-        "x-sdkwork-request-context": "WebRequestContext"
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.categories.manage"
       }
     }
   },

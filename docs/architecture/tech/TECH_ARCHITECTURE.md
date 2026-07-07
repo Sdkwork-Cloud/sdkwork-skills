@@ -2,7 +2,7 @@
 
 Status: active
 Owner: SDKWork maintainers
-Updated: 2026-06-29
+Updated: 2026-07-06
 Specs: ARCHITECTURE_DECISION_SPEC.md, DOCUMENTATION_SPEC.md
 
 ## 1. Architecture Overview
@@ -71,10 +71,13 @@ See repository root `AGENTS.md` dictionary. Authoritative app config: `sdkwork.a
 
 ## 6. Security, Privacy, And Observability
 
-- IAM route manifest operation IDs aligned with OpenAPI.
+- IMF module manifest: `specs/iam.module.manifest.json` with `skills.*` permission catalog.
+- HTTP routes declare `x-sdkwork-permission` in OpenAPI and `with_required_permission` in route manifests; enforcement is handled by `sdkwork-web-framework`.
+- File uploads use `sdkwork-drive-app-sdk` on the client; backend stores canonical `drive://` `package_ref` only.
 - Delete package route: `RateLimitTier::AuthCritical`.
 - Health: `/livez`, `/readyz`, `/healthz` with DB readiness on standalone gateway.
 - Errors: ProblemDetail with sanitized 5xx detail; trace via `traceId` / `x-sdkwork-trace-id`.
+- List APIs use SQL offset pagination via `sdkwork-utils-rust` (`offset_list_page_data`).
 
 ## 7. Deployment And Runtime Topology
 
@@ -98,9 +101,11 @@ pnpm topology:validate
 
 | Standard | Status |
 | --- | --- |
-| `sdkwork-specs` agent/docs scripts | Aligned |
-| `sdkwork-web-framework` | Integrated on route crates |
-| `sdkwork-database` | Integrated (`database/`, host crate) |
-| `sdkwork-utils` (`@sdkwork/utils`, `sdkwork-utils-rust`) | Used in UI + handlers |
+| `sdkwork-specs` agent/docs/scripts | Aligned (`pnpm check` + envelope/topology/gateway gates) |
+| `sdkwork-web-framework` | Integrated with permission-enforced route manifests |
+| `sdkwork-database` | Integrated (`database/`, host crate, drift check in `pnpm check`) |
+| `sdkwork-utils` | Shared pagination, envelopes, string helpers |
+| `sdkwork-drive` | Client upload + server `drive://` validation |
 | `sdkwork-discovery` | N/A (no RPC yet) |
 | API §15 `SdkWorkApiResponse` | Aligned (handlers + OpenAPI + SDK) |
+| IMF `iam.module.manifest.json` | Registered under `specs/` |

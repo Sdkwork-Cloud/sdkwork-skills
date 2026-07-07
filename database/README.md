@@ -21,13 +21,14 @@ through `categories_json` category codes.
 ## Category Permissions
 
 Each `ai_skill_category.permission_code` defines the IAM scope required to manage
-packages in that category. Default pattern: `skills.admin.package.manage.<category_code>`.
+packages in that category. Default pattern: `skills.packages.manage.<category_code>`.
 
-Global admin scopes:
+Global scopes (see `specs/iam.module.manifest.json`):
 
-- `skills.admin.category.manage` — manage category taxonomy
-- `skills.admin.package.manage` — manage packages across all categories
-- `skills.admin.marketplace.read` — read marketplace admin surfaces
+- `skills.categories.manage` — manage category taxonomy
+- `skills.packages.manage` — manage packages across all categories
+- `skills.marketplace.read` — read marketplace catalog and admin list surfaces
+- `skills.packages.install` — install skills for the current user
 
 ## Verification
 
@@ -41,7 +42,7 @@ pnpm db:plan
 This module is in **initialization state** for greenfield deployments:
 
 1. **Baseline** — `database/ddl/baseline/{engine}/0001_skills_baseline.sql` contains the full DDL snapshot.
-2. **Migrations** — `database/migrations/{engine}/` is reserved for post-GA incremental schema changes only. It is intentionally empty at initialization.
+2. **Migrations** — `database/migrations/{engine}/` is reserved for post-GA incremental schema changes only.
 3. **Drift** — run `pnpm db:drift:check` before release.
 
 ## Commands

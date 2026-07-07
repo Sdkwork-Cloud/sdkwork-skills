@@ -1778,6 +1778,7 @@ dependencies = [
  "chrono",
  "sdkwork-intelligence-skills-service",
  "sdkwork-skills-contract",
+ "sdkwork-utils-rust",
  "serde_json",
  "sqlx",
 ]

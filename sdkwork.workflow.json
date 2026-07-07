@@ -42,12 +42,6 @@
       "tokenSecret": "SDKWORK_RELEASE_TOKEN"
     },
     {
-      "id": "sdkwork-appbase",
-      "repository": "Sdkwork-Cloud/sdkwork-appbase",
-      "refInput": "SDKWORK_APPBASE_REF",
-      "tokenSecret": "SDKWORK_RELEASE_TOKEN"
-    },
-    {
       "id": "sdkwork-drive",
       "repository": "Sdkwork-Cloud/sdkwork-drive",
       "refInput": "SDKWORK_DRIVE_REF",
@@ -129,8 +123,7 @@
       "formats": ["tar.gz"],
       "runner": "ubuntu-24.04",
       "outputGlobs": [
-        "target/release/sdkwork-skills-app-api*",
-        "target/release/sdkwork-skills-backend-api*"
+        "target/release/sdkwork-skills-standalone-gateway*"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "server"

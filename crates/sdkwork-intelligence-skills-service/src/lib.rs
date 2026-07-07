@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use sdkwork_skills_contract::{
     SkillCategoryRecord, SkillCategoryType, SkillPackageRecord, SkillRecord, UserSkillInstallRecord,
 };
-use sdkwork_utils_rust::trim;
+use sdkwork_utils_rust::{trim, OffsetListPageParams};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -24,10 +24,12 @@ pub type SkillsResult<T> = Result<T, SkillsServiceError>;
 
 #[async_trait]
 pub trait SkillsRepository: Send + Sync {
-    async fn list_skill_packages(
+    async fn list_skill_packages_page(
         &self,
         tenant_id: u64,
-    ) -> SkillsResult<Vec<SkillPackageRecord>>;
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillPackageRecord>, i64)>;
     async fn get_skill_package(
         &self,
         tenant_id: u64,
@@ -37,13 +39,25 @@ pub trait SkillsRepository: Send + Sync {
         &self,
         record: SkillPackageRecord,
     ) -> SkillsResult<SkillPackageRecord>;
-    async fn list_skills(&self, tenant_id: u64) -> SkillsResult<Vec<SkillRecord>>;
+    async fn list_skills_page(
+        &self,
+        tenant_id: u64,
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillRecord>, i64)>;
     async fn get_skill(&self, tenant_id: u64, skill_key: &str) -> SkillsResult<SkillRecord>;
     async fn list_categories(
         &self,
         tenant_id: u64,
         category_type: &str,
     ) -> SkillsResult<Vec<SkillCategoryRecord>>;
+    async fn list_categories_page(
+        &self,
+        tenant_id: u64,
+        category_type: &str,
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillCategoryRecord>, i64)>;
     async fn upsert_category(
         &self,
         record: SkillCategoryRecord,
@@ -73,19 +87,42 @@ impl<R: SkillsRepository> SkillsService<R> {
         Self { repository }
     }
 
-    pub async fn list_hub_skills(&self, tenant_id: u64) -> SkillsResult<Vec<SkillRecord>> {
-        self.repository.list_skills(tenant_id).await
+    pub async fn list_hub_skills_page(
+        &self,
+        tenant_id: u64,
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillRecord>, i64)> {
+        self.repository
+            .list_skills_page(tenant_id, params, keyword)
+            .await
+    }
+
+    pub async fn list_skill_packages_page(
+        &self,
+        tenant_id: u64,
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillPackageRecord>, i64)> {
+        self.repository
+            .list_skill_packages_page(tenant_id, params, keyword)
+            .await
+    }
+
+    pub async fn list_categories_page(
+        &self,
+        tenant_id: u64,
+        category_type: &str,
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillCategoryRecord>, i64)> {
+        self.repository
+            .list_categories_page(tenant_id, category_type, params, keyword)
+            .await
     }
 
     pub async fn get_skill(&self, tenant_id: u64, skill_key: &str) -> SkillsResult<SkillRecord> {
         self.repository.get_skill(tenant_id, skill_key).await
-    }
-
-    pub async fn list_skill_packages(
-        &self,
-        tenant_id: u64,
-    ) -> SkillsResult<Vec<SkillPackageRecord>> {
-        self.repository.list_skill_packages(tenant_id).await
     }
 
     pub async fn get_skill_package(

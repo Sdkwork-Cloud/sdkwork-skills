@@ -4,10 +4,10 @@ use sdkwork_intelligence_skills_service::{
 use sdkwork_skills_contract::{
     SkillCategoryRecord, SkillPackageRecord, SkillRecord, UserSkillInstallRecord,
 };
-use sdkwork_utils_rust::{SdkWorkPageData, SdkWorkResourceData};
+use sdkwork_utils_rust::{offset_list_page_data, SdkWorkPageData, SdkWorkResourceData};
 
 use crate::list_query::SdkWorkListQuery;
-use crate::response::{item_data, paginate_items, ApiProblem, ApiResult};
+use crate::response::{item_data, ApiProblem, ApiResult};
 
 pub fn resolve_tenant_id(headers: &axum::http::HeaderMap, default_tenant_id: u64) -> u64 {
     headers
@@ -27,69 +27,17 @@ impl From<SkillsServiceError> for ApiProblem {
     }
 }
 
-fn filter_skill_records(items: Vec<SkillRecord>, query: &SdkWorkListQuery) -> Vec<SkillRecord> {
-    let Some(keyword) = query.search_keyword() else {
-        return items;
-    };
-    let keyword = keyword.to_lowercase();
-    items
-        .into_iter()
-        .filter(|item| {
-            item.name.to_lowercase().contains(&keyword)
-                || item.skill_key.to_lowercase().contains(&keyword)
-                || item
-                    .summary
-                    .as_deref()
-                    .unwrap_or("")
-                    .to_lowercase()
-                    .contains(&keyword)
-        })
-        .collect()
-}
-
-fn filter_skill_packages(
-    items: Vec<SkillPackageRecord>,
-    query: &SdkWorkListQuery,
-) -> Vec<SkillPackageRecord> {
-    let Some(keyword) = query.search_keyword() else {
-        return items;
-    };
-    let keyword = keyword.to_lowercase();
-    items
-        .into_iter()
-        .filter(|item| {
-            item.display_name.to_lowercase().contains(&keyword)
-                || item.skill_id.to_lowercase().contains(&keyword)
-                || item.code.to_lowercase().contains(&keyword)
-        })
-        .collect()
-}
-
-fn filter_categories(
-    items: Vec<SkillCategoryRecord>,
-    query: &SdkWorkListQuery,
-) -> Vec<SkillCategoryRecord> {
-    let Some(keyword) = query.search_keyword() else {
-        return items;
-    };
-    let keyword = keyword.to_lowercase();
-    items
-        .into_iter()
-        .filter(|item| {
-            item.name.to_lowercase().contains(&keyword)
-                || item.code.to_lowercase().contains(&keyword)
-        })
-        .collect()
-}
-
 pub async fn list_hub_skills<R: SkillsRepository>(
     service: &SkillsService<R>,
     tenant_id: u64,
     query: &SdkWorkListQuery,
 ) -> ApiResult<SdkWorkPageData<SkillRecord>> {
     query.validate()?;
-    let items = service.list_hub_skills(tenant_id).await?;
-    Ok(paginate_items(filter_skill_records(items, query), query))
+    let params = query.offset_params()?;
+    let (items, total) = service
+        .list_hub_skills_page(tenant_id, params, query.search_keyword())
+        .await?;
+    Ok(offset_list_page_data(items, total, params))
 }
 
 pub async fn list_skill_packages<R: SkillsRepository>(
@@ -98,8 +46,11 @@ pub async fn list_skill_packages<R: SkillsRepository>(
     query: &SdkWorkListQuery,
 ) -> ApiResult<SdkWorkPageData<SkillPackageRecord>> {
     query.validate()?;
-    let items = service.list_skill_packages(tenant_id).await?;
-    Ok(paginate_items(filter_skill_packages(items, query), query))
+    let params = query.offset_params()?;
+    let (items, total) = service
+        .list_skill_packages_page(tenant_id, params, query.search_keyword())
+        .await?;
+    Ok(offset_list_page_data(items, total, params))
 }
 
 pub async fn list_categories<R: SkillsRepository>(
@@ -109,10 +60,11 @@ pub async fn list_categories<R: SkillsRepository>(
     query: &SdkWorkListQuery,
 ) -> ApiResult<SdkWorkPageData<SkillCategoryRecord>> {
     query.validate()?;
-    let items = service
-        .list_categories(tenant_id, category_type)
+    let params = query.offset_params()?;
+    let (items, total) = service
+        .list_categories_page(tenant_id, category_type, params, query.search_keyword())
         .await?;
-    Ok(paginate_items(filter_categories(items, query), query))
+    Ok(offset_list_page_data(items, total, params))
 }
 
 pub async fn get_skill_package<R: SkillsRepository>(

@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.iam.module",
+  "moduleId": "skills",
+  "catalogVersion": "1.0.0",
+  "domain": "skills",
+  "owner": "sdkwork-skills",
+  "displayName": "SDKWork Skills Module",
+  "permissions": {
+    "catalog": [
+      {
+        "code": "skills.marketplace.read",
+        "name": "Read skills marketplace catalog",
+        "resource": "marketplace",
+        "action": "read",
+        "status": "active",
+        "since": "1.0.0",
+        "replacementCode": null
+      },
+      {
+        "code": "skills.packages.install",
+        "name": "Install skills for the current user",
+        "resource": "packages",
+        "action": "install",
+        "status": "active",
+        "since": "1.0.0",
+        "replacementCode": null
+      },
+      {
+        "code": "skills.packages.manage",
+        "name": "Manage skill packages",
+        "resource": "packages",
+        "action": "manage",
+        "status": "active",
+        "since": "1.0.0",
+        "replacementCode": null
+      },
+      {
+        "code": "skills.categories.manage",
+        "name": "Manage skill marketplace categories",
+        "resource": "categories",
+        "action": "manage",
+        "status": "active",
+        "since": "1.0.0",
+        "replacementCode": null
+      }
+    ],
+    "openapiAuthorities": [
+      "sdkwork-skills.app",
+      "sdkwork-skills.backend"
+    ]
+  },
+  "roles": {
+    "domainStandardRoles": [
+      {
+        "code": "skills_admin_operator",
+        "name": "Skills Admin Operator",
+        "surface": "organization",
+        "scope": "organization",
+        "standard": true,
+        "assignable": true,
+        "bindingPrincipalKind": "organization_membership",
+        "permissionPatterns": [
+          "skills.marketplace.read",
+          "skills.packages.manage",
+          "skills.categories.manage"
+        ]
+      },
+      {
+        "code": "skills_marketplace_user",
+        "name": "Skills Marketplace User",
+        "surface": "application",
+        "scope": "tenant",
+        "standard": true,
+        "assignable": true,
+        "bindingPrincipalKind": "user",
+        "permissionPatterns": [
+          "skills.marketplace.read",
+          "skills.packages.install"
+        ]
+      }
+    ],
+    "roleGrantExtensions": [
+      {
+        "roleCode": "app_user",
+        "patterns": [
+          "skills.marketplace.read",
+          "skills.packages.install"
+        ]
+      },
+      {
+        "roleCode": "org_admin",
+        "patterns": [
+          "skills.*"
+        ]
+      },
+      {
+        "roleCode": "org_operations",
+        "patterns": [
+          "skills.marketplace.read",
+          "skills.packages.manage",
+          "skills.categories.manage"
+        ]
+      }
+    ],
+    "roleExclusions": []
+  },
+  "directory": {
+    "organizationTemplates": [],
+    "departmentTemplates": [],
+    "positionTemplates": [],
+    "membershipTemplates": []
+  },
+  "policyConditions": {
+    "supportedAttributes": []
+  },
+  "oauthScopeMappings": [],
+  "dependencies": {
+    "requiresModules": [
+      "iam-kernel"
+    ]
+  }
+}

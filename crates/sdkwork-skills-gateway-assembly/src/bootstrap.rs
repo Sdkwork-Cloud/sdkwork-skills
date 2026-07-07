@@ -13,6 +13,12 @@ pub struct ApplicationAssembly {
 }
 
 fn web_framework_enabled() -> bool {
+    if std::env::var("SDKWORK_SKILLS_ENVIRONMENT")
+        .map(|value| value.eq_ignore_ascii_case("production"))
+        .unwrap_or(false)
+    {
+        return true;
+    }
     std::env::var("SDKWORK_SKILLS_WEB_FRAMEWORK")
         .map(|value| value != "0" && value != "false")
         .unwrap_or(true)

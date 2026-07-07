@@ -3,6 +3,7 @@ use sdkwork_skills_contract::{
     SkillCategoryRecord, SkillInvocationKind, SkillLifecycleStatus, SkillPackageRecord,
     SkillRecord, SkillVisibility, UserSkillInstallRecord,
 };
+use sdkwork_utils_rust::{OffsetListPageParams, LIST_TOTAL_SQL_COLUMN};
 use sqlx::{PgPool, Row};
 
 use crate::json_util::{string_list_from_json, string_list_to_json, timestamp_to_rfc3339};
@@ -316,6 +317,127 @@ pub async fn list_skills(pool: &PgPool, tenant_id: u64) -> SkillsResult<Vec<Skil
     .map_err(map_sqlx)?;
 
     rows.iter().map(row_to_skill).collect()
+}
+
+fn search_pattern(keyword: Option<&str>) -> String {
+    keyword
+        .map(|value| format!("%{}%", value.replace('%', "\\%").replace('_', "\\_")))
+        .unwrap_or_else(|| "%".to_string())
+}
+
+pub async fn list_skills_page(
+    pool: &PgPool,
+    tenant_id: u64,
+    params: OffsetListPageParams,
+    keyword: Option<&str>,
+) -> SkillsResult<(Vec<SkillRecord>, i64)> {
+    let pattern = search_pattern(keyword);
+    let rows = sqlx::query(&format!(
+        r#"
+        SELECT id, tenant_id, organization_id, owner_user_id, skill_key, package_id, name,
+               summary, description, runtime, entrypoint, market_status, visibility,
+               review_status, categories_json, enabled, featured, install_count, tags_json,
+               capabilities_json, version, created_at, updated_at, deleted_at,
+               COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+        FROM ai_agent_skill
+        WHERE tenant_id = $1 AND deleted_at IS NULL AND enabled = 1
+          AND ($2 = '%' OR name ILIKE $2 OR skill_key ILIKE $2 OR COALESCE(summary, '') ILIKE $2)
+        ORDER BY featured DESC, recommend_weight DESC, updated_at DESC, skill_key ASC
+        LIMIT $3 OFFSET $4
+        "#
+    ))
+    .bind(tenant_id as i64)
+    .bind(pattern)
+    .bind(params.page_size)
+    .bind(params.offset)
+    .fetch_all(pool)
+    .await
+    .map_err(map_sqlx)?;
+
+    let total = rows
+        .first()
+        .map(|row| row.try_get::<i64, _>(LIST_TOTAL_SQL_COLUMN).unwrap_or(0))
+        .unwrap_or(0);
+    let items = rows.iter().map(row_to_skill).collect::<SkillsResult<Vec<_>>>()?;
+    Ok((items, total))
+}
+
+pub async fn list_skill_packages_page(
+    pool: &PgPool,
+    tenant_id: u64,
+    params: OffsetListPageParams,
+    keyword: Option<&str>,
+) -> SkillsResult<(Vec<SkillPackageRecord>, i64)> {
+    let pattern = search_pattern(keyword);
+    let rows = sqlx::query(&format!(
+        r#"
+        SELECT id, tenant_id, organization_id, owner_user_id, skill_id, package_key, code,
+               display_name, summary, description, invocation_kind, package_ref, entrypoint,
+               input_schema_json, output_schema_json, capability_ids_json, categories_json,
+               tags_json, security_profile_id, status, visibility, version,
+               created_at, updated_at, deleted_at,
+               COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+        FROM ai_agent_skill_package
+        WHERE tenant_id = $1 AND deleted_at IS NULL AND status <> 4
+          AND ($2 = '%' OR display_name ILIKE $2 OR skill_id ILIKE $2 OR code ILIKE $2)
+        ORDER BY sort_weight DESC, updated_at DESC, code ASC
+        LIMIT $3 OFFSET $4
+        "#
+    ))
+    .bind(tenant_id as i64)
+    .bind(pattern)
+    .bind(params.page_size)
+    .bind(params.offset)
+    .fetch_all(pool)
+    .await
+    .map_err(map_sqlx)?;
+
+    let total = rows
+        .first()
+        .map(|row| row.try_get::<i64, _>(LIST_TOTAL_SQL_COLUMN).unwrap_or(0))
+        .unwrap_or(0);
+    let items = rows
+        .iter()
+        .map(row_to_skill_package)
+        .collect::<SkillsResult<Vec<_>>>()?;
+    Ok((items, total))
+}
+
+pub async fn list_categories_page(
+    pool: &PgPool,
+    tenant_id: u64,
+    category_type: &str,
+    params: OffsetListPageParams,
+    keyword: Option<&str>,
+) -> SkillsResult<(Vec<SkillCategoryRecord>, i64)> {
+    let pattern = search_pattern(keyword);
+    let rows = sqlx::query(&format!(
+        r#"
+        SELECT id, tenant_id, organization_id, category_type, code, name, description,
+               parent_id, sort_weight, permission_code, visible, status,
+               COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+        FROM ai_skill_category
+        WHERE category_type = $1 AND tenant_id IN (0, $2) AND deleted_at IS NULL AND status = 1
+          AND ($3 = '%' OR name ILIKE $3 OR code ILIKE $3)
+        ORDER BY sort_weight ASC, code ASC
+        LIMIT $4 OFFSET $5
+        "#
+    ))
+    .bind(category_type)
+    .bind(tenant_id as i64)
+    .bind(pattern)
+    .bind(params.page_size)
+    .bind(params.offset)
+    .fetch_all(pool)
+    .await
+    .map_err(map_sqlx)?;
+
+    let total = rows
+        .first()
+        .map(|row| row.try_get::<i64, _>(LIST_TOTAL_SQL_COLUMN).unwrap_or(0))
+        .unwrap_or(0);
+    let items = rows.iter().map(row_to_category).collect::<SkillsResult<Vec<_>>>()?;
+    Ok((items, total))
 }
 
 pub async fn get_skill(

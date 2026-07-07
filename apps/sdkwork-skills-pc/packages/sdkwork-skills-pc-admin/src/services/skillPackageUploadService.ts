@@ -1,9 +1,11 @@
-import type { SdkworkDriveAppClient } from '@sdkwork/drive-app-sdk';
+import type { SkillsAppClients } from '@sdkwork/skills-pc-core';
 import { formatDrivePackageRef } from '@sdkwork/skills-pc-commons/driveUri';
 import {
   resolveSkillsDriveParentNodeId,
   resolveSkillsDriveSpaceId,
 } from '@sdkwork/skills-pc-commons/runtime';
+
+type SkillsDriveAppClient = SkillsAppClients['drive'];
 
 export type SkillPackageUploadOptions = {
   spaceId?: string;
@@ -11,7 +13,7 @@ export type SkillPackageUploadOptions = {
 };
 
 export async function uploadSkillPackageArchive(
-  driveClient: SdkworkDriveAppClient,
+  driveClient: SkillsDriveAppClient,
   file: File,
   options: SkillPackageUploadOptions = {},
 ): Promise<string> {

@@ -1,27 +1,30 @@
+import { isBlank, trim } from '@sdkwork/utils';
+
 export const SKILLS_ADMIN_PERMISSIONS = {
-  packageManage: 'skills.admin.package.manage',
-  categoryManage: 'skills.admin.category.manage',
-  marketplaceRead: 'skills.admin.marketplace.read',
+  packageManage: 'skills.packages.manage',
+  categoryManage: 'skills.categories.manage',
+  marketplaceRead: 'skills.marketplace.read',
+  packagesInstall: 'skills.packages.install',
 } as const;
 
 export const SKILLS_ADMIN_ROLES = {
-  operator: 'skills-admin-operator',
-  superAdmin: 'skills-admin-super',
+  operator: 'skills_admin_operator',
+  superAdmin: 'org_admin',
 } as const;
 
 export type SkillsAdminPermission =
   (typeof SKILLS_ADMIN_PERMISSIONS)[keyof typeof SKILLS_ADMIN_PERMISSIONS];
 
 export function packageManagePermissionForCategory(categoryCode: string): string {
-  return `skills.admin.package.manage.${categoryCode}`;
+  return `skills.packages.manage.${categoryCode}`;
 }
 
 export function resolveCategoryPackagePermission(category: {
   code: string;
   permission_code?: string | null;
 }): string {
-  const explicit = category.permission_code?.trim();
-  return explicit || packageManagePermissionForCategory(category.code);
+  const explicit = category.permission_code ? trim(category.permission_code) : '';
+  return !isBlank(explicit) ? explicit : packageManagePermissionForCategory(category.code);
 }
 
 export function canManagePackagesInCategories(

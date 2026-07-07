@@ -1,3 +1,4 @@
+import { isBlank, trim } from '@sdkwork/utils';
 import manifest from '../../../../sdkwork.app.config.json';
 
 export type SdkworkSkillsPcEnvironment = 'development' | 'test' | 'staging' | 'production';
@@ -74,7 +75,7 @@ const APPBASE_APP_SDK_FAMILY_ID = 'sdkwork-iam-app-sdk';
 
 function envValue(key: string): string | undefined {
   const value = import.meta.env[key];
-  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+  return typeof value === 'string' && !isBlank(value) ? trim(value) : undefined;
 }
 
 function resolveEnvironment(mode: string): SdkworkSkillsPcEnvironment {

@@ -1,9 +1,10 @@
-pub const PERM_CATEGORY_MANAGE: &str = "skills.admin.category.manage";
-pub const PERM_PACKAGE_MANAGE: &str = "skills.admin.package.manage";
-pub const PERM_MARKETPLACE_READ: &str = "skills.admin.marketplace.read";
+pub const PERM_MARKETPLACE_READ: &str = "skills.marketplace.read";
+pub const PERM_PACKAGES_INSTALL: &str = "skills.packages.install";
+pub const PERM_PACKAGES_MANAGE: &str = "skills.packages.manage";
+pub const PERM_CATEGORIES_MANAGE: &str = "skills.categories.manage";
 
 pub fn package_manage_permission_for_category(category_code: &str) -> String {
-    format!("skills.admin.package.manage.{category_code}")
+    format!("skills.packages.manage.{category_code}")
 }
 
 pub fn resolve_category_package_permission(

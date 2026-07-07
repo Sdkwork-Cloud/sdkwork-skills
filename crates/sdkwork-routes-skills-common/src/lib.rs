@@ -9,7 +9,7 @@ pub use commands::{
 };
 pub use list_query::SdkWorkListQuery;
 pub use response::{
-    finish_api_json, item_data, ok_json, paginate_items, ApiProblem, ApiResult,
+    finish_api_json, item_data, ok_json, ApiProblem, ApiResult,
 };
 pub use service_ops::{
     delete_skill_package, get_skill, get_skill_package, install_skill, list_categories,

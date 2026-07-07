@@ -1,3 +1,6 @@
-driftPolicyVersion: 1
-mode: strict
-ignoreTables: []
+schemaVersion: 1
+kind: sdkwork.database.drift-policy
+rules:
+  ignoreTables: []
+  ignoreColumns: []
+  severityOverrides: {}

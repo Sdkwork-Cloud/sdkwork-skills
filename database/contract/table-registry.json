@@ -2,12 +2,47 @@
   "schemaVersion": 1,
   "kind": "sdkwork.database.table-registry",
   "tables": [
-    { "table_name": "ai_skill_category", "owner": "skills-platform", "compliance_level": "L2", "lifecycle_status": "active" },
-    { "table_name": "ai_agent_skill_package", "owner": "skills-platform", "compliance_level": "L2", "lifecycle_status": "active" },
-    { "table_name": "ai_agent_skill", "owner": "skills-platform", "compliance_level": "L2", "lifecycle_status": "active" },
-    { "table_name": "ai_user_agent_skill", "owner": "skills-platform", "compliance_level": "L2", "lifecycle_status": "active" },
-    { "table_name": "ai_skill_asset", "owner": "skills-platform", "compliance_level": "L2", "lifecycle_status": "active" },
-    { "table_name": "ai_skill_artifact", "owner": "skills-platform", "compliance_level": "L2", "lifecycle_status": "active" },
-    { "table_name": "ai_skill_action", "owner": "skills-platform", "compliance_level": "L2", "lifecycle_status": "active" }
+    {
+      "table_name": "ai_skill_category",
+      "owner": "skills-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "ai_agent_skill_package",
+      "owner": "skills-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "ai_agent_skill",
+      "owner": "skills-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "ai_user_agent_skill",
+      "owner": "skills-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "ai_skill_asset",
+      "owner": "skills-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "ai_skill_artifact",
+      "owner": "skills-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "ai_skill_action",
+      "owner": "skills-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    }
   ]
 }

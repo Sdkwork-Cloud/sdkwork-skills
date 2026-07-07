@@ -1,63 +1,73 @@
 use sdkwork_web_core::{HttpMethod, HttpRoute, HttpRouteManifest, RateLimitTier};
 
-const fn abuse_sensitive_route(
+const fn skills_admin_route(
     method: HttpMethod,
     path: &'static str,
-    tag: &'static str,
     operation_id: &'static str,
+    permission: &'static str,
 ) -> HttpRoute {
-    HttpRoute::dual_token(method, path, tag, operation_id)
+    HttpRoute::dual_token(method, path, "skills-admin", operation_id)
+        .with_required_permission(permission)
+}
+
+const fn skills_admin_abuse_route(
+    method: HttpMethod,
+    path: &'static str,
+    operation_id: &'static str,
+    permission: &'static str,
+) -> HttpRoute {
+    skills_admin_route(method, path, operation_id, permission)
         .with_rate_limit_tier(RateLimitTier::AuthCritical)
 }
 
 const HTTP_ROUTES: &[HttpRoute] = &[
-    HttpRoute::dual_token(
+    skills_admin_route(
         HttpMethod::Get,
         "/backend/v3/api/skill",
-        "skills-admin",
         "skills.management.list",
+        "skills.marketplace.read",
     ),
-    HttpRoute::dual_token(
+    skills_admin_route(
         HttpMethod::Get,
         "/backend/v3/api/skill/package",
-        "skills-admin",
         "skillPackages.management.list",
+        "skills.packages.manage",
     ),
-    HttpRoute::dual_token(
+    skills_admin_route(
         HttpMethod::Post,
         "/backend/v3/api/skill/package",
-        "skills-admin",
         "skillPackages.create",
+        "skills.packages.manage",
     ),
-    HttpRoute::dual_token(
+    skills_admin_route(
         HttpMethod::Put,
         "/backend/v3/api/skill/package/{skillId}",
-        "skills-admin",
         "skillPackages.update",
+        "skills.packages.manage",
     ),
-    abuse_sensitive_route(
+    skills_admin_abuse_route(
         HttpMethod::Delete,
         "/backend/v3/api/skill/package/{skillId}",
-        "skills-admin",
         "skillPackages.delete",
+        "skills.packages.manage",
     ),
-    HttpRoute::dual_token(
+    skills_admin_route(
         HttpMethod::Get,
         "/backend/v3/api/category",
-        "skills-admin",
         "categories.management.list",
+        "skills.categories.manage",
     ),
-    HttpRoute::dual_token(
+    skills_admin_route(
         HttpMethod::Post,
         "/backend/v3/api/category",
-        "skills-admin",
         "categories.create",
+        "skills.categories.manage",
     ),
-    HttpRoute::dual_token(
+    skills_admin_route(
         HttpMethod::Put,
         "/backend/v3/api/category/{categoryId}",
-        "skills-admin",
         "categories.update",
+        "skills.categories.manage",
     ),
 ];
 

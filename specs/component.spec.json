@@ -19,6 +19,11 @@
   },
   "canonicalSpecs": [
     {
+      "file": "IAM_MODULE_MANIFEST_SPEC.md",
+      "path": "../sdkwork-specs/IAM_MODULE_MANIFEST_SPEC.md",
+      "purpose": "IMF permission catalog registration."
+    },
+    {
       "file": "APP_PC_ARCHITECTURE_SPEC.md",
       "path": "../sdkwork-specs/APP_PC_ARCHITECTURE_SPEC.md",
       "purpose": "PC application root layout."
@@ -40,6 +45,7 @@
     }
   ],
   "contracts": {
+    "iamModuleManifest": "specs/iam.module.manifest.json",
     "publicExports": [],
     "runtimeEntrypoints": [
       "package.json#scripts.dev",

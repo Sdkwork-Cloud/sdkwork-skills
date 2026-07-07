@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use sdkwork_utils_rust::{validated_offset_list_params, OffsetListPageParams};
 
 use crate::response::ApiProblem;
 
@@ -23,7 +24,14 @@ impl SdkWorkListQuery {
                 "cursor pagination is not supported yet; use page and page_size",
             ));
         }
-        Ok(())
+        self.offset_params().map(|_| ())
+    }
+
+    pub fn offset_params(&self) -> Result<OffsetListPageParams, ApiProblem> {
+        validated_offset_list_params(self.page.map(i64::from), self.page_size.map(i64::from))
+            .map_err(|_| {
+                ApiProblem::bad_request("page must be >= 1 and page_size must be between 1 and 200")
+            })
     }
 
     pub fn effective_page_size(&self) -> i32 {
