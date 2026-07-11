@@ -4,7 +4,7 @@
   "applicationCode": "skills",
   "packageName": "sdkwork-skills-gateway-assembly",
   "crateDir": "crates/sdkwork-skills-gateway-assembly",
-  "generatedAt": "2026-06-25T13:14:32.730Z",
+  "generatedAt": "2026-07-08T01:34:22.599Z",
   "routeCrates": [
     {
       "packageName": "sdkwork-routes-skills-app-api",
