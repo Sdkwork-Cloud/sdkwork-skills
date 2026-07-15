@@ -8,7 +8,19 @@ function resolveStorage(): Storage | undefined {
   if (typeof window === 'undefined') {
     return undefined;
   }
-  return window.sessionStorage;
+  migrateLegacyToken(AUTH_TOKEN_KEY);
+  migrateLegacyToken(ACCESS_TOKEN_KEY);
+  return window.localStorage;
+}
+
+function migrateLegacyToken(key: string): void {
+  const legacyToken = window.sessionStorage.getItem(key);
+  if (legacyToken && !window.localStorage.getItem(key)) {
+    window.localStorage.setItem(key, legacyToken);
+  }
+  if (legacyToken) {
+    window.sessionStorage.removeItem(key);
+  }
 }
 
 function readToken(key: string): string | undefined {
