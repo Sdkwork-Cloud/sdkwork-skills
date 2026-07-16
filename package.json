@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "dev": "pnpm --dir apps/sdkwork-skills-pc dev",
+    "stop": "node ../sdkwork-specs/tools/stop-sdkwork-workspace-processes.mjs --workspace .",    "dev": "pnpm --dir apps/sdkwork-skills-pc dev",
     "build": "pnpm --dir apps/sdkwork-skills-pc build",
     "test": "cargo test --workspace && pnpm --dir apps/sdkwork-skills-pc test && node --import ./tests/register-workspace-imports.mjs --experimental-strip-types --test tests/*.test.mjs",
     "check": "pnpm check:pnpm-script-standard && pnpm check:agent-workflow-standard && pnpm check:app-composition && pnpm check:api-envelope && pnpm db:validate && pnpm api:check && pnpm topology:validate && pnpm gateway:validate:cloud && pnpm gateway:assembly:validate",

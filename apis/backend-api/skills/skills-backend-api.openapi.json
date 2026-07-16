@@ -282,7 +282,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "OK",
             "content": {
               "application/json": {
@@ -460,15 +460,8 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SkillPackagesDeleteResponse"
-                }
-              }
-            }
+          "204": {
+            "description": "OK"
           },
           "400": {
             "description": "Problem detail",
@@ -667,7 +660,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "OK",
             "content": {
               "application/json": {

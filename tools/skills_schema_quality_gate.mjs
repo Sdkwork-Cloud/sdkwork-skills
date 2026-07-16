@@ -141,12 +141,29 @@ function checkDocument(filePath, authority, prefix, manifestPath) {
       fail(`${filePath} missing x-sdkwork-api-surface on ${operation.operationId}`);
     }
 
-    const successSchema = operation.responses?.["200"]?.content?.["application/json"]?.schema;
+    const action = String(operation.operationId).split(".").at(-1);
+    const successStatuses = action === "create"
+      ? ["201"]
+      : action === "delete"
+        ? ["204"]
+        : ["200", "202"];
+    const successStatus = successStatuses.find((status) => operation.responses?.[status]);
+    if (!successStatus) {
+      fail(`${operation.operationId} must declare ${successStatuses.join(" or ")} success response`);
+    }
+    if (successStatus === "204") {
+      if (operation.responses[successStatus]?.content) {
+        fail(`${operation.operationId} 204 success response must not declare content`);
+      }
+      openapiOps.set(operationKey(method, pathKey, operation.operationId), true);
+      continue;
+    }
+    const successSchema = operation.responses?.[successStatus]?.content?.["application/json"]?.schema;
     if (!successSchema) {
-      fail(`${operation.operationId} must declare 200 application/json success schema`);
+      fail(`${operation.operationId} must declare ${successStatus} application/json success schema`);
     }
     if (!usesSdkWorkEnvelope(successSchema, components)) {
-      fail(`${operation.operationId} 200 must use SdkWorkApiResponse envelope`);
+      fail(`${operation.operationId} ${successStatus} must use SdkWorkApiResponse envelope`);
     }
 
     if (String(operation.operationId).endsWith(".list")) {
