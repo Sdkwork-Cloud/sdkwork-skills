@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "crates/sdkwork-api-skills-assembly",
     "crates/sdkwork-skills-gateway-assembly",
     "crates/sdkwork-skills-contract",
     "crates/sdkwork-intelligence-skills-service",

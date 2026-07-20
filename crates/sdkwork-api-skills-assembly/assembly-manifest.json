@@ -1,0 +1,32 @@
+{
+  "kind": "sdkwork.api.assembly",
+  "schemaVersion": 1,
+  "applicationCode": "skills",
+  "apiMode": "served",
+  "packageName": "sdkwork-api-skills-assembly",
+  "crateDir": "crates/sdkwork-api-skills-assembly",
+  "routeCrates": [
+    {
+      "packageName": "sdkwork-routes-skills-app-api",
+      "memberDir": "crates/sdkwork-routes-skills-app-api",
+      "libName": "sdkwork_routes_skills_app_api",
+      "surface": "app-api",
+      "pathPrefix": null,
+      "mountOrder": 0,
+      "componentRef": "crates/sdkwork-routes-skills-app-api/specs/component.spec.json",
+      "routeManifestRef": "crates/sdkwork-routes-skills-app-api/sdks/_route-manifests/app-api/sdkwork-routes-skills-app-api.route-manifest.json",
+      "sourceRef": "crates/sdkwork-routes-skills-app-api/Cargo.toml"
+    },
+    {
+      "packageName": "sdkwork-routes-skills-backend-api",
+      "memberDir": "crates/sdkwork-routes-skills-backend-api",
+      "libName": "sdkwork_routes_skills_backend_api",
+      "surface": "backend-api",
+      "pathPrefix": null,
+      "mountOrder": 1,
+      "componentRef": "crates/sdkwork-routes-skills-backend-api/specs/component.spec.json",
+      "routeManifestRef": "crates/sdkwork-routes-skills-backend-api/sdks/_route-manifests/backend-api/sdkwork-routes-skills-backend-api.route-manifest.json",
+      "sourceRef": "crates/sdkwork-routes-skills-backend-api/Cargo.toml"
+    }
+  ]
+}
