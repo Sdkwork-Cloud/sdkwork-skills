@@ -29,7 +29,7 @@ Authority: [ADR-20260624-skills-domain-extraction-and-ai-table-standard.md](../a
 2. Bootstrap database: `pnpm db:bootstrap` (requires PostgreSQL per `database/` config).
 3. Start PC dev server (proxies to local gateways): `pnpm dev`.
 4. Run standalone gateways on ports `18090` (app-api) and `18091` (backend-api) via
-   `cargo run -p sdkwork-skills-standalone-gateway` when testing APIs without cloud topology.
+   `cargo run -p sdkwork-api-skills-standalone-gateway` when testing APIs without cloud topology.
 
 ## API And SDK Conventions
 

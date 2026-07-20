@@ -84,7 +84,7 @@
       {
         "name": "Build Skills API server binaries",
         "shell": "pwsh",
-        "run": "cargo build --release -p sdkwork-skills-standalone-gateway"
+        "run": "cargo build --release -p sdkwork-api-skills-standalone-gateway"
       },
       {
         "name": "Build Skills PC web bundle",
@@ -123,7 +123,7 @@
       "formats": ["tar.gz"],
       "runner": "ubuntu-24.04",
       "outputGlobs": [
-        "target/release/sdkwork-skills-standalone-gateway*"
+        "target/release/sdkwork-api-skills-standalone-gateway*"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "server"

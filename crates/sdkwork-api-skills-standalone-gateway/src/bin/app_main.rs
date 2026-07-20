@@ -1,4 +1,4 @@
-use sdkwork_skills_standalone_gateway::{bootstrap_runtime, serve_standalone_gateway};
+use sdkwork_api_skills_standalone_gateway::{bootstrap_runtime, serve_standalone_gateway};
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]

@@ -55,7 +55,7 @@ Specs: ARCHITECTURE_DECISION_SPEC.md, DOCUMENTATION_SPEC.md
 | `sdkwork-routes-skills-common` | Shared API response + service helpers |
 | `sdkwork-routes-skills-app-api` | App-api routes and manifest |
 | `sdkwork-routes-skills-backend-api` | Backend-api routes and manifest |
-| `sdkwork-skills-standalone-gateway` | Local/dev gateway binary |
+| `sdkwork-api-skills-standalone-gateway` | Local/dev gateway binary |
 | `apps/sdkwork-skills-pc` | Browser client surfaces |
 
 ## 4. Directory And Package Layout

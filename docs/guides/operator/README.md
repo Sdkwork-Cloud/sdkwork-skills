@@ -6,7 +6,7 @@ Deployment, monitoring, and incident response for the Skills application root.
 
 | Component | Role | Default local port |
 | --- | --- | --- |
-| `sdkwork-skills-standalone-gateway` | App + backend HTTP APIs | `18090` (app-api), `18091` (backend-api) |
+| `sdkwork-api-skills-standalone-gateway` | App + backend HTTP APIs | `18090` (app-api), `18091` (backend-api) |
 | `apps/sdkwork-skills-pc` | Browser Hub / Console / Admin | Vite dev server (via `pnpm dev`) |
 | PostgreSQL | `ai_*` persistence | Per `database/` config |
 

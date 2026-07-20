@@ -1,6 +1,6 @@
 use axum::Router;
-use sdkwork_skills_gateway_assembly::{
-    assemble_app_surface_router, assemble_application_business_router,
+use sdkwork_api_skills_assembly::{
+    assemble_app_surface_router, assemble_api_router,
     assemble_backend_surface_router,
 };
 use tokio::net::TcpListener;
@@ -82,7 +82,7 @@ pub async fn serve_standalone_gateway(runtime: Arc<SkillsRuntime>) -> Result<(),
     let service = runtime.service();
     let tenant_id = runtime.default_tenant_id();
     let pool = runtime.postgres_pool();
-    let app = assemble_application_business_router(service, tenant_id, pool)
+    let app = assemble_api_router(service, tenant_id, pool)
         .await
         .router;
     serve_with_shutdown(app, addr.as_str(), "standalone gateway").await
