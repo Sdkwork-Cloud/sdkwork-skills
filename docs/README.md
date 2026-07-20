@@ -31,7 +31,7 @@
 pnpm verify
 node ../sdkwork-specs/tools/check-api-response-envelope.mjs --workspace .
 node ../sdkwork-specs/tools/check-repository-docs-standard.mjs --root .
-pnpm gateway:assembly:validate
+pnpm api:assembly:validate
 pnpm topology:validate
 ```
 

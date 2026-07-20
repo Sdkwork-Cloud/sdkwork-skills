@@ -30,7 +30,7 @@ Standalone gateway exposes:
 
 ```bash
 pnpm verify
-pnpm gateway:assembly:validate
+pnpm api:assembly:validate
 pnpm topology:validate
 node ../sdkwork-specs/tools/check-api-response-envelope.mjs --workspace .
 ```
