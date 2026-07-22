@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-skills-app-sdk",
+    "displayName": "SDKWork Skills App SDK",
+    "version": "0.1.0",
+    "type": "sdk-family",
+    "root": "sdks/sdkwork-skills-app-sdk",
+    "domain": "intelligence",
+    "capability": "skills-app-sdk",
+    "surface": "app-api",
+    "status": "standardized",
+    "languages": [
+      "typescript"
+    ],
+    "generated": true,
+    "private": false,
+    "manifests": [
+      "sdk-manifest.json"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "SDK_SPEC.md",
+      "path": "../../../sdkwork-specs/SDK_SPEC.md",
+      "purpose": "SDK family ownership and consumer integration rules."
+    },
+    {
+      "file": "SDK_WORKSPACE_GENERATION_SPEC.md",
+      "path": "../../../sdkwork-specs/SDK_WORKSPACE_GENERATION_SPEC.md",
+      "purpose": "Authority OpenAPI, composed entrypoint, and generated output rules."
+    },
+    {
+      "file": "API_SPEC.md",
+      "path": "../../../sdkwork-specs/API_SPEC.md",
+      "purpose": "App API schema and operation contract rules."
+    },
+    {
+      "file": "TYPESCRIPT_CODE_SPEC.md",
+      "path": "../../../sdkwork-specs/TYPESCRIPT_CODE_SPEC.md",
+      "purpose": "TypeScript package exports and strict typing."
+    }
+  ],
+  "sdk": {
+    "family": "sdkwork-skills-app-sdk",
+    "authority": "sdkwork-skills-app-api",
+    "sdkOwner": "sdkwork-skills",
+    "apiPrefix": "/app/v3/api",
+    "packageName": "@sdkwork/skills-app-sdk",
+    "sdkName": "sdkwork-skills-app-sdk",
+    "sdkType": "app",
+    "sdkSurface": "app",
+    "externalSdkgenProfileSupported": true,
+    "generatedOutput": "sdkwork-skills-app-sdk-typescript/generated/server-openapi",
+    "standardProfile": "sdkwork-v3"
+  },
+  "contracts": {
+    "apiAuthority": {
+      "name": "sdkwork-skills-app-api",
+      "owner": "sdkwork-skills",
+      "prefix": "/app/v3/api",
+      "authorityOpenApi": "../../apis/app-api/skills/skills-app-api.openapi.json",
+      "derivedOpenApi": [],
+      "standard": "../../../sdkwork-specs/SDK_SPEC.md"
+    },
+    "publicExports": [
+      "@sdkwork/skills-app-sdk"
+    ],
+    "runtimeEntrypoints": [
+      "sdkwork-skills-app-sdk-typescript/src/index.ts",
+      "sdk-manifest.json"
+    ],
+    "routeManifest": null,
+    "sdkDependencies": [],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "sdkClients": [
+      "SdkworkSkillsAppClient",
+      "createSkillsAppClient"
+    ],
+    "events": [],
+    "configKeys": [
+      "sdk-manifest.json"
+    ]
+  },
+  "verification": {
+    "commands": [
+      "pnpm sdk:generate",
+      "pnpm --dir sdks/sdkwork-skills-app-sdk/sdkwork-skills-app-sdk-typescript typecheck",
+      "node ../sdkwork-specs/tools/check-app-sdk-consumer-imports.mjs --workspace ."
+    ]
+  }
+}

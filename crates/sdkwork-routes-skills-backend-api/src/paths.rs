@@ -1,12 +1,8 @@
-pub const LIVEZ: &str = "/livez";
-pub const READYZ: &str = "/readyz";
-pub const HEALTHZ: &str = "/healthz";
-
-pub const ADMIN_SKILLS_LIST: &str = "/backend/v3/api/skill";
-pub const ADMIN_PACKAGES_LIST: &str = "/backend/v3/api/skill/package";
-pub const ADMIN_PACKAGE_CREATE: &str = "/backend/v3/api/skill/package";
-pub const ADMIN_PACKAGE_UPDATE: &str = "/backend/v3/api/skill/package/{skillId}";
-pub const ADMIN_PACKAGE_DELETE: &str = "/backend/v3/api/skill/package/{skillId}";
-pub const ADMIN_CATEGORIES_LIST: &str = "/backend/v3/api/category";
-pub const ADMIN_CATEGORY_CREATE: &str = "/backend/v3/api/category";
-pub const ADMIN_CATEGORY_UPDATE: &str = "/backend/v3/api/category/{categoryId}";
+pub const SKILLS: &str = "/backend/v3/api/skills";
+pub const SKILL_PACKAGES: &str = "/backend/v3/api/skill_packages";
+pub const SKILL_PACKAGE: &str = "/backend/v3/api/skill_packages/{packageId}";
+pub const PACKAGE_ARTIFACTS: &str = "/backend/v3/api/skill_packages/{packageId}/artifacts";
+pub const SKILL_CAPABILITIES: &str = "/backend/v3/api/skill_capabilities";
+pub const SKILL_CAPABILITY: &str = "/backend/v3/api/skill_capabilities/{capabilityId}";
+pub const SKILL_CATEGORIES: &str = "/backend/v3/api/skill_categories";
+pub const SKILL_CATEGORY: &str = "/backend/v3/api/skill_categories/{categoryId}";

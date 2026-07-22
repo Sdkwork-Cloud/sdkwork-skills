@@ -110,12 +110,10 @@ export function createSdkworkSkillsPcSdkClientsWithTokenManager(
   const { app, drive } = createSkillsAppClients({
     appApiBaseUrl,
     driveAppApiBaseUrl,
-    tenantId: config.defaultTenantId,
     tokenManager,
   });
   const { backend } = createSkillsBackendClients({
     backendApiBaseUrl,
-    tenantId: config.defaultTenantId,
     tokenManager,
   });
 

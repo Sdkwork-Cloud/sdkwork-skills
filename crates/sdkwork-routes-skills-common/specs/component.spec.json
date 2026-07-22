@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-routes-skills-common",
+    "displayName": "SDKWork Skills HTTP Common",
+    "version": "0.1.0",
+    "type": "rust-route-crate",
+    "root": "crates/sdkwork-routes-skills-common",
+    "domain": "intelligence",
+    "capability": "skills",
+    "surfaceNotRequiredReason": "Shared command mapping, pagination parsing, response envelopes, and service operations for Skills HTTP surfaces.",
+    "languages": [
+      "rust"
+    ],
+    "generated": false,
+    "manifests": [
+      "Cargo.toml"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "API_SPEC.md",
+      "path": "../../../sdkwork-specs/API_SPEC.md",
+      "purpose": "Canonical input, output, ProblemDetail, and response-envelope contracts."
+    },
+    {
+      "file": "PAGINATION_SPEC.md",
+      "path": "../../../sdkwork-specs/PAGINATION_SPEC.md",
+      "purpose": "List query and page metadata contracts."
+    },
+    {
+      "file": "WEB_FRAMEWORK_SPEC.md",
+      "path": "../../../sdkwork-specs/WEB_FRAMEWORK_SPEC.md",
+      "purpose": "Typed request-context integration boundaries."
+    },
+    {
+      "file": "RUST_CODE_SPEC.md",
+      "path": "../../../sdkwork-specs/RUST_CODE_SPEC.md",
+      "purpose": "Rust shared route-module structure and verification."
+    }
+  ],
+  "contracts": {
+    "layerRole": "backend-route",
+    "publicExports": [
+      "."
+    ],
+    "providedPorts": [
+      {
+        "name": "skillsHttpCommon",
+        "export": "."
+      }
+    ],
+    "requiredPorts": [
+      {
+        "name": "skillsApplicationService",
+        "export": ".",
+        "target": "sdkwork_intelligence_skills_service::SkillsService"
+      },
+      {
+        "name": "skillsDomainContract",
+        "export": ".",
+        "target": "sdkwork_skills_contract::*"
+      }
+    ],
+    "runtimeEntrypoints": [],
+    "routeManifest": null,
+    "sdkClients": [],
+    "sdkDependencies": [],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "events": [],
+    "configKeys": []
+  },
+  "verification": {
+    "commands": [
+      "cargo test -p sdkwork-routes-skills-common",
+      "node ../sdkwork-specs/tools/check-api-response-envelope.mjs --workspace .",
+      "node ../sdkwork-specs/tools/check-pagination.mjs --workspace ."
+    ]
+  }
+}

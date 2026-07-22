@@ -8,6 +8,13 @@ export { SdkworkAppClient, createGeneratedSkillsAppClient };
 export type { SdkworkAppConfig };
 export * from '../generated/server-openapi/src/types';
 export * from '../generated/server-openapi/src/api';
+export type {
+  SkillsSkillInstallationsListParams,
+  SkillsSkillCategoriesListParams,
+  SkillsSkillPackagesArtifactsListParams,
+  SkillsSkillPackagesListParams,
+  SkillsMarketplaceListParams,
+} from '../generated/server-openapi/src/api/skills';
 export * from '../generated/server-openapi/src/http';
 export * from '../generated/server-openapi/src/auth';
 

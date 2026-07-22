@@ -1,5 +1,6 @@
 export {
   installUserSkill,
+  listInstallableSkillArtifacts,
   listPublishedSkills,
   listSkillCategories,
   listSkillPackages,

@@ -7,8 +7,13 @@ license.workspace = true
 [dependencies]
 async-trait.workspace = true
 chrono = { version = "0.4", features = ["serde"] }
-sdkwork-intelligence-skills-service = { path = "../sdkwork-intelligence-skills-service" }
+sdkwork-intelligence-skills-service.workspace = true
 sdkwork-skills-contract.workspace = true
+sdkwork-database-id.workspace = true
+sdkwork-database-sqlx.workspace = true
 sdkwork-utils-rust.workspace = true
 serde_json.workspace = true
 sqlx.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true

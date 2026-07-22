@@ -1,66 +1,73 @@
-#[cfg(test)]
-mod tests {
-    use sdkwork_skills_contract::{
-        SkillInvocationKind, SkillLifecycleStatus, SkillPackageRecord, SkillVisibility,
-    };
+use sdkwork_skills_contract::{
+    SkillArtifactRecord, SkillArtifactStatus, SkillInvocationKind, SkillLifecycleStatus,
+    SkillPackageRecord, SkillVisibility,
+};
 
-    use crate::validation;
+use super::validation::{validate_artifact_record, validate_skill_package_record};
 
-    fn sample_package(skill_id: &str) -> SkillPackageRecord {
-        SkillPackageRecord {
-            id: 0,
-            tenant_id: 100_001,
-            organization_id: 0,
-            owner_user_id: 0,
-            skill_id: skill_id.to_string(),
-            package_key: "demo".to_string(),
-            code: "demo".to_string(),
-            display_name: "Demo Skill".to_string(),
-            summary: Some("summary".to_string()),
-            description: None,
-            invocation_kind: SkillInvocationKind::LocalWorkflow,
-            package_ref: "drive://spaces/skills-dev/nodes/demo-package".to_string(),
-            entrypoint: "run".to_string(),
-            input_schema_json: "{}".to_string(),
-            output_schema_json: "{}".to_string(),
-            capability_ids: vec!["cap.demo.run".to_string()],
-            categories: vec![],
-            tags: vec![],
-            security_profile_id: None,
-            status: SkillLifecycleStatus::Active,
-            visibility: SkillVisibility::Tenant,
-            version: 1,
-            created_at: String::new(),
-            updated_at: String::new(),
-            deleted_at: None,
-        }
+fn artifact(artifact_ref: &str, checksum: &str) -> SkillArtifactRecord {
+    SkillArtifactRecord {
+        id: 0,
+        uuid: String::new(),
+        tenant_id: 1,
+        package_id: 0,
+        version_label: "1.0.0".to_string(),
+        artifact_ref: artifact_ref.to_string(),
+        checksum_sha256: checksum.to_string(),
+        size_bytes: Some(42),
+        invocation_kind: SkillInvocationKind::LocalWorkflow,
+        entrypoint: "run".to_string(),
+        input_schema: serde_json::json!({}),
+        output_schema: serde_json::json!({}),
+        config_schema: serde_json::json!({}),
+        default_config: serde_json::json!({}),
+        security_profile_id: None,
+        status: SkillArtifactStatus::Published,
+        capability_keys: Vec::new(),
+        published_at: None,
+        yanked_at: None,
+        created_at: String::new(),
     }
+}
 
-    #[test]
-    fn validate_skill_id_accepts_standard_prefix() {
-        validation::validate_skill_id("skill.demo.run").expect("valid skill id");
+fn package() -> SkillPackageRecord {
+    SkillPackageRecord {
+        id: 0,
+        uuid: String::new(),
+        tenant_id: 1,
+        organization_id: 0,
+        owner_user_id: 1,
+        skill_key: "skill.demo.run".to_string(),
+        package_key: "demo-run".to_string(),
+        code: "demo-run".to_string(),
+        display_name: "Demo Run".to_string(),
+        summary: None,
+        description: None,
+        categories: Vec::new(),
+        tags: Vec::new(),
+        status: SkillLifecycleStatus::Active,
+        visibility: SkillVisibility::Tenant,
+        featured: false,
+        sort_weight: 0,
+        version: 1,
+        created_at: String::new(),
+        updated_at: String::new(),
+        deleted_at: None,
     }
+}
 
-    #[test]
-    fn validate_skill_id_rejects_non_standard_prefix() {
-        let error = validation::validate_skill_id("agent.demo.run")
-            .expect_err("invalid skill id must fail");
-        assert!(error.to_string().contains("skill_id must match"));
-    }
+#[test]
+fn accepts_drive_artifact_with_sha256() {
+    let record = artifact(
+        "drive://spaces/skills-dev/nodes/demo-package",
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    );
+    validate_artifact_record(&record).expect("valid artifact");
+    validate_skill_package_record(&package()).expect("valid package");
+}
 
-    #[test]
-    fn validate_skill_package_record_rejects_empty_code() {
-        let mut record = sample_package("skill.demo.run");
-        record.code = "   ".to_string();
-        let error = validation::validate_skill_package_record(&record)
-            .expect_err("empty code must fail");
-        assert!(error.to_string().contains("code must not be empty"));
-    }
-
-    #[test]
-    fn validate_skill_package_record_rejects_invalid_schema_json() {
-        let mut record = sample_package("skill.demo.run");
-        record.input_schema_json = "not-json".to_string();
-        validation::validate_skill_package_record(&record).expect_err("invalid json must fail");
-    }
+#[test]
+fn rejects_non_drive_artifact_and_invalid_checksum() {
+    let record = artifact("https://example.com/demo.zip", "bad");
+    assert!(validate_artifact_record(&record).is_err());
 }

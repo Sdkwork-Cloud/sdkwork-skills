@@ -51,7 +51,7 @@
         "required": true,
         "dependencyMode": "consumer-sdk",
         "apiPrefix": "/app/v3/api",
-        "apiAuthority": "sdkwork-skills.app",
+        "apiAuthority": "sdkwork-skills-app-api",
         "generatedTransportImportPolicy": "forbidden",
         "packageByLanguage": {
           "typescript": "@sdkwork/skills-app-sdk"
@@ -63,7 +63,7 @@
         "required": true,
         "dependencyMode": "consumer-sdk",
         "apiPrefix": "/backend/v3/api",
-        "apiAuthority": "sdkwork-skills.backend",
+        "apiAuthority": "sdkwork-skills-backend-api",
         "generatedTransportImportPolicy": "forbidden",
         "packageByLanguage": {
           "typescript": "@sdkwork/skills-backend-sdk"

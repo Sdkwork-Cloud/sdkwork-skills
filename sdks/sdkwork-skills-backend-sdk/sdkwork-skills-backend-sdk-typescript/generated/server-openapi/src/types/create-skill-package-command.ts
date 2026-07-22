@@ -1,13 +1,17 @@
+import type { CreateSkillArtifactCommand } from './create-skill-artifact-command';
+
 export interface CreateSkillPackageCommand {
-  skill_id: string;
-  package_key?: string;
+  skillKey: string;
+  packageKey?: string;
   code: string;
-  display_name: string;
-  summary?: string;
-  invocation_kind: string;
-  package_ref: string;
-  entrypoint: string;
-  capability_ids?: string[];
+  displayName: string;
+  summary?: string | null;
+  description?: string | null;
   categories?: string[];
   tags?: string[];
+  status?: 'draft' | 'active' | 'disabled' | 'archived' | 'deleted';
+  visibility?: 'private' | 'tenant' | 'organization' | 'public';
+  featured?: boolean;
+  sortWeight?: number;
+  initialArtifact: CreateSkillArtifactCommand;
 }

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "sdkName": "sdkwork-skills-backend-sdk",
   "sdkOwner": "sdkwork-skills",
-  "apiAuthority": "sdkwork-skills.backend",
+  "apiAuthority": "sdkwork-skills-backend-api",
   "sdkFamily": "sdkwork-skills-backend-sdk",
   "sdkType": "backend",
   "apiPrefix": "/backend/v3/api",
@@ -17,50 +17,90 @@
   },
   "generatorName": "@sdkwork/sdk-generator",
   "generatorPath": "E:\\sdkwork-space\\sdkwork-sdk-generator\\bin\\sdkgen.js",
-  "baseUrl": "http://127.0.0.1:18091",
+  "baseUrl": "http://127.0.0.1:18092",
   "standardProfile": "sdkwork-v3",
   "fixedSdkVersion": "0.1.0",
-  "ownerOnlyOperationCount": 8,
+  "ownerOnlyOperationCount": 16,
   "operations": [
     {
+      "method": "GET",
+      "operationId": "marketplace.list",
+      "path": "/backend/v3/api/skills"
+    },
+    {
       "method": "POST",
-      "operationId": "categories.create",
-      "path": "/backend/v3/api/category"
+      "operationId": "skillCapabilities.create",
+      "path": "/backend/v3/api/skill_capabilities"
     },
     {
       "method": "GET",
-      "operationId": "categories.management.list",
-      "path": "/backend/v3/api/category"
+      "operationId": "skillCapabilities.list",
+      "path": "/backend/v3/api/skill_capabilities"
     },
     {
-      "method": "PUT",
-      "operationId": "categories.update",
-      "path": "/backend/v3/api/category/{categoryId}"
+      "method": "GET",
+      "operationId": "skillCapabilities.retrieve",
+      "path": "/backend/v3/api/skill_capabilities/{capabilityId}"
+    },
+    {
+      "method": "PATCH",
+      "operationId": "skillCapabilities.update",
+      "path": "/backend/v3/api/skill_capabilities/{capabilityId}"
+    },
+    {
+      "method": "POST",
+      "operationId": "skillCategories.create",
+      "path": "/backend/v3/api/skill_categories"
+    },
+    {
+      "method": "GET",
+      "operationId": "skillCategories.list",
+      "path": "/backend/v3/api/skill_categories"
+    },
+    {
+      "method": "GET",
+      "operationId": "skillCategories.retrieve",
+      "path": "/backend/v3/api/skill_categories/{categoryId}"
+    },
+    {
+      "method": "PATCH",
+      "operationId": "skillCategories.update",
+      "path": "/backend/v3/api/skill_categories/{categoryId}"
+    },
+    {
+      "method": "POST",
+      "operationId": "skillPackages.artifacts.create",
+      "path": "/backend/v3/api/skill_packages/{packageId}/artifacts"
+    },
+    {
+      "method": "GET",
+      "operationId": "skillPackages.artifacts.list",
+      "path": "/backend/v3/api/skill_packages/{packageId}/artifacts"
     },
     {
       "method": "POST",
       "operationId": "skillPackages.create",
-      "path": "/backend/v3/api/skill/package"
+      "path": "/backend/v3/api/skill_packages"
     },
     {
       "method": "DELETE",
       "operationId": "skillPackages.delete",
-      "path": "/backend/v3/api/skill/package/{skillId}"
+      "path": "/backend/v3/api/skill_packages/{packageId}"
     },
     {
       "method": "GET",
-      "operationId": "skillPackages.management.list",
-      "path": "/backend/v3/api/skill/package"
+      "operationId": "skillPackages.list",
+      "path": "/backend/v3/api/skill_packages"
     },
     {
-      "method": "PUT",
+      "method": "GET",
+      "operationId": "skillPackages.retrieve",
+      "path": "/backend/v3/api/skill_packages/{packageId}"
+    },
+    {
+      "method": "PATCH",
       "operationId": "skillPackages.update",
-      "path": "/backend/v3/api/skill/package/{skillId}"
-    },
-    {
-      "method": "GET",
-      "operationId": "skills.management.list",
-      "path": "/backend/v3/api/skill"
+      "path": "/backend/v3/api/skill_packages/{packageId}"
     }
   ],
   "managedBy": "tools/skills_sdk_generator_runner.mjs",

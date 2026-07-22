@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-intelligence-skills-service",
+    "displayName": "SDKWork Skills Application Service",
+    "version": "0.1.0",
+    "type": "rust-crate",
+    "root": "crates/sdkwork-intelligence-skills-service",
+    "domain": "intelligence",
+    "capability": "skills",
+    "surfaceNotRequiredReason": "Surface-neutral Skills use cases and repository port.",
+    "languages": [
+      "rust"
+    ],
+    "generated": false,
+    "manifests": [
+      "Cargo.toml"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "COMPONENT_SPEC.md",
+      "path": "../../../sdkwork-specs/COMPONENT_SPEC.md",
+      "purpose": "Component and port declaration rules."
+    },
+    {
+      "file": "DOMAIN_SPEC.md",
+      "path": "../../../sdkwork-specs/DOMAIN_SPEC.md",
+      "purpose": "Aggregate ownership and application-service boundaries."
+    },
+    {
+      "file": "DATABASE_SPEC.md",
+      "path": "../../../sdkwork-specs/DATABASE_SPEC.md",
+      "purpose": "Tenant-scoped repository semantics and immutable artifact ownership."
+    },
+    {
+      "file": "PAGINATION_SPEC.md",
+      "path": "../../../sdkwork-specs/PAGINATION_SPEC.md",
+      "purpose": "Bounded store-level pagination contracts."
+    },
+    {
+      "file": "SECURITY_SPEC.md",
+      "path": "../../../sdkwork-specs/SECURITY_SPEC.md",
+      "purpose": "Object authorization inputs and trust-boundary rules."
+    },
+    {
+      "file": "RUST_CODE_SPEC.md",
+      "path": "../../../sdkwork-specs/RUST_CODE_SPEC.md",
+      "purpose": "Rust application-service structure and verification."
+    }
+  ],
+  "contracts": {
+    "layerRole": "backend-service",
+    "publicExports": [
+      "sdkwork_intelligence_skills_service::SkillsRepository",
+      "sdkwork_intelligence_skills_service::SkillsService",
+      "sdkwork_intelligence_skills_service::SkillsServiceError",
+      "sdkwork_intelligence_skills_service::SkillsResult"
+    ],
+    "providedPorts": [
+      {
+        "name": "skillsApplicationService",
+        "export": "sdkwork_intelligence_skills_service::SkillsService"
+      }
+    ],
+    "requiredPorts": [
+      {
+        "name": "skillsRepository",
+        "export": "sdkwork_intelligence_skills_service::SkillsRepository",
+        "target": "sdkwork_intelligence_skills_repository_sqlx::SqlxSkillsRepository"
+      }
+    ],
+    "runtimeEntrypoints": [
+      "sdkwork_intelligence_skills_service::SkillsService::new"
+    ],
+    "routeManifest": null,
+    "sdkClients": [],
+    "sdkDependencies": [],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "events": [],
+    "configKeys": []
+  },
+  "verification": {
+    "commands": [
+      "cargo test -p sdkwork-intelligence-skills-service",
+      "cargo clippy -p sdkwork-intelligence-skills-service --tests -- -D warnings"
+    ]
+  }
+}

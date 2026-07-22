@@ -70,7 +70,6 @@
     "runtimeEntrypoints": [
       "app_route_manifest",
       "build_router",
-      "build_router_with_readiness",
       "build_router_with_web_framework_from_env",
       "gateway_mount",
       "gateway_route_manifest",
@@ -78,7 +77,7 @@
       "wrap_router_with_web_framework",
       "wrap_router_with_web_framework_from_env"
     ],
-    "routeManifest": "sdks/_route-manifests/app-api/sdkwork-routes-skills-app-api.route-manifest.json",
+    "routeManifest": "src/http_route_manifest.rs#app_route_manifest",
     "sdkClients": [],
     "sdkDependencies": [],
     "dependencyApiExports": [],
@@ -88,7 +87,10 @@
   },
   "verification": {
     "commands": [
-      "cargo test -p sdkwork-routes-skills-app-api"
+      "cargo test -p sdkwork-routes-skills-app-api",
+      "node tools/skills_openapi_materialize.mjs --check",
+      "node ../sdkwork-specs/tools/check-api-operation-patterns.mjs --workspace .",
+      "node ../sdkwork-specs/tools/check-pagination.mjs --workspace ."
     ]
   }
 }

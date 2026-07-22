@@ -1,12 +1,18 @@
 export interface SkillCategoryRecord {
   id: string;
+  uuid: string;
+  tenantId: string;
+  organizationId: string;
+  categoryType: 'skill_market' | 'skills_collection';
   code: string;
   name: string;
-  category_type: string;
   description?: string | null;
-  parent_id?: string | null;
-  permission_code: string;
-  sort_weight: number;
+  parentId?: string | null;
+  sortWeight: number;
+  permissionCode: string;
   visible: boolean;
-  status: number;
+  status: 0 | 1;
+  version: string;
+  createdAt: string;
+  updatedAt: string;
 }

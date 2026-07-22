@@ -3,69 +3,93 @@
 Status: active
 Owner: SDKWork maintainers
 Application: sdkwork-skills
-Updated: 2026-07-06
+Updated: 2026-07-22
 Specs: REQUIREMENTS_SPEC.md, DOCUMENTATION_SPEC.md
 
 ## 1. Background And Problem
 
-Agent platforms need a governed Skills marketplace: discoverable packages, tenant-scoped install
-state, category permissions, and admin lifecycle (create, update, soft-delete). Skill persistence
-must not live in `sdkwork-kernel`; this application is the system-of-record.
+Agent products need a governed Skills marketplace with discoverable packages,
+reviewed marketplace entries, immutable release artifacts, explicit capability
+declarations, subject-scoped installations, and an auditable admin lifecycle.
+`sdkwork-skills` is the sole system of record for that domain.
 
 ## 2. Target Users
 
 | Persona | Surface | Needs |
 | --- | --- | --- |
-| End user / agent operator | Hub (`/skills-hub`) | Browse and install published skills |
-| Tenant member | Console (`/console/skills`) | View owned skill packages |
-| Platform / tenant admin | Admin (`/admin/skills`, `/admin/categories`) | CRUD packages and categories with IAM |
+| End user or agent operator | Hub (`/skills-hub`) | Browse and install an exact published artifact |
+| Tenant member | Console (`/console/skills`) | View owned Skill packages |
+| Platform or tenant admin | Admin (`/admin/skills`, `/admin/categories`) | Govern packages, artifacts, categories, and capabilities with IAM |
 
 ## 3. Goals And Non-Goals
 
-**Goals**
+### Goals
 
-- Skills Hub with list, detail, and install flows backed by app-api.
-- Admin backend-api for package and category CRUD with drive-backed `package_ref`.
-- `ai_*` PostgreSQL tables as sole persistence; kernel reads contract types only.
-- SDKWork-standard HTTP envelopes, ProblemDetail errors, generated SDKs, IMF permissions (`specs/iam.module.manifest.json`), and route-level RBAC via `sdkwork-web-framework`.
+- App-api discovery, detail, installable-artifact listing, installation, and
+  installation inventory flows.
+- Backend-api governance for packages, immutable artifacts, categories, and
+  capabilities. Artifact bytes remain in Drive and are referenced by canonical
+  `drive://` URIs.
+- Ten normalized `ai_*` tables as the sole Skills persistence authority on
+  PostgreSQL and SQLite.
+- SDKWork-standard inputs, envelopes, ProblemDetail errors, generated SDKs,
+  dual-token authentication, route permissions, and object authorization.
+- Direct consumption of `@sdkwork/skills-app-sdk` and
+  `@sdkwork/skills-backend-sdk`; consumers must not fork Skills DTOs or routes.
 
-**Non-Goals**
+### Non-Goals
 
-- In-repo RPC or service discovery (deferred until RPC surfaces are required).
-- Skill CRUD or marketplace tables inside `sdkwork-kernel`.
+- A public open-api surface without an approved public-product requirement.
+- Agent session, conversation, chat-message, or IM transport persistence.
+- Consumer-owned Skills tables, projections, double writes, compatibility
+  facades, or locally generated copies of Skills APIs.
 
 ## 4. Scope
 
-- Rust standalone gateways (app + backend), PC React client, OpenAPI + SDK generation.
-- Migration from kernel `a_agent_skill_package` via `database/migrations/postgres/`.
+- Host-neutral Rust assembly with app-api and backend-api route surfaces.
+- PC React client and generated TypeScript App/Backend SDK families.
+- PostgreSQL and SQLite baselines, shared database pool integration, and
+  store-level pagination.
 
 ## 5. User Scenarios
 
-1. Admin uploads a skill archive via sdkwork-drive, creates a package record, assigns categories.
-2. User browses Hub, opens skill detail, installs to their profile.
-3. Kernel agent references installed skills by contract IDs without local skill tables.
+1. An operator uploads an archive through Drive, then creates a package and its
+   initial immutable artifact with checksum and schema metadata.
+2. An operator publishes and approves the marketplace entry and assigns
+   normalized categories and capabilities.
+3. A user browses visible packages, lists installable published artifacts, and
+   installs one exact artifact for an authorized user, workspace, project, or
+   agent subject.
+4. Agent runtimes reference canonical installation and artifact identities
+   without owning a second Skills database.
 
 ## 6. Success Metrics
 
-- `pnpm verify` green; `pnpm check` includes envelope, topology, gateway, and database contract gates.
-- IMF permissions: `skills.marketplace.read`, `skills.packages.install`, `skills.packages.manage`, `skills.categories.manage`.
+- `pnpm verify` is green and includes API, SDK, topology, assembly, and database
+  contract gates.
+- App SDK regeneration is idempotent with 8 owner operations; Backend SDK
+  regeneration is idempotent with 16 owner operations.
+- Repository tests cover tenant, user, organization, publication, package
+  lifecycle, optimistic concurrency, and engine parity boundaries.
 
-## 7. Phases
+## 7. Delivery State
 
-| Phase | Status |
+| Capability | Status |
 | --- | --- |
-| Application root + `ai_*` schema | Done |
-| App/backend APIs + web-framework | Done |
-| PC Hub / Console / Admin | Done |
-| Kernel decoupling + migration | In progress (external kernel repo) |
-| Production topology / cloud bundle | Planned |
+| Ten-table Skills system of record | Done |
+| App/backend APIs and generated SDKs | Done |
+| Dual-token context and object authorization | Done |
+| PC Hub, Console, and Admin integration | Active |
+| Production topology and operational validation | Active |
 
-## 8. Linked Requirements
+## 8. Linked Documents
 
-- [ADR-20260624-skills-domain-extraction-and-ai-table-standard.md](../architecture/decisions/ADR-20260624-skills-domain-extraction-and-ai-table-standard.md)
-- [TECH_ARCHITECTURE.md](../architecture/tech/TECH_ARCHITECTURE.md)
+- [ADR-20260722-skills-domain-ownership-and-artifact-model.md](../../architecture/decisions/ADR-20260722-skills-domain-ownership-and-artifact-model.md)
+- [TECH_ARCHITECTURE.md](../../architecture/tech/TECH_ARCHITECTURE.md)
+- [MIG-2026-0010-skills-greenfield-boundary-cutover.md](../../migrations/MIG-2026-0010-skills-greenfield-boundary-cutover.md)
 
-## 9. Open Questions
+## 9. Release Gate
 
-- Multi-region read replicas for Hub list latency (post-MVP).
-- Category delete semantics when packages still reference a category code.
+Production release requires the database drift check, SDK idempotence check,
+cross-engine repository tests, permission composition checks, and cloud and
+standalone readiness probes to pass from a clean checkout.

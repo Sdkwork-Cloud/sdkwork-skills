@@ -19,7 +19,7 @@
       },
       {
         "code": "skills.packages.install",
-        "name": "Install skills for the current user",
+        "name": "Install skill packages",
         "resource": "packages",
         "action": "install",
         "status": "active",
@@ -43,11 +43,47 @@
         "status": "active",
         "since": "1.0.0",
         "replacementCode": null
+      },
+      {
+        "code": "skills.capabilities.manage",
+        "name": "Manage skill capability definitions",
+        "resource": "capabilities",
+        "action": "manage",
+        "status": "active",
+        "since": "1.0.0",
+        "replacementCode": null
+      },
+      {
+        "code": "skills.artifacts.manage",
+        "name": "Manage immutable skill artifacts",
+        "resource": "artifacts",
+        "action": "manage",
+        "status": "active",
+        "since": "1.0.0",
+        "replacementCode": null
+      },
+      {
+        "code": "skills.installations.read",
+        "name": "Read authorized skill installations",
+        "resource": "installations",
+        "action": "read",
+        "status": "active",
+        "since": "1.0.0",
+        "replacementCode": null
+      },
+      {
+        "code": "skills.installations.manage",
+        "name": "Manage authorized non-user skill installations",
+        "resource": "installations",
+        "action": "manage",
+        "status": "active",
+        "since": "1.0.0",
+        "replacementCode": null
       }
     ],
     "openapiAuthorities": [
-      "sdkwork-skills.app",
-      "sdkwork-skills.backend"
+      "sdkwork-skills-app-api",
+      "sdkwork-skills-backend-api"
     ]
   },
   "roles": {
@@ -63,7 +99,11 @@
         "permissionPatterns": [
           "skills.marketplace.read",
           "skills.packages.manage",
-          "skills.categories.manage"
+          "skills.categories.manage",
+          "skills.capabilities.manage",
+          "skills.artifacts.manage",
+          "skills.installations.read",
+          "skills.installations.manage"
         ]
       },
       {
@@ -76,7 +116,8 @@
         "bindingPrincipalKind": "user",
         "permissionPatterns": [
           "skills.marketplace.read",
-          "skills.packages.install"
+          "skills.packages.install",
+          "skills.installations.read"
         ]
       }
     ],
@@ -85,7 +126,8 @@
         "roleCode": "app_user",
         "patterns": [
           "skills.marketplace.read",
-          "skills.packages.install"
+          "skills.packages.install",
+          "skills.installations.read"
         ]
       },
       {
@@ -99,7 +141,11 @@
         "patterns": [
           "skills.marketplace.read",
           "skills.packages.manage",
-          "skills.categories.manage"
+          "skills.categories.manage",
+          "skills.capabilities.manage",
+          "skills.artifacts.manage",
+          "skills.installations.read",
+          "skills.installations.manage"
         ]
       }
     ],

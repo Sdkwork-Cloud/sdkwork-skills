@@ -2,6 +2,8 @@ export type {
   SkillRecord,
   SkillPackageRecord,
   SkillCategoryRecord,
+  SkillArtifactRecord,
+  SkillInstallationRecord,
 } from '@sdkwork/skills-app-sdk';
 
 export type { SdkWorkPageData, PageInfo } from '@sdkwork/utils';
@@ -30,6 +32,7 @@ export { SkillsClientsProvider, useSkillsClients } from './context';
 
 export {
   installUserSkill,
+  listInstallableSkillArtifacts,
   listPublishedSkills,
   listSkillCategories,
   listSkillPackages,

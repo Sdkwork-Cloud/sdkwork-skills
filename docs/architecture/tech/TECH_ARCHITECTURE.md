@@ -2,110 +2,138 @@
 
 Status: active
 Owner: SDKWork maintainers
-Updated: 2026-07-06
-Specs: ARCHITECTURE_DECISION_SPEC.md, DOCUMENTATION_SPEC.md
+Updated: 2026-07-22
+Specs: `ARCHITECTURE_DECISION_SPEC.md`, `APPLICATION_GATEWAY_SPEC.md`, `API_ASSEMBLY_SPEC.md`, `API_SPEC.md`, `SDK_SPEC.md`, `DATABASE_FRAMEWORK_SPEC.md`
 
 ## 1. Architecture Overview
 
+SDKWork Skills exposes one host-neutral API assembly with two business
+surfaces:
+
+```text
+sdkwork-skills-pc
+  -> sdkwork-skills-app-sdk / sdkwork-skills-backend-sdk
+  -> application.public-ingress or platform.api-gateway
+  -> sdkwork-api-skills-assembly
+  -> sdkwork-routes-skills-app-api / sdkwork-routes-skills-backend-api
+  -> sdkwork-routes-skills-common
+  -> sdkwork-intelligence-skills-service
+  -> sdkwork-intelligence-skills-repository-sqlx
+  -> process-shared PostgreSQL or SQLite pool
 ```
-┌─────────────────────┐     ┌──────────────────────────┐
-│ sdkwork-skills-pc   │────▶│ sdkwork-skills-app-sdk   │
-│ (Hub/Console/Admin) │     │ sdkwork-skills-backend-sdk│
-└─────────────────────┘     └────────────┬─────────────┘
-                                         │ HTTPS (SdkWorkApiResponse)
-┌─────────────────────┐     ┌────────────▼─────────────┐
-│ sdkwork-kernel      │────▶│ standalone gateway       │
-│ (contract consumer) │     │ app-api :18090           │
-└─────────────────────┘     │ backend-api :18091       │
-                            └────────────┬─────────────┘
-                                         │
-                            ┌────────────▼─────────────┐
-                            │ sdkwork-web-framework    │
-                            │ + IAM web adapter        │
-                            └────────────┬─────────────┘
-                                         │
-                            ┌────────────▼─────────────┐
-                            │ intelligence-skills-*    │
-                            │ service + SQLx repo      │
-                            └────────────┬─────────────┘
-                                         │
-                            ┌────────────▼─────────────┐
-                            │ PostgreSQL (ai_* tables) │
-                            └──────────────────────────┘
-```
+
+The standalone gateway and platform cloud gateway are sibling hosts. Both
+consume `sdkwork-api-skills-assembly`; neither duplicates Skills routes,
+services, repositories, or database pools. App-api and backend-api are surfaces
+on one ingress, not separate business servers.
 
 ## 2. Technology Choices
 
 | Layer | Choice |
 | --- | --- |
-| HTTP | Axum + `sdkwork-web-axum` / `sdkwork-web-core` |
-| Auth | `sdkwork-iam-web-adapter` dual-token |
-| Persistence | PostgreSQL via `sdkwork-database-*` + SQLx |
-| Shared HTTP types | `sdkwork-utils-rust` (`SdkWorkApiResponse`, `PageInfo`) |
-| PC UI | React + Vite; `@sdkwork/utils` for string helpers |
-| Contracts | OpenAPI 3.1.2, `sdkwork-v3` SDK profile |
+| HTTP | Axum with `sdkwork-web-axum` and `sdkwork-web-core` |
+| Authentication | `sdkwork-iam-web-adapter` dual-token request context |
+| Persistence | PostgreSQL and SQLite through `sdkwork-database-*` and SQLx |
+| Shared HTTP types | `sdkwork-utils-rust` envelopes and pagination types |
+| PC UI | React and Vite |
+| Contracts | OpenAPI 3.1.2 with the `sdkwork-v3` profile |
 
-## 3. System Boundaries And Modules
+## 3. Component Boundaries
 
-| Crate / package | Responsibility |
+| Component | Responsibility |
 | --- | --- |
-| `sdkwork-skills-contract` | Cross-repo Rust DTOs and enums |
-| `sdkwork-intelligence-skills-service` | Validation and domain orchestration |
-| `sdkwork-intelligence-skills-repository-sqlx` | `ai_*` SQL access |
-| `sdkwork-routes-skills-common` | Shared API response + service helpers |
-| `sdkwork-routes-skills-app-api` | App-api routes and manifest |
-| `sdkwork-routes-skills-backend-api` | Backend-api routes and manifest |
-| `sdkwork-api-skills-standalone-gateway` | Local/dev gateway binary |
-| `apps/sdkwork-skills-pc` | Browser client surfaces |
+| `sdkwork-skills-contract` | Surface-neutral domain records, enums, operations, and permissions |
+| `sdkwork-intelligence-skills-service` | Validation, use cases, and repository port |
+| `sdkwork-intelligence-skills-repository-sqlx` | Tenant-scoped PostgreSQL and SQLite queries |
+| `sdkwork-routes-skills-common` | Commands, list queries, envelopes, errors, and service calls |
+| `sdkwork-routes-skills-app-api` | App-api handlers and route manifest only |
+| `sdkwork-routes-skills-backend-api` | Backend-api handlers and route manifest only |
+| `sdkwork-api-skills-assembly` | Host-neutral router composition and readiness capability |
+| `sdkwork-api-skills-standalone-gateway` | Standalone listener and host-owned operations endpoints |
+| `sdkwork-skills-database-host` | Skills lifecycle on a caller-provided process pool |
+| `apps/sdkwork-skills-pc` | Browser client composition through generated SDK families |
 
-## 4. Directory And Package Layout
+Route crates do not register `/healthz`, `/livez`, `/readyz`, or `/metrics`.
+Those paths belong to the active gateway host.
 
-See repository root `AGENTS.md` dictionary. Authoritative app config: `sdkwork.app.config.json`.
+## 4. API And SDK Ownership
 
-## 5. API, SDK, And Data Ownership
+| Surface | API Authority | SDK Family | Operations |
+| --- | --- | --- | ---: |
+| App | `sdkwork-skills-app-api` | `sdkwork-skills-app-sdk` | 8 |
+| Backend | `sdkwork-skills-backend-api` | `sdkwork-skills-backend-sdk` | 16 |
 
-- OpenAPI authorities materialized by `tools/skills_openapi_materialize.mjs` (uses
-  `sdkwork-specs/tools/lib/openapi-envelope-schemas.mjs`).
-- SDK generation: `pnpm sdk:generate` via `@sdkwork/sdk-generator`.
-- Tables: `ai_agent_skill`, `ai_agent_skill_package`, `ai_skill_category`, user install tables.
+`tools/skills_openapi_materialize.mjs` materializes owner-only OpenAPI from the
+route manifests. `pnpm sdk:generate` invokes `@sdkwork/sdk-generator`; generated
+transport stays under each SDK family's `generated/server-openapi` directory.
+Generated files are never edited by hand.
 
-## 6. Security, Privacy, And Observability
+There is no Skills open-api surface. Public exposure requires a separately
+approved product contract rather than reusing authenticated app routes.
 
-- IMF module manifest: `specs/iam.module.manifest.json` with `skills.*` permission catalog.
-- HTTP routes declare `x-sdkwork-permission` in OpenAPI and `with_required_permission` in route manifests; enforcement is handled by `sdkwork-web-framework`.
-- File uploads use `sdkwork-drive-app-sdk` on the client; backend stores canonical `drive://` `package_ref` only.
-- Delete package route: `RateLimitTier::AuthCritical`.
-- Health: `/livez`, `/readyz`, `/healthz` with DB readiness on standalone gateway.
-- Errors: ProblemDetail with sanitized 5xx detail; trace via `traceId` / `x-sdkwork-trace-id`.
-- List APIs use SQL offset pagination via `sdkwork-utils-rust` (`offset_list_page_data`).
+Create operations return HTTP `201` with `SdkWorkApiResponse.data.item`.
+Updates return HTTP `200` with `data.item`; lists return `data.items` and
+`data.pageInfo`; deletes return HTTP `204`; errors use
+`application/problem+json` with numeric `code` and `traceId`.
 
-## 7. Deployment And Runtime Topology
+## 5. Persistence Model
 
-- Dev: `pnpm dev` (PC) + standalone gateway or cloud topology per `specs/topology.spec.json`.
-- Packaging: `sdkwork.workflow.json` / `.github/workflows/package.yml`.
-- Container image id: `registry.sdkwork.com/apps/sdkwork-skills` (from app config).
+The database module owns exactly ten `ai_*` tables. Category and capability
+relationships are normalized through binding tables. Artifacts are immutable
+releases; package rows do not carry release payloads or a latest-artifact
+projection. Installations reference one exact artifact and support `user`,
+`workspace`, `project`, and `agent` subjects.
 
-## 8. Architecture Decision Index
+The module owns lifecycle assets but not the process pool. The gateway supplies
+one shared `DatabasePool`; the assembly constructs one `SqlxSkillsRepository`
+and one `SkillsService` for both surfaces. PostgreSQL and SQLite select
+engine-specific SQL inside the repository while preserving one logical
+contract.
 
-- [ADR-20260624-skills-domain-extraction-and-ai-table-standard.md](../decisions/ADR-20260624-skills-domain-extraction-and-ai-table-standard.md) (accepted)
+## 6. Security And Performance
 
-## 9. Verification
+- Route manifests require typed `WebRequestContext` and explicit Skills
+  permissions.
+- Tenant, organization, user, and operator identity come only from the request
+  context. Handlers do not parse identity headers or accept a client tenant
+  selector.
+- Marketplace package and artifact visibility is checked for tenant,
+  organization, user ownership, publication, approval, and lifecycle state.
+- Installation applies subject-level authorization and requires an explicit
+  published `artifactId`.
+- Filtering, ordering, total counting, authorization, and pagination execute in
+  SQL with bounded page sizes.
+- Mutable aggregates use Snowflake IDs, optimistic versions, and soft deletion.
+- Package bytes are owned by Drive; Skills artifacts store canonical
+  `drive://` references, checksums, invocation metadata, and schemas.
+
+## 7. Deployment Topology
+
+- `standalone`: `sdkwork-api-skills-standalone-gateway` owns one listener,
+  default bind `127.0.0.1:18092`.
+- `cloud`: `sdkwork-api-cloud-gateway` embeds
+  `sdkwork-api-skills-assembly` through the `foundation-skills` feature.
+- Both profiles expose identical app/backend contracts and SDK families.
+
+## 8. Verification
 
 ```bash
-pnpm verify
+pnpm db:materialize:contract
+pnpm db:validate
+pnpm api:check
+pnpm api:assembly:validate
+pnpm sdk:generate
+cargo test --workspace
+cargo clippy --workspace --tests -- -D warnings
+node ../sdkwork-specs/tools/check-api-operation-patterns.mjs --workspace .
 node ../sdkwork-specs/tools/check-api-response-envelope.mjs --workspace .
-pnpm topology:validate
+node ../sdkwork-specs/tools/check-pagination.mjs --workspace .
+node ../sdkwork-specs/tools/check-app-sdk-consumer-imports.mjs --workspace .
 ```
 
-## Standards Alignment Matrix
+SDK generation is complete only when a second `pnpm sdk:generate` reports no
+created, updated, or deleted generated files.
 
-| Standard | Status |
-| --- | --- |
-| `sdkwork-specs` agent/docs/scripts | Aligned (`pnpm check` + envelope/topology/gateway gates) |
-| `sdkwork-web-framework` | Integrated with permission-enforced route manifests |
-| `sdkwork-database` | Integrated (`database/`, host crate, drift check in `pnpm check`) |
-| `sdkwork-utils` | Shared pagination, envelopes, string helpers |
-| `sdkwork-drive` | Client upload + server `drive://` validation |
-| `sdkwork-discovery` | N/A (no RPC yet) |
-| API §15 `SdkWorkApiResponse` | Aligned (handlers + OpenAPI + SDK) |
-| IMF `iam.module.manifest.json` | Registered under `specs/` |
+## 9. Architecture Decision
+
+- [ADR-20260722-skills-domain-ownership-and-artifact-model.md](../decisions/ADR-20260722-skills-domain-ownership-and-artifact-model.md)

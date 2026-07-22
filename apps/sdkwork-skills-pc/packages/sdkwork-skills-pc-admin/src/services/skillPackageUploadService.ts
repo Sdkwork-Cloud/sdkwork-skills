@@ -1,5 +1,6 @@
 import type { SkillsAppClients } from '@sdkwork/skills-pc-core';
-import { formatDrivePackageRef } from '@sdkwork/skills-pc-commons/driveUri';
+import { formatDriveArtifactRef } from '@sdkwork/skills-pc-commons/driveUri';
+import { hexEncode, Sha256Hasher } from '@sdkwork/utils';
 import {
   resolveSkillsDriveParentNodeId,
   resolveSkillsDriveSpaceId,
@@ -12,11 +13,28 @@ export type SkillPackageUploadOptions = {
   parentNodeId?: string;
 };
 
+export interface SkillArtifactUploadResult {
+  artifactRef: string;
+  checksumSha256: string;
+  sizeBytes: string;
+}
+
+const CHECKSUM_CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
+
+async function calculateSha256(file: File): Promise<string> {
+  const hasher = new Sha256Hasher();
+  for (let offset = 0; offset < file.size; offset += CHECKSUM_CHUNK_SIZE_BYTES) {
+    const chunk = file.slice(offset, offset + CHECKSUM_CHUNK_SIZE_BYTES);
+    hasher.update(new Uint8Array(await chunk.arrayBuffer()));
+  }
+  return hexEncode(hasher.digest());
+}
+
 export async function uploadSkillPackageArchive(
   driveClient: SkillsDriveAppClient,
   file: File,
   options: SkillPackageUploadOptions = {},
-): Promise<string> {
+): Promise<SkillArtifactUploadResult> {
   const spaceId = options.spaceId ?? resolveSkillsDriveSpaceId();
   if (!spaceId) {
     throw new Error(
@@ -24,6 +42,7 @@ export async function uploadSkillPackageArchive(
     );
   }
 
+  const checksumSha256 = await calculateSha256(file);
   const uploadResult = await driveClient.uploader.upload({
     file,
     appResourceType: 'skills-pc-package-upload',
@@ -35,7 +54,15 @@ export async function uploadSkillPackageArchive(
     uploadProfileCode: 'archive',
     originalFileName: file.name,
     contentType: file.type || 'application/octet-stream',
+    checksumSha256Hex: `sha256:${checksumSha256}`,
   });
 
-  return formatDrivePackageRef(uploadResult.uploadItem.spaceId, uploadResult.uploadItem.nodeId);
+  return {
+    artifactRef: formatDriveArtifactRef(
+      uploadResult.uploadItem.spaceId,
+      uploadResult.uploadItem.nodeId,
+    ),
+    checksumSha256,
+    sizeBytes: String(file.size),
+  };
 }

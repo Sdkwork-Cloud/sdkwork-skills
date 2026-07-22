@@ -18,7 +18,7 @@ pnpm add sdkwork-skills-app-sdk-generated-typescript
 import { SdkworkAppClient } from 'sdkwork-skills-app-sdk-generated-typescript';
 
 const client = new SdkworkAppClient({
-  baseUrl: 'http://127.0.0.1:18090',
+  baseUrl: 'http://127.0.0.1:18092',
   timeout: 30000,
 });
 
@@ -33,7 +33,7 @@ const params = {
   cursor: 'cursor',
   q: 'q',
 };
-const result = await client.skills.list(params);
+const result = await client.skills.marketplace.list(params);
 ```
 
 ## Authentication
@@ -50,7 +50,7 @@ Access-Token: <accessToken>
 import { SdkworkAppClient } from 'sdkwork-skills-app-sdk-generated-typescript';
 
 const client = new SdkworkAppClient({
-  baseUrl: 'http://127.0.0.1:18090',
+  baseUrl: 'http://127.0.0.1:18092',
   timeout: 30000, // Request timeout in ms
   headers: {      // Custom headers
     'X-Custom-Header': 'value',
@@ -67,14 +67,14 @@ const client = new SdkworkAppClient({
 ### skills
 
 ```typescript
-// Skills skills.list
+// marketplace.list
 const params = {
   page: 1,
   page_size: 2,
   cursor: 'cursor',
   q: 'q',
 };
-const result = await client.skills.list(params);
+const result = await client.skills.marketplace.list(params);
 ```
 
 ## Error Handling
@@ -89,7 +89,7 @@ try {
     cursor: 'cursor',
     q: 'q',
   };
-  const result = await client.skills.list(params);
+  const result = await client.skills.marketplace.list(params);
 } catch (error) {
   if (error instanceof AuthenticationError) {
     console.error('Authentication failed:', error.message);

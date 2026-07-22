@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use crate::json_util::{string_list_from_json, string_list_to_json};
+    use crate::json_util::{
+        json_value_from_text, json_value_to_text, string_list_from_json, string_list_to_json,
+    };
 
     #[test]
     fn string_list_json_roundtrip() {
@@ -13,5 +15,13 @@ mod tests {
     #[test]
     fn string_list_from_json_rejects_non_array() {
         string_list_from_json("{}", "tags").expect_err("object must fail");
+    }
+
+    #[test]
+    fn json_value_text_roundtrip_preserves_object_shape() {
+        let value = serde_json::json!({"type": "object", "required": ["path"]});
+        let encoded = json_value_to_text(&value, "schema").expect("encode JSON value");
+        let decoded = json_value_from_text(&encoded, "schema").expect("decode JSON value");
+        assert_eq!(decoded, value);
     }
 }

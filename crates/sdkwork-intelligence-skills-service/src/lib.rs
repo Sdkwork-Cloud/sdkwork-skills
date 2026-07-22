@@ -5,9 +5,10 @@ mod validation_tests;
 
 use async_trait::async_trait;
 use sdkwork_skills_contract::{
-    SkillCategoryRecord, SkillCategoryType, SkillPackageRecord, SkillRecord, UserSkillInstallRecord,
+    SkillArtifactRecord, SkillArtifactStatus, SkillCapabilityRecord, SkillCategoryRecord,
+    SkillInstallationRecord, SkillLifecycleStatus, SkillPackageRecord, SkillRecord,
 };
-use sdkwork_utils_rust::{trim, OffsetListPageParams};
+use sdkwork_utils_rust::OffsetListPageParams;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -16,6 +17,8 @@ pub enum SkillsServiceError {
     NotFound(String),
     #[error("invalid argument: {0}")]
     InvalidArgument(String),
+    #[error("conflict: {0}")]
+    Conflict(String),
     #[error("repository error: {0}")]
     Repository(String),
 }
@@ -33,24 +36,55 @@ pub trait SkillsRepository: Send + Sync {
     async fn get_skill_package(
         &self,
         tenant_id: u64,
-        skill_id: &str,
+        package_id: u64,
     ) -> SkillsResult<SkillPackageRecord>;
-    async fn upsert_skill_package(
+    async fn list_marketplace_skill_packages_page(
         &self,
-        record: SkillPackageRecord,
+        tenant_id: u64,
+        organization_id: u64,
+        user_id: u64,
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillPackageRecord>, i64)>;
+    async fn get_marketplace_skill_package(
+        &self,
+        tenant_id: u64,
+        organization_id: u64,
+        user_id: u64,
+        package_id: u64,
     ) -> SkillsResult<SkillPackageRecord>;
+    async fn create_skill_package(
+        &self,
+        package: SkillPackageRecord,
+        initial_artifact: SkillArtifactRecord,
+    ) -> SkillsResult<SkillPackageRecord>;
+    async fn update_skill_package(
+        &self,
+        package: SkillPackageRecord,
+    ) -> SkillsResult<SkillPackageRecord>;
+    async fn delete_skill_package(&self, tenant_id: u64, package_id: u64) -> SkillsResult<()>;
+
     async fn list_skills_page(
         &self,
         tenant_id: u64,
+        organization_id: u64,
+        user_id: u64,
         params: OffsetListPageParams,
         keyword: Option<&str>,
     ) -> SkillsResult<(Vec<SkillRecord>, i64)>;
-    async fn get_skill(&self, tenant_id: u64, skill_key: &str) -> SkillsResult<SkillRecord>;
-    async fn list_categories(
+    async fn get_skill(
         &self,
         tenant_id: u64,
-        category_type: &str,
-    ) -> SkillsResult<Vec<SkillCategoryRecord>>;
+        organization_id: u64,
+        user_id: u64,
+        skill_key: &str,
+    ) -> SkillsResult<SkillRecord>;
+
+    async fn get_category(
+        &self,
+        tenant_id: u64,
+        category_id: u64,
+    ) -> SkillsResult<SkillCategoryRecord>;
     async fn list_categories_page(
         &self,
         tenant_id: u64,
@@ -62,19 +96,54 @@ pub trait SkillsRepository: Send + Sync {
         &self,
         record: SkillCategoryRecord,
     ) -> SkillsResult<SkillCategoryRecord>;
-    async fn install_skill_for_user(
-        &self,
-        record: UserSkillInstallRecord,
-    ) -> SkillsResult<UserSkillInstallRecord>;
-    async fn delete_skill_package(
+
+    async fn list_capabilities_page(
         &self,
         tenant_id: u64,
-        skill_id: &str,
-    ) -> SkillsResult<SkillPackageRecord>;
-    async fn sync_skill_from_package(
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillCapabilityRecord>, i64)>;
+    async fn get_capability(
         &self,
-        package: &SkillPackageRecord,
-    ) -> SkillsResult<SkillRecord>;
+        tenant_id: u64,
+        capability_id: u64,
+    ) -> SkillsResult<SkillCapabilityRecord>;
+    async fn upsert_capability(
+        &self,
+        record: SkillCapabilityRecord,
+    ) -> SkillsResult<SkillCapabilityRecord>;
+
+    async fn list_artifacts_page(
+        &self,
+        tenant_id: u64,
+        package_id: u64,
+        params: OffsetListPageParams,
+    ) -> SkillsResult<(Vec<SkillArtifactRecord>, i64)>;
+    async fn list_installable_artifacts_page(
+        &self,
+        tenant_id: u64,
+        organization_id: u64,
+        user_id: u64,
+        package_id: u64,
+        params: OffsetListPageParams,
+    ) -> SkillsResult<(Vec<SkillArtifactRecord>, i64)>;
+    async fn create_artifact(
+        &self,
+        artifact: SkillArtifactRecord,
+    ) -> SkillsResult<SkillArtifactRecord>;
+
+    async fn install_skill(
+        &self,
+        record: SkillInstallationRecord,
+    ) -> SkillsResult<SkillInstallationRecord>;
+    async fn list_installations_page(
+        &self,
+        tenant_id: u64,
+        organization_id: u64,
+        subject_kind: &str,
+        subject_id: u64,
+        params: OffsetListPageParams,
+    ) -> SkillsResult<(Vec<SkillInstallationRecord>, i64)>;
 }
 
 #[derive(Clone)]
@@ -90,11 +159,26 @@ impl<R: SkillsRepository> SkillsService<R> {
     pub async fn list_hub_skills_page(
         &self,
         tenant_id: u64,
+        organization_id: u64,
+        user_id: u64,
         params: OffsetListPageParams,
         keyword: Option<&str>,
     ) -> SkillsResult<(Vec<SkillRecord>, i64)> {
         self.repository
-            .list_skills_page(tenant_id, params, keyword)
+            .list_skills_page(tenant_id, organization_id, user_id, params, keyword)
+            .await
+    }
+
+    pub async fn get_skill(
+        &self,
+        tenant_id: u64,
+        organization_id: u64,
+        user_id: u64,
+        skill_key: &str,
+    ) -> SkillsResult<SkillRecord> {
+        validation::validate_skill_key(skill_key)?;
+        self.repository
+            .get_skill(tenant_id, organization_id, user_id, skill_key)
             .await
     }
 
@@ -109,6 +193,108 @@ impl<R: SkillsRepository> SkillsService<R> {
             .await
     }
 
+    pub async fn get_skill_package(
+        &self,
+        tenant_id: u64,
+        package_id: u64,
+    ) -> SkillsResult<SkillPackageRecord> {
+        self.repository
+            .get_skill_package(tenant_id, package_id)
+            .await
+    }
+
+    pub async fn list_marketplace_skill_packages_page(
+        &self,
+        tenant_id: u64,
+        organization_id: u64,
+        user_id: u64,
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillPackageRecord>, i64)> {
+        self.repository
+            .list_marketplace_skill_packages_page(
+                tenant_id,
+                organization_id,
+                user_id,
+                params,
+                keyword,
+            )
+            .await
+    }
+
+    pub async fn get_marketplace_skill_package(
+        &self,
+        tenant_id: u64,
+        organization_id: u64,
+        user_id: u64,
+        package_id: u64,
+    ) -> SkillsResult<SkillPackageRecord> {
+        self.repository
+            .get_marketplace_skill_package(tenant_id, organization_id, user_id, package_id)
+            .await
+    }
+
+    pub async fn create_skill_package(
+        &self,
+        package: SkillPackageRecord,
+        initial_artifact: SkillArtifactRecord,
+    ) -> SkillsResult<SkillPackageRecord> {
+        validation::validate_skill_package_record(&package)?;
+        validation::validate_artifact_record(&initial_artifact)?;
+        if package.id != 0 {
+            return Err(SkillsServiceError::InvalidArgument(
+                "new skill package id must be zero".to_string(),
+            ));
+        }
+        if initial_artifact.id != 0 || initial_artifact.package_id != 0 {
+            return Err(SkillsServiceError::InvalidArgument(
+                "new initial artifact id and package_id must be zero".to_string(),
+            ));
+        }
+        if package.tenant_id != initial_artifact.tenant_id {
+            return Err(SkillsServiceError::InvalidArgument(
+                "package and initial artifact tenant_id must match".to_string(),
+            ));
+        }
+        if package.status == SkillLifecycleStatus::Active
+            && initial_artifact.status != SkillArtifactStatus::Published
+        {
+            return Err(SkillsServiceError::InvalidArgument(
+                "an active package requires a published initial artifact".to_string(),
+            ));
+        }
+        self.repository
+            .create_skill_package(package, initial_artifact)
+            .await
+    }
+
+    pub async fn update_skill_package(
+        &self,
+        package: SkillPackageRecord,
+    ) -> SkillsResult<SkillPackageRecord> {
+        validation::validate_skill_package_record(&package)?;
+        if package.id == 0 || package.version == 0 {
+            return Err(SkillsServiceError::InvalidArgument(
+                "existing skill package id and version are required".to_string(),
+            ));
+        }
+        self.repository.update_skill_package(package).await
+    }
+
+    pub async fn delete_skill_package(&self, tenant_id: u64, package_id: u64) -> SkillsResult<()> {
+        self.repository
+            .delete_skill_package(tenant_id, package_id)
+            .await
+    }
+
+    pub async fn get_category(
+        &self,
+        tenant_id: u64,
+        category_id: u64,
+    ) -> SkillsResult<SkillCategoryRecord> {
+        self.repository.get_category(tenant_id, category_id).await
+    }
+
     pub async fn list_categories_page(
         &self,
         tenant_id: u64,
@@ -121,91 +307,136 @@ impl<R: SkillsRepository> SkillsService<R> {
             .await
     }
 
-    pub async fn get_skill(&self, tenant_id: u64, skill_key: &str) -> SkillsResult<SkillRecord> {
-        self.repository.get_skill(tenant_id, skill_key).await
-    }
-
-    pub async fn get_skill_package(
-        &self,
-        tenant_id: u64,
-        skill_id: &str,
-    ) -> SkillsResult<SkillPackageRecord> {
-        self.repository.get_skill_package(tenant_id, skill_id).await
-    }
-
-    pub async fn upsert_skill_package(
-        &self,
-        record: SkillPackageRecord,
-    ) -> SkillsResult<SkillPackageRecord> {
-        validation::validate_skill_package_record(&record)?;
-        self.validate_package_categories(record.tenant_id, &record.categories)
-            .await?;
-        let saved = self.repository.upsert_skill_package(record).await?;
-        self.repository.sync_skill_from_package(&saved).await?;
-        Ok(saved)
-    }
-
-    pub async fn delete_skill_package(
-        &self,
-        tenant_id: u64,
-        skill_id: &str,
-    ) -> SkillsResult<SkillPackageRecord> {
-        validation::validate_skill_id(skill_id)?;
-        self.repository
-            .delete_skill_package(tenant_id, skill_id)
-            .await
-    }
-
-    pub async fn list_categories(
-        &self,
-        tenant_id: u64,
-        category_type: &str,
-    ) -> SkillsResult<Vec<SkillCategoryRecord>> {
-        self.repository
-            .list_categories(tenant_id, category_type)
-            .await
-    }
-
-    pub async fn upsert_category(
+    pub async fn create_category(
         &self,
         record: SkillCategoryRecord,
     ) -> SkillsResult<SkillCategoryRecord> {
         validation::validate_category_record(&record)?;
+        if record.id != 0 {
+            return Err(SkillsServiceError::InvalidArgument(
+                "new category id must be zero".to_string(),
+            ));
+        }
         self.repository.upsert_category(record).await
     }
 
-    async fn validate_package_categories(
+    pub async fn update_category(
+        &self,
+        record: SkillCategoryRecord,
+    ) -> SkillsResult<SkillCategoryRecord> {
+        validation::validate_category_record(&record)?;
+        if record.id == 0 || record.version == 0 {
+            return Err(SkillsServiceError::InvalidArgument(
+                "existing category id and version are required".to_string(),
+            ));
+        }
+        self.repository.upsert_category(record).await
+    }
+
+    pub async fn list_capabilities_page(
         &self,
         tenant_id: u64,
-        categories: &[String],
-    ) -> SkillsResult<()> {
-        if categories.is_empty() {
-            return Ok(());
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillCapabilityRecord>, i64)> {
+        self.repository
+            .list_capabilities_page(tenant_id, params, keyword)
+            .await
+    }
+
+    pub async fn get_capability(
+        &self,
+        tenant_id: u64,
+        capability_id: u64,
+    ) -> SkillsResult<SkillCapabilityRecord> {
+        self.repository
+            .get_capability(tenant_id, capability_id)
+            .await
+    }
+
+    pub async fn create_capability(
+        &self,
+        record: SkillCapabilityRecord,
+    ) -> SkillsResult<SkillCapabilityRecord> {
+        validation::validate_capability_record(&record)?;
+        if record.id != 0 {
+            return Err(SkillsServiceError::InvalidArgument(
+                "new capability id must be zero".to_string(),
+            ));
         }
-        let known = self
-            .repository
-            .list_categories(tenant_id, SkillCategoryType::SkillMarket.as_str())
-            .await?;
-        let known_codes: std::collections::HashSet<String> =
-            known.into_iter().map(|item| item.code).collect();
-        for code in categories {
-            let normalized = trim(code);
-            if normalized.is_empty() {
-                continue;
-            }
-            if !known_codes.contains(&normalized) {
-                return Err(SkillsServiceError::InvalidArgument(format!(
-                    "unknown skill category code: {normalized}"
-                )));
-            }
+        self.repository.upsert_capability(record).await
+    }
+
+    pub async fn update_capability(
+        &self,
+        record: SkillCapabilityRecord,
+    ) -> SkillsResult<SkillCapabilityRecord> {
+        validation::validate_capability_record(&record)?;
+        if record.id == 0 || record.version == 0 {
+            return Err(SkillsServiceError::InvalidArgument(
+                "existing capability id and version are required".to_string(),
+            ));
         }
-        Ok(())
+        self.repository.upsert_capability(record).await
+    }
+
+    pub async fn list_artifacts_page(
+        &self,
+        tenant_id: u64,
+        package_id: u64,
+        params: OffsetListPageParams,
+    ) -> SkillsResult<(Vec<SkillArtifactRecord>, i64)> {
+        self.repository
+            .list_artifacts_page(tenant_id, package_id, params)
+            .await
+    }
+
+    pub async fn list_installable_artifacts_page(
+        &self,
+        tenant_id: u64,
+        organization_id: u64,
+        user_id: u64,
+        package_id: u64,
+        params: OffsetListPageParams,
+    ) -> SkillsResult<(Vec<SkillArtifactRecord>, i64)> {
+        self.repository
+            .list_installable_artifacts_page(
+                tenant_id,
+                organization_id,
+                user_id,
+                package_id,
+                params,
+            )
+            .await
+    }
+
+    pub async fn create_artifact(
+        &self,
+        artifact: SkillArtifactRecord,
+    ) -> SkillsResult<SkillArtifactRecord> {
+        validation::validate_artifact_record(&artifact)?;
+        self.repository.create_artifact(artifact).await
     }
 
     pub async fn install_skill(
         &self,
-        record: UserSkillInstallRecord,
-    ) -> SkillsResult<UserSkillInstallRecord> {
-        self.repository.install_skill_for_user(record).await
+        record: SkillInstallationRecord,
+    ) -> SkillsResult<SkillInstallationRecord> {
+        validation::validate_installation_record(&record)?;
+        self.repository.install_skill(record).await
+    }
+
+    pub async fn list_installations_page(
+        &self,
+        tenant_id: u64,
+        organization_id: u64,
+        subject_kind: &str,
+        subject_id: u64,
+        params: OffsetListPageParams,
+    ) -> SkillsResult<(Vec<SkillInstallationRecord>, i64)> {
+        validation::validate_installation_subject(subject_kind, subject_id)?;
+        self.repository
+            .list_installations_page(tenant_id, organization_id, subject_kind, subject_id, params)
+            .await
     }
 }

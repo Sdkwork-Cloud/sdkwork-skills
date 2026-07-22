@@ -1,10 +1,8 @@
-pub const LIVEZ: &str = "/livez";
-pub const READYZ: &str = "/readyz";
-pub const HEALTHZ: &str = "/healthz";
-
-pub const SKILLS_LIST: &str = "/app/v3/api/skills";
-pub const SKILL_GET: &str = "/app/v3/api/skills/{skillKey}";
-pub const SKILL_PACKAGES_LIST: &str = "/app/v3/api/skill_packages";
-pub const SKILL_PACKAGE_GET: &str = "/app/v3/api/skill_packages/{skillId}";
-pub const CATEGORIES_LIST: &str = "/app/v3/api/categories";
-pub const USER_SKILL_INSTALL: &str = "/app/v3/api/user/skills/install";
+pub const SKILLS: &str = "/app/v3/api/skills";
+pub const SKILL: &str = "/app/v3/api/skills/{skillKey}";
+pub const SKILL_PACKAGES: &str = "/app/v3/api/skill_packages";
+pub const SKILL_PACKAGE: &str = "/app/v3/api/skill_packages/{packageId}";
+pub const PACKAGE_ARTIFACTS: &str = "/app/v3/api/skill_packages/{packageId}/artifacts";
+pub const SKILL_CATEGORIES: &str = "/app/v3/api/skill_categories";
+pub const PACKAGE_INSTALLATIONS: &str = "/app/v3/api/skill_packages/{packageId}/installations";
+pub const SKILL_INSTALLATIONS: &str = "/app/v3/api/skill_installations";

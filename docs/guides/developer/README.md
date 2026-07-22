@@ -2,42 +2,50 @@
 
 ## Repository Role
 
-`sdkwork-skills` is the SDKWork application root for Skills marketplace persistence, HTTP APIs,
-and the PC browser client (`apps/sdkwork-skills-pc`). Skills data lives in `ai_*` PostgreSQL tables;
-`sdkwork-kernel` consumes `sdkwork-skills-contract` and must not own skill CRUD.
+`sdkwork-skills` is the application root and single write authority for Skills
+marketplace persistence, HTTP APIs, generated SDKs, and the PC browser client.
+Skills data lives in the module's ten `ai_*` PostgreSQL and SQLite tables.
 
-Authority: [ADR-20260624-skills-domain-extraction-and-ai-table-standard.md](../architecture/decisions/ADR-20260624-skills-domain-extraction-and-ai-table-standard.md)
+Authority:
+[ADR-20260722-skills-domain-ownership-and-artifact-model.md](../../architecture/decisions/ADR-20260722-skills-domain-ownership-and-artifact-model.md)
 
 ## Where To Work
 
 | Task | Path |
 | --- | --- |
 | App identity and runtime | `sdkwork.app.config.json` |
-| PC Hub / Console / Admin UI | `apps/sdkwork-skills-pc/` |
+| PC Hub, Console, and Admin UI | `apps/sdkwork-skills-pc/` |
 | App and backend OpenAPI | `apis/app-api/`, `apis/backend-api/` |
 | Generated SDK families | `sdks/sdkwork-skills-app-sdk/`, `sdks/sdkwork-skills-backend-sdk/` |
 | Rust route crates | `crates/sdkwork-routes-skills-*` |
-| Domain service and SQLx repository | `crates/sdkwork-intelligence-skills-*` |
-| Database migrations | `database/migrations/postgres/` |
-| Local agent skill pointers | `.sdkwork/skills/` (optional; non-authoritative) |
+| Domain contract and service | `crates/sdkwork-skills-contract/`, `crates/sdkwork-intelligence-skills-service/` |
+| SQLx repository | `crates/sdkwork-intelligence-skills-repository-sqlx/` |
+| Database baseline and contracts | `database/ddl/baseline/`, `database/contract/` |
+| Local agent skill pointers | `.sdkwork/skills/` (optional and non-authoritative) |
 
 ## Local Setup
 
-1. Install workspace dependencies from repository root:
-   `pnpm install --filter sdkwork-skills-pc...` (requires sibling repos in
-   `sdkwork-space`, including `@sdkwork/iam-credential-entry` via `pnpm-workspace.yaml`).
-2. Bootstrap database: `pnpm db:bootstrap` (requires PostgreSQL per `database/` config).
-3. Start PC dev server (proxies to local gateways): `pnpm dev`.
-4. Run standalone gateways on ports `18090` (app-api) and `18091` (backend-api) via
-   `cargo run -p sdkwork-api-skills-standalone-gateway` when testing APIs without cloud topology.
+1. Run `pnpm install` from the repository root.
+2. Materialize and validate the contract with
+   `pnpm db:materialize:contract && pnpm db:validate`.
+3. Bootstrap the selected database profile with `pnpm db:bootstrap`.
+4. Start the configured surface with `pnpm dev`.
+5. Use `cargo run -p sdkwork-api-skills-standalone-gateway` when testing
+   without the cloud gateway.
 
 ## API And SDK Conventions
 
-- Success bodies use `SdkWorkApiResponse` (`code: 0`, `data`, `traceId`) per `API_SPEC.md` §15.
-- Lists expose `data.items` + `data.pageInfo`; single resources use `data.item`.
+- Success bodies use `SdkWorkApiResponse` with `code`, `data`, and `traceId`.
+- Lists expose `data.items` and `data.pageInfo`; resources use `data.item`.
 - Errors use `application/problem+json` with numeric `code` and `traceId`.
-- Regenerate contracts: `pnpm api:materialize && pnpm sdk:generate`.
-- PC surfaces must consume generated SDKs; do not add raw HTTP wrappers in production UI.
+- Regenerate contracts through `pnpm api:materialize && pnpm sdk:generate`.
+- UI and application consumers import composed SDK packages. Do not add raw
+  HTTP wrappers, manual auth headers, generated transport imports, or local DTO
+  forks.
+- Installation flows list installable artifacts and submit an explicit
+  `artifactId`; they never infer a latest release.
+- Tenant, organization, and user identity come from the shared token-backed
+  request context, never from consumer query parameters or identity headers.
 
 ## Verification
 
@@ -48,12 +56,13 @@ node ../sdkwork-specs/tools/verify-repo.mjs --root .
 node ../sdkwork-specs/tools/check-repository-docs-standard.mjs --root .
 ```
 
-Root `tests/` use `tests/register-workspace-imports.mjs` to resolve `@sdkwork/utils` for
-TypeScript source checks without requiring a full `pnpm install` at the repository root.
+Root `tests/` use `tests/register-workspace-imports.mjs` to resolve workspace
+packages for TypeScript source checks.
 
 ## Related Specs
 
 - `../sdkwork-specs/SDKWORK_WORKSPACE_SPEC.md`
 - `../sdkwork-specs/API_SPEC.md`
-- `../sdkwork-specs/FRONTEND_SPEC.md`
+- `../sdkwork-specs/DATABASE_SPEC.md`
+- `../sdkwork-specs/SDK_SPEC.md`
 - `../sdkwork-specs/RUST_CODE_SPEC.md`

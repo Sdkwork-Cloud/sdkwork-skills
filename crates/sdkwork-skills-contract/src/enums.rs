@@ -100,6 +100,90 @@ pub enum SkillCategoryType {
     SkillsCollection,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SkillArtifactStatus {
+    Draft,
+    Published,
+    Yanked,
+}
+
+impl SkillArtifactStatus {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Draft => "draft",
+            Self::Published => "published",
+            Self::Yanked => "yanked",
+        }
+    }
+
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "draft" => Some(Self::Draft),
+            "published" => Some(Self::Published),
+            "yanked" => Some(Self::Yanked),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SkillInstallationSubjectKind {
+    User,
+    Workspace,
+    Project,
+    Agent,
+}
+
+impl SkillInstallationSubjectKind {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::User => "user",
+            Self::Workspace => "workspace",
+            Self::Project => "project",
+            Self::Agent => "agent",
+        }
+    }
+
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "user" => Some(Self::User),
+            "workspace" => Some(Self::Workspace),
+            "project" => Some(Self::Project),
+            "agent" => Some(Self::Agent),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SkillCapabilityRiskLevel {
+    Standard,
+    Sensitive,
+    Privileged,
+}
+
+impl SkillCapabilityRiskLevel {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Standard => "standard",
+            Self::Sensitive => "sensitive",
+            Self::Privileged => "privileged",
+        }
+    }
+
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "standard" => Some(Self::Standard),
+            "sensitive" => Some(Self::Sensitive),
+            "privileged" => Some(Self::Privileged),
+            _ => None,
+        }
+    }
+}
+
 impl SkillCategoryType {
     pub fn as_str(self) -> &'static str {
         match self {

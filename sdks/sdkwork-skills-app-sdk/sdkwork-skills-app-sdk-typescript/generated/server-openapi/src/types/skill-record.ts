@@ -1,17 +1,23 @@
 export interface SkillRecord {
   id: string;
-  skill_key: string;
+  uuid: string;
+  tenantId: string;
+  organizationId: string;
+  skillKey: string;
+  packageId: string;
   name: string;
   summary?: string | null;
   description?: string | null;
-  runtime?: string | null;
-  entrypoint?: string | null;
-  market_status: string;
-  visibility: string;
+  marketStatus: string;
+  visibility: 'private' | 'tenant' | 'organization' | 'public';
+  reviewStatus: string;
+  categories: string[];
   enabled: boolean;
   featured: boolean;
-  install_count: string;
-  tags?: string[];
-  capabilities?: string[];
-  categories?: string[];
+  installCount: string;
+  tags: string[];
+  version: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
 }

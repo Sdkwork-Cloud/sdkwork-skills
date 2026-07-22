@@ -10,11 +10,10 @@ path = "src/lib.rs"
 [dependencies]
 axum.workspace = true
 sdkwork-iam-web-adapter.workspace = true
-sdkwork-intelligence-skills-service = { path = "../sdkwork-intelligence-skills-service" }
+sdkwork-intelligence-skills-service.workspace = true
 sdkwork-routes-skills-common.workspace = true
 sdkwork-skills-contract.workspace = true
 sdkwork-web-axum.workspace = true
 sdkwork-web-core.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-sqlx.workspace = true

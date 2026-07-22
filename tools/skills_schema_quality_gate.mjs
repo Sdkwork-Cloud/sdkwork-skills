@@ -41,18 +41,31 @@ function operationKey(method, pathKey, operationId) {
 
 function parseRustRouteManifest(manifestPath) {
   const content = readText(manifestPath);
+  const operationConstants = new Map();
+  const operationsSource = readText(
+    path.join(workspaceRoot, "crates/sdkwork-skills-contract/src/operations.rs"),
+  );
+  for (const match of operationsSource.matchAll(
+    /pub\s+const\s+(OP_[A-Z0-9_]+)\s*:\s*&str\s*=\s*"([^"]+)"/gu,
+  )) {
+    operationConstants.set(match[1], match[2]);
+  }
   const routes = [];
   const patterns = [
-    /skills_(?:admin_abuse_|admin_)?route\(\s*HttpMethod::(\w+),\s*"([^"]+)",\s*"([^"]+)"/gu,
+    /(?:sensitive_)?skills_(?:admin_)?route\(\s*HttpMethod::(\w+),\s*"([^"]+)",\s*(?:"([^"]+)"|(OP_[A-Z0-9_]+))/gu,
     /HttpRoute::dual_token\(\s*HttpMethod::(\w+),\s*"([^"]+)",\s*"[^"]+",\s*"([^"]+)"/gu,
   ];
   const seen = new Set();
   for (const pattern of patterns) {
     for (const match of content.matchAll(pattern)) {
+      const operationId = match[3] ?? operationConstants.get(match[4]);
+      if (!operationId) {
+        fail(`${manifestPath} references unknown operation constant ${match[4]}`);
+      }
       const route = {
         method: match[1].toLowerCase(),
         pathKey: match[2],
-        operationId: match[3],
+        operationId,
       };
       const key = operationKey(route.method, route.pathKey, route.operationId);
       if (seen.has(key)) {
@@ -217,6 +230,6 @@ const backendManifest =
   parseArg("--backend-manifest") ??
   path.join(workspaceRoot, "crates/sdkwork-routes-skills-backend-api/src/http_route_manifest.rs");
 
-checkDocument(appPath, "sdkwork-skills.app", "/app/v3/api", appManifest);
-checkDocument(backendPath, "sdkwork-skills.backend", "/backend/v3/api", backendManifest);
+checkDocument(appPath, "sdkwork-skills-app-api", "/app/v3/api", appManifest);
+checkDocument(backendPath, "sdkwork-skills-backend-api", "/backend/v3/api", backendManifest);
 process.stdout.write("[skills_schema_quality_gate] ok\n");

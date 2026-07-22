@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-skills-backend-sdk",
+    "displayName": "SDKWork Skills Backend SDK",
+    "version": "0.1.0",
+    "type": "sdk-family",
+    "root": "sdks/sdkwork-skills-backend-sdk",
+    "domain": "intelligence",
+    "capability": "skills-backend-sdk",
+    "surface": "backend-api",
+    "status": "standardized",
+    "languages": [
+      "typescript"
+    ],
+    "generated": true,
+    "private": false,
+    "manifests": [
+      "sdk-manifest.json"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "SDK_SPEC.md",
+      "path": "../../../sdkwork-specs/SDK_SPEC.md",
+      "purpose": "SDK family ownership and consumer integration rules."
+    },
+    {
+      "file": "SDK_WORKSPACE_GENERATION_SPEC.md",
+      "path": "../../../sdkwork-specs/SDK_WORKSPACE_GENERATION_SPEC.md",
+      "purpose": "Authority OpenAPI, composed entrypoint, and generated output rules."
+    },
+    {
+      "file": "API_SPEC.md",
+      "path": "../../../sdkwork-specs/API_SPEC.md",
+      "purpose": "Backend API schema and operation contract rules."
+    },
+    {
+      "file": "TYPESCRIPT_CODE_SPEC.md",
+      "path": "../../../sdkwork-specs/TYPESCRIPT_CODE_SPEC.md",
+      "purpose": "TypeScript package exports and strict typing."
+    }
+  ],
+  "sdk": {
+    "family": "sdkwork-skills-backend-sdk",
+    "authority": "sdkwork-skills-backend-api",
+    "sdkOwner": "sdkwork-skills",
+    "apiPrefix": "/backend/v3/api",
+    "packageName": "@sdkwork/skills-backend-sdk",
+    "sdkName": "sdkwork-skills-backend-sdk",
+    "sdkType": "backend",
+    "sdkSurface": "backend",
+    "externalSdkgenProfileSupported": true,
+    "generatedOutput": "sdkwork-skills-backend-sdk-typescript/generated/server-openapi",
+    "standardProfile": "sdkwork-v3"
+  },
+  "contracts": {
+    "apiAuthority": {
+      "name": "sdkwork-skills-backend-api",
+      "owner": "sdkwork-skills",
+      "prefix": "/backend/v3/api",
+      "authorityOpenApi": "../../apis/backend-api/skills/skills-backend-api.openapi.json",
+      "derivedOpenApi": [],
+      "standard": "../../../sdkwork-specs/SDK_SPEC.md"
+    },
+    "publicExports": [
+      "@sdkwork/skills-backend-sdk"
+    ],
+    "runtimeEntrypoints": [
+      "sdkwork-skills-backend-sdk-typescript/src/index.ts",
+      "sdk-manifest.json"
+    ],
+    "routeManifest": null,
+    "sdkDependencies": [],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "sdkClients": [
+      "SdkworkSkillsBackendClient",
+      "createSkillsBackendClient"
+    ],
+    "events": [],
+    "configKeys": [
+      "sdk-manifest.json"
+    ]
+  },
+  "verification": {
+    "commands": [
+      "pnpm sdk:generate",
+      "pnpm --dir sdks/sdkwork-skills-backend-sdk/sdkwork-skills-backend-sdk-typescript typecheck"
+    ]
+  }
+}

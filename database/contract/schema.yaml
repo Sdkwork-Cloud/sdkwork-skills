@@ -1,11 +1,12 @@
 schema_version: 1
 kind: sdkwork.database.schema
 module_id: skills
-contract_version: 1.0.0
+contract_version: 2.0.0
 owner_team: skills-platform
 compliance_level: L2
 engines:
   - postgres
+  - sqlite
 table_prefix: ai_
 tables:
   - name: ai_skill_category
@@ -17,13 +18,22 @@ tables:
   - name: ai_agent_skill
     lifecycle_status: active
     owner: skills-platform
-  - name: ai_user_agent_skill
+  - name: ai_skill_category_binding
     lifecycle_status: active
     owner: skills-platform
-  - name: ai_skill_asset
+  - name: ai_skill_capability
     lifecycle_status: active
     owner: skills-platform
   - name: ai_skill_artifact
+    lifecycle_status: active
+    owner: skills-platform
+  - name: ai_skill_artifact_capability
+    lifecycle_status: active
+    owner: skills-platform
+  - name: ai_skill_installation
+    lifecycle_status: active
+    owner: skills-platform
+  - name: ai_skill_asset
     lifecycle_status: active
     owner: skills-platform
   - name: ai_skill_action

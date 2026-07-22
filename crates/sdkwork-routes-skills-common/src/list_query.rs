@@ -1,5 +1,6 @@
-use serde::Deserialize;
+use sdkwork_skills_contract::{SkillCategoryType, SkillInstallationSubjectKind};
 use sdkwork_utils_rust::{validated_offset_list_params, OffsetListPageParams};
+use serde::Deserialize;
 
 use crate::response::ApiProblem;
 
@@ -10,6 +11,22 @@ pub struct SdkWorkListQuery {
     pub page_size: Option<i32>,
     pub cursor: Option<String>,
     pub q: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+pub struct SkillInstallationListQuery {
+    #[serde(flatten)]
+    pub pagination: SdkWorkListQuery,
+    pub subject_kind: Option<SkillInstallationSubjectKind>,
+    #[serde(default, with = "sdkwork_utils_rust::serde_uint64::option")]
+    pub subject_id: Option<u64>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+pub struct SkillCategoryListQuery {
+    #[serde(flatten)]
+    pub pagination: SdkWorkListQuery,
+    pub category_type: Option<SkillCategoryType>,
 }
 
 impl SdkWorkListQuery {

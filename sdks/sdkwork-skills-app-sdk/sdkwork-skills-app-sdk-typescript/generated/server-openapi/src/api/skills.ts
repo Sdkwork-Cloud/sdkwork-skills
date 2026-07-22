@@ -1,10 +1,19 @@
 import { appApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { CategoriesPageData, InstallSkillCommand, SkillPackageRecord, SkillPackagesPageData, SkillRecord, SkillsPageData, UserSkillInstallRecord } from '../types';
+import type { CreateSkillInstallationCommand, SkillArtifactsPageData, SkillCategoriesPageData, SkillInstallationRecord, SkillInstallationsPageData, SkillPackageRecord, SkillPackagesPageData, SkillRecord, SkillsPageData } from '../types';
 
 
-export class SkillsUserSkillsApi {
+export interface SkillsSkillInstallationsListParams {
+  page?: number;
+  pageSize?: number;
+  cursor?: string;
+  q?: string;
+  subjectKind?: 'user' | 'workspace' | 'project' | 'agent';
+  subjectId?: string;
+}
+
+export class SkillsSkillInstallationsApi {
   private client: HttpClient;
 
   constructor(client: HttpClient) {
@@ -12,20 +21,28 @@ export class SkillsUserSkillsApi {
   }
 
 
-/** Skills userSkills.install */
-  async install(body: InstallSkillCommand): Promise<UserSkillInstallRecord> {
-    return this.client.post<UserSkillInstallRecord>(appApiPath(`/user/skills/install`), body, undefined, undefined, 'application/json');
+/** skillInstallations.list */
+  async list(params?: SkillsSkillInstallationsListParams): Promise<SkillInstallationsPageData> {
+    const query = buildQueryString([
+      { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+      { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
+      { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
+      { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
+      { name: 'subject_kind', value: params?.subjectKind, style: 'form', explode: true, allowReserved: false },
+      { name: 'subject_id', value: params?.subjectId, style: 'form', explode: true, allowReserved: false },
+    ]);
+    return this.client.get<SkillInstallationsPageData>(appendQueryString(appApiPath(`/skill_installations`), query));
   }
 }
 
-export interface SkillsCategoriesListParams {
+export interface SkillsSkillCategoriesListParams {
   page?: number;
   pageSize?: number;
   cursor?: string;
   q?: string;
 }
 
-export class SkillsCategoriesApi {
+export class SkillsSkillCategoriesApi {
   private client: HttpClient;
 
   constructor(client: HttpClient) {
@@ -33,15 +50,56 @@ export class SkillsCategoriesApi {
   }
 
 
-/** Skills categories.list */
-  async list(params?: SkillsCategoriesListParams): Promise<CategoriesPageData> {
+/** skillCategories.list */
+  async list(params?: SkillsSkillCategoriesListParams): Promise<SkillCategoriesPageData> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<CategoriesPageData>(appendQueryString(appApiPath(`/categories`), query));
+    return this.client.get<SkillCategoriesPageData>(appendQueryString(appApiPath(`/skill_categories`), query));
+  }
+}
+
+export class SkillsSkillPackagesInstallationsApi {
+  private client: HttpClient;
+
+  constructor(client: HttpClient) {
+    this.client = client;
+  }
+
+
+/** skillPackages.installations.create */
+  async create(packageId: string, body: CreateSkillInstallationCommand): Promise<SkillInstallationRecord> {
+    return this.client.post<SkillInstallationRecord>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}/installations`), body, undefined, undefined, 'application/json');
+  }
+}
+
+export interface SkillsSkillPackagesArtifactsListParams {
+  page?: number;
+  pageSize?: number;
+  cursor?: string;
+  q?: string;
+}
+
+export class SkillsSkillPackagesArtifactsApi {
+  private client: HttpClient;
+
+  constructor(client: HttpClient) {
+    this.client = client;
+  }
+
+
+/** skillPackages.artifacts.list */
+  async list(packageId: string, params?: SkillsSkillPackagesArtifactsListParams): Promise<SkillArtifactsPageData> {
+    const query = buildQueryString([
+      { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+      { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
+      { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
+      { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
+    ]);
+    return this.client.get<SkillArtifactsPageData>(appendQueryString(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}/artifacts`), query));
   }
 }
 
@@ -54,13 +112,17 @@ export interface SkillsSkillPackagesListParams {
 
 export class SkillsSkillPackagesApi {
   private client: HttpClient;
+  public readonly artifacts: SkillsSkillPackagesArtifactsApi;
+  public readonly installations: SkillsSkillPackagesInstallationsApi;
 
   constructor(client: HttpClient) {
     this.client = client;
+    this.artifacts = new SkillsSkillPackagesArtifactsApi(client);
+    this.installations = new SkillsSkillPackagesInstallationsApi(client);
   }
 
 
-/** Skills skillPackages.list */
+/** skillPackages.list */
   async list(params?: SkillsSkillPackagesListParams): Promise<SkillPackagesPageData> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
@@ -71,35 +133,29 @@ export class SkillsSkillPackagesApi {
     return this.client.get<SkillPackagesPageData>(appendQueryString(appApiPath(`/skill_packages`), query));
   }
 
-/** Skills skillPackages.retrieve */
-  async retrieve(skillId: string): Promise<SkillPackageRecord> {
-    return this.client.get<SkillPackageRecord>(appApiPath(`/skill_packages/${serializePathParameter(skillId, { name: 'skillId', style: 'simple', explode: false })}`));
+/** skillPackages.retrieve */
+  async retrieve(packageId: string): Promise<SkillPackageRecord> {
+    return this.client.get<SkillPackageRecord>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}`));
   }
 }
 
-export interface SkillsListParams {
+export interface SkillsMarketplaceListParams {
   page?: number;
   pageSize?: number;
   cursor?: string;
   q?: string;
 }
 
-export class SkillsApi {
+export class SkillsMarketplaceApi {
   private client: HttpClient;
-  public readonly skillPackages: SkillsSkillPackagesApi;
-  public readonly categories: SkillsCategoriesApi;
-  public readonly userSkills: SkillsUserSkillsApi;
 
   constructor(client: HttpClient) {
     this.client = client;
-    this.skillPackages = new SkillsSkillPackagesApi(client);
-    this.categories = new SkillsCategoriesApi(client);
-    this.userSkills = new SkillsUserSkillsApi(client);
   }
 
 
-/** Skills skills.list */
-  async list(params?: SkillsListParams): Promise<SkillsPageData> {
+/** marketplace.list */
+  async list(params?: SkillsMarketplaceListParams): Promise<SkillsPageData> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -109,10 +165,27 @@ export class SkillsApi {
     return this.client.get<SkillsPageData>(appendQueryString(appApiPath(`/skills`), query));
   }
 
-/** Skills skills.retrieve */
+/** marketplace.retrieve */
   async retrieve(skillKey: string): Promise<SkillRecord> {
     return this.client.get<SkillRecord>(appApiPath(`/skills/${serializePathParameter(skillKey, { name: 'skillKey', style: 'simple', explode: false })}`));
   }
+}
+
+export class SkillsApi {
+
+  public readonly marketplace: SkillsMarketplaceApi;
+  public readonly skillPackages: SkillsSkillPackagesApi;
+  public readonly skillCategories: SkillsSkillCategoriesApi;
+  public readonly skillInstallations: SkillsSkillInstallationsApi;
+
+  constructor(client: HttpClient) {
+
+    this.marketplace = new SkillsMarketplaceApi(client);
+    this.skillPackages = new SkillsSkillPackagesApi(client);
+    this.skillCategories = new SkillsSkillCategoriesApi(client);
+    this.skillInstallations = new SkillsSkillInstallationsApi(client);
+  }
+
 }
 
 export function createSkillsApi(client: HttpClient): SkillsApi {

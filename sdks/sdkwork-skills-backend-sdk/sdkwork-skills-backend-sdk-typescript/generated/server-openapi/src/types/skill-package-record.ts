@@ -1,15 +1,23 @@
 export interface SkillPackageRecord {
   id: string;
-  skill_id: string;
+  uuid: string;
+  tenantId: string;
+  organizationId: string;
+  ownerUserId: string;
+  skillKey: string;
+  packageKey: string;
   code: string;
-  display_name: string;
+  displayName: string;
   summary?: string | null;
-  invocation_kind: string;
-  /** Canonical sdkwork-drive package reference. */
-  package_ref: string;
-  entrypoint: string;
-  status: string;
-  visibility: string;
-  categories?: string[];
-  tags?: string[];
+  description?: string | null;
+  categories: string[];
+  tags: string[];
+  status: 'draft' | 'active' | 'disabled' | 'archived' | 'deleted';
+  visibility: 'private' | 'tenant' | 'organization' | 'public';
+  featured: boolean;
+  sortWeight: number;
+  version: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
 }

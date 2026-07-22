@@ -1,6 +1,6 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { isBlank, trim } from '@sdkwork/utils';
-import { isDrivePackageRef } from '@sdkwork/skills-pc-commons/driveUri';
+import { isDriveArtifactRef } from '@sdkwork/skills-pc-commons/driveUri';
 import {
   useSkillsClients,
   type CreateCategoryInput,
@@ -35,17 +35,29 @@ export function AdminSkillsPage({
   const [uploading, setUploading] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [form, setForm] = useState<CreatePackageInput>({
-    skill_id: 'skill.demo.sample',
-    package_key: 'demo-sample',
+    skillKey: 'skill.demo.sample',
+    packageKey: 'demo-sample',
     code: 'demo-sample',
-    display_name: 'Demo Sample Skill',
-    invocation_kind: 'local-workflow',
-    package_ref: '',
-    entrypoint: 'run',
+    displayName: 'Demo Sample Skill',
     summary: 'Skill package uploaded through sdkwork-drive',
-    capability_ids: ['cap.demo.sample.run'],
-    categories: ['default'],
+    categories: [],
     tags: ['demo'],
+    status: 'active',
+    visibility: 'tenant',
+    initialArtifact: {
+      versionLabel: '1.0.0',
+      artifactRef: '',
+      checksumSha256: '',
+      sizeBytes: null,
+      invocationKind: 'local-workflow',
+      entrypoint: 'run',
+      inputSchema: {},
+      outputSchema: {},
+      configSchema: {},
+      defaultConfig: {},
+      status: 'published',
+      capabilityKeys: [],
+    },
   });
 
   async function reload() {
@@ -64,14 +76,22 @@ export function AdminSkillsPage({
   async function onUploadSelectedFile() {
     const file = fileInputRef.current?.files?.[0];
     if (!file) {
-      setError('Select a skill package archive to upload through sdkwork-drive.');
+      setError('Select a Skill package archive to upload through sdkwork-drive.');
       return;
     }
     setUploading(true);
     setError(null);
     try {
-      const packageRef = await uploadSkillPackageArchive(clients.drive, file);
-      setForm((current) => ({ ...current, package_ref: packageRef }));
+      const artifact = await uploadSkillPackageArchive(clients.drive, file);
+      setForm((current) => ({
+        ...current,
+        initialArtifact: {
+          ...current.initialArtifact,
+          artifactRef: artifact.artifactRef,
+          checksumSha256: artifact.checksumSha256,
+          sizeBytes: artifact.sizeBytes,
+        },
+      }));
       setSelectedFileName(file.name);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -83,8 +103,12 @@ export function AdminSkillsPage({
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
-    if (!isDrivePackageRef(form.package_ref)) {
-      setError('Upload a package through sdkwork-drive before creating the skill package record.');
+    if (!isDriveArtifactRef(form.initialArtifact.artifactRef)) {
+      setError('Upload an artifact through sdkwork-drive before creating the Skill package.');
+      return;
+    }
+    if (!/^[0-9a-f]{64}$/.test(form.initialArtifact.checksumSha256)) {
+      setError('The uploaded artifact is missing a valid SHA-256 checksum.');
       return;
     }
     const selectedCategories = form.categories ?? [];
@@ -107,10 +131,10 @@ export function AdminSkillsPage({
     }
   }
 
-  async function onDelete(skillId: string) {
+  async function onDelete(packageId: string) {
     setError(null);
     try {
-      await deleteSkillPackage(clients, skillId);
+      await deleteSkillPackage(clients, packageId);
       await reload();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -123,15 +147,29 @@ export function AdminSkillsPage({
       {error ? <p role="alert">{error}</p> : null}
       <form onSubmit={onSubmit} style={{ display: 'grid', gap: 8, maxWidth: 640, marginBottom: 24 }}>
         <input
-          value={form.skill_id}
-          onChange={(event) => setForm({ ...form, skill_id: event.target.value })}
-          placeholder="skill_id"
+          value={form.skillKey}
+          onChange={(event) => setForm({ ...form, skillKey: event.target.value })}
+          placeholder="skill key"
           required
         />
         <input
-          value={form.display_name}
-          onChange={(event) => setForm({ ...form, display_name: event.target.value })}
-          placeholder="display_name"
+          value={form.displayName}
+          onChange={(event) => setForm({ ...form, displayName: event.target.value })}
+          placeholder="display name"
+          required
+        />
+        <input
+          value={form.initialArtifact.versionLabel}
+          onChange={(event) =>
+            setForm({
+              ...form,
+              initialArtifact: {
+                ...form.initialArtifact,
+                versionLabel: event.target.value,
+              },
+            })
+          }
+          placeholder="artifact version"
           required
         />
         <fieldset style={{ display: 'grid', gap: 8, border: '1px solid #ddd', padding: 12 }}>
@@ -152,7 +190,7 @@ export function AdminSkillsPage({
                 }}
               />
               <span>
-                {category.name} ({category.code}) — {category.permission_code}
+                {category.name} ({category.code}) - {category.permissionCode}
               </span>
             </label>
           ))}
@@ -160,26 +198,29 @@ export function AdminSkillsPage({
         <div style={{ display: 'grid', gap: 8 }}>
           <input ref={fileInputRef} type="file" accept=".zip,.tar,.gz,.tgz,.skillpkg,application/zip" />
           <button type="button" onClick={onUploadSelectedFile} disabled={uploading}>
-            {uploading ? 'Uploading…' : 'Upload Package via sdkwork-drive'}
+            {uploading ? 'Uploading...' : 'Upload Artifact via sdkwork-drive'}
           </button>
           {selectedFileName ? <p>Uploaded file: {selectedFileName}</p> : null}
           <input
-            value={form.package_ref}
+            value={form.initialArtifact.artifactRef}
             readOnly
-            placeholder="package_ref (drive://spaces/.../nodes/...)"
+            placeholder="artifactRef (drive://spaces/.../nodes/...)"
             required
           />
         </div>
-        <button type="submit" disabled={isBlank(trim(form.package_ref))}>
-          Create Package
+        <button
+          type="submit"
+          disabled={isBlank(trim(form.initialArtifact.artifactRef)) || uploading}
+        >
+          Create Package And Artifact
         </button>
       </form>
       <ul>
         {packages.map((item) => (
           <li key={item.id}>
-            {item.display_name} ({item.skill_id})
-            {(item.categories ?? []).length > 0 ? ` [${(item.categories ?? []).join(', ')}]` : ''}
-            <button type="button" onClick={() => onDelete(item.skill_id)} style={{ marginLeft: 8 }}>
+            {item.displayName} ({item.skillKey})
+            {item.categories.length > 0 ? ` [${item.categories.join(', ')}]` : ''}
+            <button type="button" onClick={() => onDelete(item.id)} style={{ marginLeft: 8 }}>
               Delete
             </button>
           </li>
@@ -197,8 +238,8 @@ export function AdminCategoriesPage() {
     code: 'general',
     name: 'General',
     description: 'Default category',
-    sort_weight: 0,
-    permission_code: packageManagePermissionForCategory('general'),
+    sortWeight: 0,
+    permissionCode: packageManagePermissionForCategory('general'),
   });
 
   async function reload() {
@@ -233,7 +274,7 @@ export function AdminCategoriesPage() {
             setForm({
               ...form,
               code,
-              permission_code: packageManagePermissionForCategory(code),
+              permissionCode: packageManagePermissionForCategory(code),
             });
           }}
           placeholder="code"
@@ -246,9 +287,9 @@ export function AdminCategoriesPage() {
           required
         />
         <input
-          value={form.permission_code ?? ''}
-          onChange={(event) => setForm({ ...form, permission_code: event.target.value })}
-          placeholder="permission_code"
+          value={form.permissionCode ?? ''}
+          onChange={(event) => setForm({ ...form, permissionCode: event.target.value })}
+          placeholder="permission code"
           required
         />
         <button type="submit">Create Category</button>
@@ -256,7 +297,7 @@ export function AdminCategoriesPage() {
       <ul>
         {categories.map((item) => (
           <li key={item.id}>
-            {item.name} ({item.code}) — {item.permission_code}
+            {item.name} ({item.code}) - {item.permissionCode}
           </li>
         ))}
       </ul>

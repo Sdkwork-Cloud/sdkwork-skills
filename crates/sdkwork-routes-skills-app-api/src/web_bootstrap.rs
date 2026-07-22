@@ -9,15 +9,10 @@ use sdkwork_web_core::{
 };
 
 use crate::http_route_manifest::app_route_manifest;
-use crate::paths;
 use crate::SkillsAppRequestContext;
 
 pub fn skills_public_path_prefixes() -> Vec<String> {
-    vec![
-        paths::LIVEZ.to_owned(),
-        paths::READYZ.to_owned(),
-        paths::HEALTHZ.to_owned(),
-    ]
+    Vec::new()
 }
 
 #[derive(Clone, Default)]
@@ -35,17 +30,24 @@ fn skills_app_context_from_web_request(
     context: &WebRequestContext,
 ) -> Option<SkillsAppRequestContext> {
     let principal = context.principal.as_ref()?;
-    let tenant_id = principal.tenant_id().parse().ok()?;
-    let actor_id = principal.user_id().parse().ok();
+    let tenant_id = principal
+        .tenant_id()
+        .parse()
+        .ok()
+        .filter(|value| *value > 0)?;
+    let actor_id = principal
+        .user_id()
+        .parse()
+        .ok()
+        .filter(|value| *value > 0)?;
     let organization_id = principal
         .organization_id()
-        .and_then(|value| value.parse().ok());
-    let session_id = principal.session_id().map(str::to_owned);
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(0);
     Some(SkillsAppRequestContext {
         tenant_id,
         actor_id,
         organization_id,
-        session_id,
     })
 }
 

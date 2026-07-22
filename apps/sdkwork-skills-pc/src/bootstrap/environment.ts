@@ -42,7 +42,6 @@ export interface SdkworkSkillsPcRuntimeConfig {
   backendApiBaseUrl: string;
   buildMode: SdkworkSkillsPcEnvironment;
   configProfile: SdkworkSkillsPcConfigProfile;
-  defaultTenantId: string;
   deploymentMode: SdkworkSkillsPcDeploymentMode;
   driveAppApiBaseUrl: string;
   environment: SdkworkSkillsPcEnvironment;
@@ -115,9 +114,6 @@ export function resolveSdkworkSkillsPcRuntimeConfig(
   const environment = resolveEnvironment(mode);
   const sdkBaseUrl = envValue('VITE_SDKWORK_SKILLS_PC_SDK_BASE_URL');
   const sdkBaseUrls = parseSdkBaseUrls(sdkBaseUrl);
-  const defaultTenantId =
-    envValue('VITE_SDKWORK_SKILLS_TENANT_ID') ?? manifest.backend?.tenantId ?? '100001';
-
   return {
     appApiBaseUrl:
       envValue('VITE_SDKWORK_SKILLS_APP_API_BASE_URL') ??
@@ -138,7 +134,6 @@ export function resolveSdkworkSkillsPcRuntimeConfig(
       BACKEND_API_PREFIX,
     buildMode: environment,
     configProfile: profileByEnvironment[environment],
-    defaultTenantId,
     deploymentMode: 'web',
     driveAppApiBaseUrl:
       envValue('VITE_SDKWORK_DRIVE_APP_API_BASE_URL') ??

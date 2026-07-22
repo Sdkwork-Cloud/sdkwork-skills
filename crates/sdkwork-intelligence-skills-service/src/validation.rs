@@ -1,181 +1,148 @@
+use regex_lite::Regex;
 use sdkwork_drive_contract::DriveUri;
 use sdkwork_skills_contract::{
-    SkillCategoryRecord, SkillCategoryType, SkillInvocationKind, SkillPackageRecord,
+    SkillArtifactRecord, SkillCapabilityRecord, SkillCategoryRecord, SkillInstallationRecord,
+    SkillInstallationSubjectKind, SkillPackageRecord,
 };
-use sdkwork_utils_rust::{is_blank, trim};
+use sdkwork_utils_rust::trim;
 
 use crate::{SkillsResult, SkillsServiceError};
 
-const SKILL_ID_PATTERN: &str = r"^skill\.[a-z0-9_-]+(\.[a-z0-9_-]+)*$";
-const CATEGORY_CODE_PATTERN: &str = r"^[a-z0-9_-]+$";
+fn invalid(message: impl Into<String>) -> SkillsServiceError {
+    SkillsServiceError::InvalidArgument(message.into())
+}
 
-pub fn validate_skill_id(skill_id: &str) -> SkillsResult<()> {
-    let normalized = trim(skill_id);
-    let valid = regex_lite::Regex::new(SKILL_ID_PATTERN)
-        .map_err(|error| SkillsServiceError::Repository(error.to_string()))?
-        .is_match(&normalized);
-    if !valid {
-        return Err(SkillsServiceError::InvalidArgument(format!(
-            "skill_id must match {SKILL_ID_PATTERN}: {skill_id}"
-        )));
+fn skill_key_pattern() -> Regex {
+    Regex::new(r"^skill\.[a-z0-9_-]+(?:\.[a-z0-9_-]+)*$").expect("valid skill key regex")
+}
+
+fn capability_key_pattern() -> Regex {
+    Regex::new(r"^[a-z0-9_-]+(?:\.[a-z0-9_-]+)+$").expect("valid capability key regex")
+}
+
+fn sha256_pattern() -> Regex {
+    Regex::new(r"^[0-9a-f]{64}$").expect("valid sha256 regex")
+}
+
+pub fn validate_skill_key(value: &str) -> SkillsResult<()> {
+    let value = trim(value);
+    if !skill_key_pattern().is_match(&value) {
+        return Err(invalid(
+            "skill_key must use skill.<segment>[.<segment>] lowercase format",
+        ));
     }
     Ok(())
 }
 
-pub fn validate_package_ref(package_ref: &str) -> SkillsResult<()> {
-    let normalized = trim(package_ref);
-    if is_blank(Some(&normalized)) {
-        return Err(SkillsServiceError::InvalidArgument(
-            "package_ref must not be empty".to_string(),
-        ));
+fn validate_json_object(value: &serde_json::Value, field: &str) -> SkillsResult<()> {
+    if !value.is_object() {
+        return Err(invalid(format!("{field} must be a JSON object")));
     }
-    DriveUri::parse(&normalized).map_err(|error| {
-        SkillsServiceError::InvalidArgument(format!(
-            "package_ref must be a canonical sdkwork-drive URI: {error}"
+    Ok(())
+}
+
+pub fn validate_artifact_record(record: &SkillArtifactRecord) -> SkillsResult<()> {
+    if trim(&record.version_label).is_empty() || record.version_label.len() > 128 {
+        return Err(invalid("version_label must contain 1 to 128 characters"));
+    }
+    DriveUri::parse(&record.artifact_ref).map_err(|error| {
+        invalid(format!(
+            "artifact_ref must be a canonical Drive URI: {error}"
         ))
     })?;
+    if !sha256_pattern().is_match(&record.checksum_sha256) {
+        return Err(invalid(
+            "checksum_sha256 must be 64 lowercase hexadecimal characters",
+        ));
+    }
+    if trim(&record.entrypoint).is_empty() || record.entrypoint.len() > 255 {
+        return Err(invalid("entrypoint must contain 1 to 255 characters"));
+    }
+    validate_json_object(&record.input_schema, "input_schema")?;
+    validate_json_object(&record.output_schema, "output_schema")?;
+    validate_json_object(&record.config_schema, "config_schema")?;
+    validate_json_object(&record.default_config, "default_config")?;
+    if record.capability_keys.len() > 64 {
+        return Err(invalid(
+            "capability_keys cannot contain more than 64 entries",
+        ));
+    }
+    for key in &record.capability_keys {
+        if !capability_key_pattern().is_match(&trim(key)) {
+            return Err(invalid(format!("invalid capability key: {key}")));
+        }
+    }
     Ok(())
 }
 
 pub fn validate_skill_package_record(record: &SkillPackageRecord) -> SkillsResult<()> {
-    validate_skill_id(record.skill_id.as_str())?;
-    if is_blank(Some(trim(record.code.as_str()).as_str())) {
-        return Err(SkillsServiceError::InvalidArgument(
-            "code must not be empty".to_string(),
-        ));
-    }
-    if is_blank(Some(trim(record.display_name.as_str()).as_str())) {
-        return Err(SkillsServiceError::InvalidArgument(
-            "display_name must not be empty".to_string(),
-        ));
-    }
-    validate_package_ref(record.package_ref.as_str())?;
-    if is_blank(Some(trim(record.entrypoint.as_str()).as_str())) {
-        return Err(SkillsServiceError::InvalidArgument(
-            "entrypoint must not be empty".to_string(),
-        ));
-    }
-    validate_invocation_kind(record.invocation_kind)?;
-    validate_json_object(record.input_schema_json.as_str(), "input_schema_json")?;
-    validate_json_object(record.output_schema_json.as_str(), "output_schema_json")?;
-    validate_category_codes(&record.categories)?;
-    Ok(())
-}
-
-pub fn validate_category_codes(categories: &[String]) -> SkillsResult<()> {
-    let pattern = regex_lite::Regex::new(CATEGORY_CODE_PATTERN)
-        .map_err(|error| SkillsServiceError::Repository(error.to_string()))?;
-    for code in categories {
-        let normalized = trim(code);
-        if normalized.is_empty() {
-            continue;
-        }
-        if !pattern.is_match(&normalized) {
-            return Err(SkillsServiceError::InvalidArgument(format!(
-                "category code must match {CATEGORY_CODE_PATTERN}: {code}"
+    validate_skill_key(&record.skill_key)?;
+    for (field, value, max) in [
+        ("package_key", record.package_key.as_str(), 128_usize),
+        ("code", record.code.as_str(), 128_usize),
+        ("display_name", record.display_name.as_str(), 255_usize),
+    ] {
+        let value = trim(value);
+        if value.is_empty() || value.len() > max {
+            return Err(invalid(format!(
+                "{field} must contain 1 to {max} characters"
             )));
         }
     }
-    Ok(())
-}
-
-pub fn validate_invocation_kind(kind: SkillInvocationKind) -> SkillsResult<()> {
-    match kind {
-        SkillInvocationKind::LocalWorkflow
-        | SkillInvocationKind::ProcessAdapter
-        | SkillInvocationKind::McpTool
-        | SkillInvocationKind::KernelProvider => Ok(()),
+    if record.categories.len() > 32 {
+        return Err(invalid("categories cannot contain more than 32 entries"));
     }
+    if record.tags.len() > 64 {
+        return Err(invalid("tags cannot contain more than 64 entries"));
+    }
+    Ok(())
 }
 
 pub fn validate_category_record(record: &SkillCategoryRecord) -> SkillsResult<()> {
-    if is_blank(Some(trim(record.code.as_str()).as_str())) {
-        return Err(SkillsServiceError::InvalidArgument(
-            "category code must not be empty".to_string(),
+    if trim(&record.code).is_empty() || record.code.len() > 128 {
+        return Err(invalid("category code must contain 1 to 128 characters"));
+    }
+    if trim(&record.name).is_empty() || record.name.len() > 255 {
+        return Err(invalid("category name must contain 1 to 255 characters"));
+    }
+    if trim(&record.permission_code).is_empty() {
+        return Err(invalid("category permission_code is required"));
+    }
+    Ok(())
+}
+
+pub fn validate_capability_record(record: &SkillCapabilityRecord) -> SkillsResult<()> {
+    if !capability_key_pattern().is_match(&trim(&record.capability_key)) {
+        return Err(invalid(
+            "capability_key must contain at least two lowercase dotted segments",
         ));
     }
-    if is_blank(Some(trim(record.name.as_str()).as_str())) {
-        return Err(SkillsServiceError::InvalidArgument(
-            "category name must not be empty".to_string(),
-        ));
-    }
-    if record.category_type != SkillCategoryType::SkillMarket.as_str()
-        && record.category_type != SkillCategoryType::SkillsCollection.as_str()
-    {
-        return Err(SkillsServiceError::InvalidArgument(format!(
-            "unsupported category_type: {}",
-            record.category_type
-        )));
-    }
-    validate_category_codes(&[record.code.clone()])?;
-    if is_blank(Some(trim(record.permission_code.as_str()).as_str())) {
-        return Err(SkillsServiceError::InvalidArgument(
-            "permission_code must not be empty".to_string(),
+    if trim(&record.display_name).is_empty() || record.display_name.len() > 255 {
+        return Err(invalid(
+            "capability display_name must contain 1 to 255 characters",
         ));
     }
     Ok(())
 }
 
-fn validate_json_object(input: &str, field: &str) -> SkillsResult<()> {
-    let value: serde_json::Value = serde_json::from_str(input).map_err(|error| {
-        SkillsServiceError::InvalidArgument(format!("{field} must be valid json: {error}"))
-    })?;
-    if !value.is_object() && !value.is_array() {
-        return Err(SkillsServiceError::InvalidArgument(format!(
-            "{field} must be a json object or array"
-        )));
+pub fn validate_installation_subject(subject_kind: &str, subject_id: u64) -> SkillsResult<()> {
+    if SkillInstallationSubjectKind::parse(subject_kind).is_none() {
+        return Err(invalid(
+            "subject_kind must be user, workspace, project, or agent",
+        ));
+    }
+    if subject_id == 0 {
+        return Err(invalid("subject_id must be a positive Snowflake id"));
     }
     Ok(())
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use sdkwork_skills_contract::{
-        SkillInvocationKind, SkillLifecycleStatus, SkillPackageRecord, SkillVisibility,
-    };
-
-    fn sample_package(package_ref: &str) -> SkillPackageRecord {
-        SkillPackageRecord {
-            id: 1,
-            tenant_id: 100_001,
-            organization_id: 0,
-            owner_user_id: 0,
-            skill_id: "skill.demo.sample".to_string(),
-            package_key: "demo".to_string(),
-            code: "demo".to_string(),
-            display_name: "Demo".to_string(),
-            summary: None,
-            description: None,
-            invocation_kind: SkillInvocationKind::LocalWorkflow,
-            package_ref: package_ref.to_string(),
-            entrypoint: "run".to_string(),
-            input_schema_json: "{}".to_string(),
-            output_schema_json: "{}".to_string(),
-            capability_ids: vec![],
-            categories: vec![],
-            tags: vec![],
-            security_profile_id: None,
-            status: SkillLifecycleStatus::Active,
-            visibility: SkillVisibility::Tenant,
-            version: 1,
-            created_at: "2026-01-01T00:00:00Z".to_string(),
-            updated_at: "2026-01-01T00:00:00Z".to_string(),
-            deleted_at: None,
-        }
+pub fn validate_installation_record(record: &SkillInstallationRecord) -> SkillsResult<()> {
+    validate_installation_subject(record.subject_kind.as_str(), record.subject_id)?;
+    if record.package_id == 0 || record.artifact_id == 0 || record.installed_by_user_id == 0 {
+        return Err(invalid(
+            "package_id, artifact_id, and installed_by_user_id are required",
+        ));
     }
-
-    #[test]
-    fn accepts_drive_package_ref() {
-        assert!(validate_skill_package_record(&sample_package(
-            "drive://spaces/skills-space/nodes/pkg-node-1"
-        ))
-        .is_ok());
-    }
-
-    #[test]
-    fn rejects_invalid_package_ref() {
-        assert!(validate_skill_package_record(&sample_package("invalid-ref")).is_err());
-        assert!(validate_skill_package_record(&sample_package("file://demo")).is_err());
-    }
+    validate_json_object(&record.config, "config")
 }

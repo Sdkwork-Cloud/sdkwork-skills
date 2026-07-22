@@ -1,73 +1,47 @@
+use sdkwork_database_id::SnowflakeIdGenerator;
 use sdkwork_intelligence_skills_service::{SkillsResult, SkillsServiceError};
 use sdkwork_skills_contract::{
-    SkillCategoryRecord, SkillInvocationKind, SkillLifecycleStatus, SkillPackageRecord,
-    SkillRecord, SkillVisibility, UserSkillInstallRecord,
+    SkillArtifactRecord, SkillCapabilityRecord, SkillCategoryRecord, SkillInstallationRecord,
+    SkillLifecycleStatus, SkillPackageRecord, SkillRecord,
 };
 use sdkwork_utils_rust::{OffsetListPageParams, LIST_TOTAL_SQL_COLUMN};
-use sqlx::{PgPool, Row};
+use sqlx::{PgPool, Postgres, Row, Transaction};
 
-use crate::json_util::{string_list_from_json, string_list_to_json, timestamp_to_rfc3339};
+use crate::json_util::{
+    json_value_from_text, json_value_to_text, string_list_from_json, string_list_to_json,
+    timestamp_to_rfc3339,
+};
+use crate::support::{
+    artifact_status, capability_risk, invocation, lifecycle, map_sqlx, new_uuid, next_id,
+    search_pattern, subject_kind, visibility,
+};
 
-fn map_invocation_kind(value: &str) -> SkillsResult<SkillInvocationKind> {
-    SkillInvocationKind::parse(value).ok_or_else(|| {
-        SkillsServiceError::Repository(format!("invalid invocation_kind: {value}"))
-    })
-}
-
-fn map_lifecycle_status(value: i16) -> SkillsResult<SkillLifecycleStatus> {
-    SkillLifecycleStatus::from_db_code(value).ok_or_else(|| {
-        SkillsServiceError::Repository(format!("invalid skill package status: {value}"))
-    })
-}
-
-fn map_visibility(value: i16) -> SkillsResult<SkillVisibility> {
-    SkillVisibility::from_db_code(value).ok_or_else(|| {
-        SkillsServiceError::Repository(format!("invalid skill visibility: {value}"))
-    })
-}
-
-fn row_to_skill_package(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillPackageRecord> {
+fn row_to_package(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillPackageRecord> {
     Ok(SkillPackageRecord {
         id: row.try_get::<i64, _>("id").map_err(map_sqlx)? as u64,
+        uuid: row.try_get("uuid").map_err(map_sqlx)?,
         tenant_id: row.try_get::<i64, _>("tenant_id").map_err(map_sqlx)? as u64,
         organization_id: row.try_get::<i64, _>("organization_id").map_err(map_sqlx)? as u64,
         owner_user_id: row.try_get::<i64, _>("owner_user_id").map_err(map_sqlx)? as u64,
-        skill_id: row.try_get("skill_id").map_err(map_sqlx)?,
+        skill_key: row.try_get("skill_key").map_err(map_sqlx)?,
         package_key: row.try_get("package_key").map_err(map_sqlx)?,
         code: row.try_get("code").map_err(map_sqlx)?,
         display_name: row.try_get("display_name").map_err(map_sqlx)?,
         summary: row.try_get("summary").map_err(map_sqlx)?,
         description: row.try_get("description").map_err(map_sqlx)?,
-        invocation_kind: map_invocation_kind(
-            row.try_get::<String, _>("invocation_kind")
-                .map_err(map_sqlx)?
-                .as_str(),
-        )?,
-        package_ref: row.try_get("package_ref").map_err(map_sqlx)?,
-        entrypoint: row.try_get("entrypoint").map_err(map_sqlx)?,
-        input_schema_json: row.try_get("input_schema_json").map_err(map_sqlx)?,
-        output_schema_json: row.try_get("output_schema_json").map_err(map_sqlx)?,
-        capability_ids: string_list_from_json(
-            row.try_get::<String, _>("capability_ids_json")
-                .map_err(map_sqlx)?
-                .as_str(),
-            "capability_ids_json",
-        )?,
         categories: string_list_from_json(
-            row.try_get::<String, _>("categories_json")
-                .map_err(map_sqlx)?
-                .as_str(),
-            "categories_json",
+            &row.try_get::<String, _>("category_codes_json")
+                .map_err(map_sqlx)?,
+            "category_codes_json",
         )?,
         tags: string_list_from_json(
-            row.try_get::<String, _>("tags_json")
-                .map_err(map_sqlx)?
-                .as_str(),
+            &row.try_get::<String, _>("tags_json").map_err(map_sqlx)?,
             "tags_json",
         )?,
-        security_profile_id: row.try_get("security_profile_id").map_err(map_sqlx)?,
-        status: map_lifecycle_status(row.try_get("status").map_err(map_sqlx)?)?,
-        visibility: map_visibility(row.try_get("visibility").map_err(map_sqlx)?)?,
+        status: lifecycle(row.try_get("status").map_err(map_sqlx)?)?,
+        visibility: visibility(row.try_get("visibility").map_err(map_sqlx)?)?,
+        featured: row.try_get::<i16, _>("featured").map_err(map_sqlx)? != 0,
+        sort_weight: row.try_get("sort_weight").map_err(map_sqlx)?,
         version: row.try_get::<i64, _>("version").map_err(map_sqlx)? as u64,
         created_at: timestamp_to_rfc3339(row.try_get("created_at").map_err(map_sqlx)?),
         updated_at: timestamp_to_rfc3339(row.try_get("updated_at").map_err(map_sqlx)?),
@@ -81,42 +55,28 @@ fn row_to_skill_package(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillPackag
 fn row_to_skill(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillRecord> {
     Ok(SkillRecord {
         id: row.try_get::<i64, _>("id").map_err(map_sqlx)? as u64,
+        uuid: row.try_get("uuid").map_err(map_sqlx)?,
         tenant_id: row.try_get::<i64, _>("tenant_id").map_err(map_sqlx)? as u64,
         organization_id: row.try_get::<i64, _>("organization_id").map_err(map_sqlx)? as u64,
-        owner_user_id: row.try_get::<i64, _>("owner_user_id").map_err(map_sqlx)? as u64,
         skill_key: row.try_get("skill_key").map_err(map_sqlx)?,
-        package_id: row
-            .try_get::<Option<i64>, _>("package_id")
-            .map_err(map_sqlx)?
-            .map(|value| value as u64),
-        name: row.try_get("name").map_err(map_sqlx)?,
+        package_id: row.try_get::<i64, _>("package_id").map_err(map_sqlx)? as u64,
+        name: row.try_get("display_name").map_err(map_sqlx)?,
         summary: row.try_get("summary").map_err(map_sqlx)?,
         description: row.try_get("description").map_err(map_sqlx)?,
-        runtime: row.try_get("runtime").map_err(map_sqlx)?,
-        entrypoint: row.try_get("entrypoint").map_err(map_sqlx)?,
         market_status: row.try_get("market_status").map_err(map_sqlx)?,
-        visibility: row.try_get("visibility").map_err(map_sqlx)?,
+        visibility: visibility(row.try_get("visibility").map_err(map_sqlx)?)?,
         review_status: row.try_get("review_status").map_err(map_sqlx)?,
         categories: string_list_from_json(
-            row.try_get::<String, _>("categories_json")
-                .map_err(map_sqlx)?
-                .as_str(),
-            "categories_json",
+            &row.try_get::<String, _>("category_codes_json")
+                .map_err(map_sqlx)?,
+            "category_codes_json",
         )?,
         enabled: row.try_get::<i16, _>("enabled").map_err(map_sqlx)? != 0,
         featured: row.try_get::<i16, _>("featured").map_err(map_sqlx)? != 0,
         install_count: row.try_get::<i64, _>("install_count").map_err(map_sqlx)? as u64,
         tags: string_list_from_json(
-            row.try_get::<String, _>("tags_json")
-                .map_err(map_sqlx)?
-                .as_str(),
+            &row.try_get::<String, _>("tags_json").map_err(map_sqlx)?,
             "tags_json",
-        )?,
-        capabilities: string_list_from_json(
-            row.try_get::<String, _>("capabilities_json")
-                .map_err(map_sqlx)?
-                .as_str(),
-            "capabilities_json",
         )?,
         version: row.try_get::<i64, _>("version").map_err(map_sqlx)? as u64,
         created_at: timestamp_to_rfc3339(row.try_get("created_at").map_err(map_sqlx)?),
@@ -131,6 +91,7 @@ fn row_to_skill(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillRecord> {
 fn row_to_category(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillCategoryRecord> {
     Ok(SkillCategoryRecord {
         id: row.try_get::<i64, _>("id").map_err(map_sqlx)? as u64,
+        uuid: row.try_get("uuid").map_err(map_sqlx)?,
         tenant_id: row.try_get::<i64, _>("tenant_id").map_err(map_sqlx)? as u64,
         organization_id: row.try_get::<i64, _>("organization_id").map_err(map_sqlx)? as u64,
         category_type: row.try_get("category_type").map_err(map_sqlx)?,
@@ -145,222 +106,157 @@ fn row_to_category(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillCategoryRec
         permission_code: row.try_get("permission_code").map_err(map_sqlx)?,
         visible: row.try_get::<i16, _>("visible").map_err(map_sqlx)? != 0,
         status: row.try_get("status").map_err(map_sqlx)?,
+        version: row.try_get::<i64, _>("version").map_err(map_sqlx)? as u64,
+        created_at: timestamp_to_rfc3339(row.try_get("created_at").map_err(map_sqlx)?),
+        updated_at: timestamp_to_rfc3339(row.try_get("updated_at").map_err(map_sqlx)?),
     })
 }
 
-fn row_to_user_install(row: &sqlx::postgres::PgRow) -> SkillsResult<UserSkillInstallRecord> {
-    Ok(UserSkillInstallRecord {
+fn row_to_capability(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillCapabilityRecord> {
+    Ok(SkillCapabilityRecord {
         id: row.try_get::<i64, _>("id").map_err(map_sqlx)? as u64,
+        uuid: row.try_get("uuid").map_err(map_sqlx)?,
         tenant_id: row.try_get::<i64, _>("tenant_id").map_err(map_sqlx)? as u64,
         organization_id: row.try_get::<i64, _>("organization_id").map_err(map_sqlx)? as u64,
-        user_id: row.try_get::<i64, _>("user_id").map_err(map_sqlx)? as u64,
-        skill_id: row.try_get::<i64, _>("skill_id").map_err(map_sqlx)? as u64,
-        package_id: row
-            .try_get::<Option<i64>, _>("package_id")
+        capability_key: row.try_get("capability_key").map_err(map_sqlx)?,
+        display_name: row.try_get("display_name").map_err(map_sqlx)?,
+        description: row.try_get("description").map_err(map_sqlx)?,
+        risk_level: capability_risk(&row.try_get::<String, _>("risk_level").map_err(map_sqlx)?)?,
+        status: row.try_get("status").map_err(map_sqlx)?,
+        version: row.try_get::<i64, _>("version").map_err(map_sqlx)? as u64,
+        created_at: timestamp_to_rfc3339(row.try_get("created_at").map_err(map_sqlx)?),
+        updated_at: timestamp_to_rfc3339(row.try_get("updated_at").map_err(map_sqlx)?),
+    })
+}
+
+fn row_to_artifact(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillArtifactRecord> {
+    Ok(SkillArtifactRecord {
+        id: row.try_get::<i64, _>("id").map_err(map_sqlx)? as u64,
+        uuid: row.try_get("uuid").map_err(map_sqlx)?,
+        tenant_id: row.try_get::<i64, _>("tenant_id").map_err(map_sqlx)? as u64,
+        package_id: row.try_get::<i64, _>("package_id").map_err(map_sqlx)? as u64,
+        version_label: row.try_get("version_label").map_err(map_sqlx)?,
+        artifact_ref: row.try_get("artifact_ref").map_err(map_sqlx)?,
+        checksum_sha256: row.try_get("checksum_sha256").map_err(map_sqlx)?,
+        size_bytes: row
+            .try_get::<Option<i64>, _>("size_bytes")
             .map_err(map_sqlx)?
             .map(|value| value as u64),
+        invocation_kind: invocation(
+            &row.try_get::<String, _>("invocation_kind")
+                .map_err(map_sqlx)?,
+        )?,
+        entrypoint: row.try_get("entrypoint").map_err(map_sqlx)?,
+        input_schema: json_value_from_text(
+            &row.try_get::<String, _>("input_schema_json")
+                .map_err(map_sqlx)?,
+            "input_schema_json",
+        )?,
+        output_schema: json_value_from_text(
+            &row.try_get::<String, _>("output_schema_json")
+                .map_err(map_sqlx)?,
+            "output_schema_json",
+        )?,
+        config_schema: json_value_from_text(
+            &row.try_get::<String, _>("config_schema_json")
+                .map_err(map_sqlx)?,
+            "config_schema_json",
+        )?,
+        default_config: json_value_from_text(
+            &row.try_get::<String, _>("default_config_json")
+                .map_err(map_sqlx)?,
+            "default_config_json",
+        )?,
+        security_profile_id: row.try_get("security_profile_id").map_err(map_sqlx)?,
+        status: artifact_status(&row.try_get::<String, _>("status").map_err(map_sqlx)?)?,
+        capability_keys: string_list_from_json(
+            &row.try_get::<String, _>("capability_keys_json")
+                .map_err(map_sqlx)?,
+            "capability_keys_json",
+        )?,
+        published_at: row
+            .try_get::<Option<chrono::DateTime<chrono::Utc>>, _>("published_at")
+            .map_err(map_sqlx)?
+            .map(timestamp_to_rfc3339),
+        yanked_at: row
+            .try_get::<Option<chrono::DateTime<chrono::Utc>>, _>("yanked_at")
+            .map_err(map_sqlx)?
+            .map(timestamp_to_rfc3339),
+        created_at: timestamp_to_rfc3339(row.try_get("created_at").map_err(map_sqlx)?),
+    })
+}
+
+fn row_to_installation(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillInstallationRecord> {
+    Ok(SkillInstallationRecord {
+        id: row.try_get::<i64, _>("id").map_err(map_sqlx)? as u64,
+        uuid: row.try_get("uuid").map_err(map_sqlx)?,
+        tenant_id: row.try_get::<i64, _>("tenant_id").map_err(map_sqlx)? as u64,
+        organization_id: row.try_get::<i64, _>("organization_id").map_err(map_sqlx)? as u64,
+        subject_kind: subject_kind(&row.try_get::<String, _>("subject_kind").map_err(map_sqlx)?)?,
+        subject_id: row.try_get::<i64, _>("subject_id").map_err(map_sqlx)? as u64,
+        skill_id: row.try_get::<i64, _>("skill_id").map_err(map_sqlx)? as u64,
+        package_id: row.try_get::<i64, _>("package_id").map_err(map_sqlx)? as u64,
+        artifact_id: row.try_get::<i64, _>("artifact_id").map_err(map_sqlx)? as u64,
+        installed_by_user_id: row
+            .try_get::<i64, _>("installed_by_user_id")
+            .map_err(map_sqlx)? as u64,
         install_status: row.try_get("install_status").map_err(map_sqlx)?,
         enabled: row.try_get::<i16, _>("enabled").map_err(map_sqlx)? != 0,
-        config_json: row.try_get("config_json").map_err(map_sqlx)?,
+        config: json_value_from_text(
+            &row.try_get::<String, _>("config_json").map_err(map_sqlx)?,
+            "config_json",
+        )?,
+        version: row.try_get::<i64, _>("version").map_err(map_sqlx)? as u64,
         installed_at: timestamp_to_rfc3339(row.try_get("installed_at").map_err(map_sqlx)?),
         updated_at: timestamp_to_rfc3339(row.try_get("updated_at").map_err(map_sqlx)?),
     })
 }
 
-fn map_sqlx(error: sqlx::Error) -> SkillsServiceError {
-    SkillsServiceError::Repository(error.to_string())
-}
+const PACKAGE_SELECT: &str = r#"
+    SELECT p.id, p.uuid, p.tenant_id, p.organization_id, p.owner_user_id,
+           s.skill_key, p.package_key, p.code, p.display_name, p.summary, p.description,
+           COALESCE((
+               SELECT jsonb_agg(c.code ORDER BY c.code)::text
+               FROM ai_skill_category_binding b
+               JOIN ai_skill_category c ON c.id = b.category_id AND c.deleted_at IS NULL
+               WHERE b.skill_id = s.id
+           ), '[]') AS category_codes_json,
+           p.tags_json, p.status, p.visibility, p.featured, p.sort_weight, p.version,
+           p.created_at, p.updated_at, p.deleted_at
+    FROM ai_agent_skill_package p
+    JOIN ai_agent_skill s ON s.package_id = p.id AND s.deleted_at IS NULL
+"#;
 
-pub async fn list_skill_packages(pool: &PgPool, tenant_id: u64) -> SkillsResult<Vec<SkillPackageRecord>> {
-    let rows = sqlx::query(
-        r#"
-        SELECT id, tenant_id, organization_id, owner_user_id, skill_id, package_key, code,
-               display_name, summary, description, invocation_kind, package_ref, entrypoint,
-               input_schema_json, output_schema_json, capability_ids_json, categories_json,
-               tags_json, security_profile_id, status, visibility, version,
-               created_at, updated_at, deleted_at
-        FROM ai_agent_skill_package
-        WHERE tenant_id = $1 AND deleted_at IS NULL AND status <> 4
-        ORDER BY sort_weight DESC, updated_at DESC, code ASC
-        "#,
-    )
-    .bind(tenant_id as i64)
-    .fetch_all(pool)
-    .await
-    .map_err(map_sqlx)?;
+const SKILL_SELECT: &str = r#"
+    SELECT s.id, s.uuid, s.tenant_id, s.organization_id, s.skill_key, s.package_id,
+           p.display_name, p.summary, p.description, s.market_status, p.visibility,
+           s.review_status,
+           COALESCE((
+               SELECT jsonb_agg(c.code ORDER BY c.code)::text
+               FROM ai_skill_category_binding b
+               JOIN ai_skill_category c ON c.id = b.category_id AND c.deleted_at IS NULL
+               WHERE b.skill_id = s.id
+           ), '[]') AS category_codes_json,
+           s.enabled, s.featured, s.install_count, p.tags_json, s.version,
+           s.created_at, s.updated_at, s.deleted_at
+    FROM ai_agent_skill s
+    JOIN ai_agent_skill_package p ON p.id = s.package_id AND p.deleted_at IS NULL
+"#;
 
-    rows.iter().map(row_to_skill_package).collect()
-}
-
-pub async fn get_skill_package(
-    pool: &PgPool,
-    tenant_id: u64,
-    skill_id: &str,
-) -> SkillsResult<SkillPackageRecord> {
-    let row = sqlx::query(
-        r#"
-        SELECT id, tenant_id, organization_id, owner_user_id, skill_id, package_key, code,
-               display_name, summary, description, invocation_kind, package_ref, entrypoint,
-               input_schema_json, output_schema_json, capability_ids_json, categories_json,
-               tags_json, security_profile_id, status, visibility, version,
-               created_at, updated_at, deleted_at
-        FROM ai_agent_skill_package
-        WHERE tenant_id = $1 AND skill_id = $2 AND deleted_at IS NULL
-        LIMIT 1
-        "#,
-    )
-    .bind(tenant_id as i64)
-    .bind(skill_id)
-    .fetch_optional(pool)
-    .await
-    .map_err(map_sqlx)?;
-
-    row.as_ref()
-        .map(row_to_skill_package)
-        .transpose()?
-        .ok_or_else(|| SkillsServiceError::NotFound(skill_id.to_string()))
-}
-
-pub async fn upsert_skill_package(
-    pool: &PgPool,
-    record: SkillPackageRecord,
-) -> SkillsResult<SkillPackageRecord> {
-    let uuid = format!("skill_package_{}_{}", record.tenant_id, record.skill_id);
-    let capability_ids_json = string_list_to_json(&record.capability_ids, "capability_ids")?;
-    let categories_json = string_list_to_json(&record.categories, "categories")?;
-    let tags_json = string_list_to_json(&record.tags, "tags")?;
-
-    let row = sqlx::query(
-        r#"
-        INSERT INTO ai_agent_skill_package (
-            uuid, tenant_id, organization_id, owner_user_id, skill_id, package_key, code,
-            display_name, summary, description, invocation_kind, package_ref, entrypoint,
-            input_schema_json, output_schema_json, capability_ids_json, categories_json,
-            tags_json, security_profile_id, status, visibility, version
-        ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
-            $19, $20, $21, $22
-        )
-        ON CONFLICT (tenant_id, skill_id) DO UPDATE SET
-            organization_id = EXCLUDED.organization_id,
-            owner_user_id = EXCLUDED.owner_user_id,
-            package_key = EXCLUDED.package_key,
-            code = EXCLUDED.code,
-            display_name = EXCLUDED.display_name,
-            summary = EXCLUDED.summary,
-            description = EXCLUDED.description,
-            invocation_kind = EXCLUDED.invocation_kind,
-            package_ref = EXCLUDED.package_ref,
-            entrypoint = EXCLUDED.entrypoint,
-            input_schema_json = EXCLUDED.input_schema_json,
-            output_schema_json = EXCLUDED.output_schema_json,
-            capability_ids_json = EXCLUDED.capability_ids_json,
-            categories_json = EXCLUDED.categories_json,
-            tags_json = EXCLUDED.tags_json,
-            security_profile_id = EXCLUDED.security_profile_id,
-            status = EXCLUDED.status,
-            visibility = EXCLUDED.visibility,
-            version = ai_agent_skill_package.version + 1,
-            updated_at = CURRENT_TIMESTAMP,
-            deleted_at = NULL
-        RETURNING id, tenant_id, organization_id, owner_user_id, skill_id, package_key, code,
-                  display_name, summary, description, invocation_kind, package_ref, entrypoint,
-                  input_schema_json, output_schema_json, capability_ids_json, categories_json,
-                  tags_json, security_profile_id, status, visibility, version,
-                  created_at, updated_at, deleted_at
-        "#,
-    )
-    .bind(uuid)
-    .bind(record.tenant_id as i64)
-    .bind(record.organization_id as i64)
-    .bind(record.owner_user_id as i64)
-    .bind(&record.skill_id)
-    .bind(&record.package_key)
-    .bind(&record.code)
-    .bind(&record.display_name)
-    .bind(&record.summary)
-    .bind(&record.description)
-    .bind(record.invocation_kind.as_str())
-    .bind(&record.package_ref)
-    .bind(&record.entrypoint)
-    .bind(&record.input_schema_json)
-    .bind(&record.output_schema_json)
-    .bind(capability_ids_json)
-    .bind(categories_json)
-    .bind(tags_json)
-    .bind(&record.security_profile_id)
-    .bind(record.status.as_db_code())
-    .bind(record.visibility.as_db_code())
-    .bind(record.version as i64)
-    .fetch_one(pool)
-    .await
-    .map_err(map_sqlx)?;
-
-    row_to_skill_package(&row)
-}
-
-pub async fn list_skills(pool: &PgPool, tenant_id: u64) -> SkillsResult<Vec<SkillRecord>> {
-    let rows = sqlx::query(
-        r#"
-        SELECT id, tenant_id, organization_id, owner_user_id, skill_key, package_id, name,
-               summary, description, runtime, entrypoint, market_status, visibility,
-               review_status, categories_json, enabled, featured, install_count, tags_json,
-               capabilities_json, version, created_at, updated_at, deleted_at
-        FROM ai_agent_skill
-        WHERE tenant_id = $1 AND deleted_at IS NULL AND enabled = 1
-        ORDER BY featured DESC, recommend_weight DESC, updated_at DESC, skill_key ASC
-        "#,
-    )
-    .bind(tenant_id as i64)
-    .fetch_all(pool)
-    .await
-    .map_err(map_sqlx)?;
-
-    rows.iter().map(row_to_skill).collect()
-}
-
-fn search_pattern(keyword: Option<&str>) -> String {
-    keyword
-        .map(|value| format!("%{}%", value.replace('%', "\\%").replace('_', "\\_")))
-        .unwrap_or_else(|| "%".to_string())
-}
-
-pub async fn list_skills_page(
-    pool: &PgPool,
-    tenant_id: u64,
-    params: OffsetListPageParams,
-    keyword: Option<&str>,
-) -> SkillsResult<(Vec<SkillRecord>, i64)> {
-    let pattern = search_pattern(keyword);
-    let rows = sqlx::query(&format!(
-        r#"
-        SELECT id, tenant_id, organization_id, owner_user_id, skill_key, package_id, name,
-               summary, description, runtime, entrypoint, market_status, visibility,
-               review_status, categories_json, enabled, featured, install_count, tags_json,
-               capabilities_json, version, created_at, updated_at, deleted_at,
-               COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
-        FROM ai_agent_skill
-        WHERE tenant_id = $1 AND deleted_at IS NULL AND enabled = 1
-          AND ($2 = '%' OR name ILIKE $2 OR skill_key ILIKE $2 OR COALESCE(summary, '') ILIKE $2)
-        ORDER BY featured DESC, recommend_weight DESC, updated_at DESC, skill_key ASC
-        LIMIT $3 OFFSET $4
-        "#
-    ))
-    .bind(tenant_id as i64)
-    .bind(pattern)
-    .bind(params.page_size)
-    .bind(params.offset)
-    .fetch_all(pool)
-    .await
-    .map_err(map_sqlx)?;
-
-    let total = rows
-        .first()
-        .map(|row| row.try_get::<i64, _>(LIST_TOTAL_SQL_COLUMN).unwrap_or(0))
-        .unwrap_or(0);
-    let items = rows.iter().map(row_to_skill).collect::<SkillsResult<Vec<_>>>()?;
-    Ok((items, total))
-}
+const ARTIFACT_SELECT: &str = r#"
+    SELECT a.id, a.uuid, a.tenant_id, a.package_id, a.version_label, a.artifact_ref,
+           a.checksum_sha256, a.size_bytes, a.invocation_kind, a.entrypoint,
+           a.input_schema_json, a.output_schema_json, a.config_schema_json,
+           a.default_config_json, a.security_profile_id, a.status,
+           COALESCE((
+               SELECT jsonb_agg(c.capability_key ORDER BY c.capability_key)::text
+               FROM ai_skill_artifact_capability ac
+               JOIN ai_skill_capability c ON c.id = ac.capability_id AND c.deleted_at IS NULL
+               WHERE ac.artifact_id = a.id
+           ), '[]') AS capability_keys_json,
+           a.published_at, a.yanked_at, a.created_at
+    FROM ai_skill_artifact a
+"#;
 
 pub async fn list_skill_packages_page(
     pool: &PgPool,
@@ -368,39 +264,202 @@ pub async fn list_skill_packages_page(
     params: OffsetListPageParams,
     keyword: Option<&str>,
 ) -> SkillsResult<(Vec<SkillPackageRecord>, i64)> {
-    let pattern = search_pattern(keyword);
-    let rows = sqlx::query(&format!(
-        r#"
-        SELECT id, tenant_id, organization_id, owner_user_id, skill_id, package_key, code,
-               display_name, summary, description, invocation_kind, package_ref, entrypoint,
-               input_schema_json, output_schema_json, capability_ids_json, categories_json,
-               tags_json, security_profile_id, status, visibility, version,
-               created_at, updated_at, deleted_at,
-               COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
-        FROM ai_agent_skill_package
-        WHERE tenant_id = $1 AND deleted_at IS NULL AND status <> 4
-          AND ($2 = '%' OR display_name ILIKE $2 OR skill_id ILIKE $2 OR code ILIKE $2)
-        ORDER BY sort_weight DESC, updated_at DESC, code ASC
-        LIMIT $3 OFFSET $4
-        "#
-    ))
-    .bind(tenant_id as i64)
-    .bind(pattern)
-    .bind(params.page_size)
-    .bind(params.offset)
-    .fetch_all(pool)
-    .await
-    .map_err(map_sqlx)?;
+    let sql = format!(
+        "SELECT package_rows.*, COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+         FROM ({PACKAGE_SELECT}
+               WHERE p.tenant_id = $1 AND p.deleted_at IS NULL AND p.status <> 4
+                 AND ($2 = '%' OR p.display_name ILIKE $2 OR p.package_key ILIKE $2 OR p.code ILIKE $2)
+         ) package_rows
+         ORDER BY featured DESC, sort_weight DESC, updated_at DESC, code ASC LIMIT $3 OFFSET $4"
+    );
+    let rows = sqlx::query(&sql)
+        .bind(tenant_id as i64)
+        .bind(search_pattern(keyword))
+        .bind(params.page_size)
+        .bind(params.offset)
+        .fetch_all(pool)
+        .await
+        .map_err(map_sqlx)?;
+    page(rows, row_to_package)
+}
 
+pub async fn get_skill_package(
+    pool: &PgPool,
+    tenant_id: u64,
+    package_id: u64,
+) -> SkillsResult<SkillPackageRecord> {
+    let sql = format!(
+        "{PACKAGE_SELECT} WHERE p.tenant_id = $1 AND p.id = $2 AND p.deleted_at IS NULL LIMIT 1"
+    );
+    let row = sqlx::query(&sql)
+        .bind(tenant_id as i64)
+        .bind(package_id as i64)
+        .fetch_optional(pool)
+        .await
+        .map_err(map_sqlx)?;
+    row.as_ref()
+        .map(row_to_package)
+        .transpose()?
+        .ok_or_else(|| SkillsServiceError::NotFound(format!("skill package {package_id}")))
+}
+
+pub async fn list_marketplace_skill_packages_page(
+    pool: &PgPool,
+    tenant_id: u64,
+    organization_id: u64,
+    user_id: u64,
+    params: OffsetListPageParams,
+    keyword: Option<&str>,
+) -> SkillsResult<(Vec<SkillPackageRecord>, i64)> {
+    let sql = format!(
+        "SELECT package_rows.*, COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+         FROM ({PACKAGE_SELECT}
+               WHERE p.tenant_id = $1 AND p.deleted_at IS NULL AND p.status = 1
+                 AND (p.visibility IN (1, 3)
+                      OR (p.visibility = 2 AND p.organization_id = $2)
+                      OR (p.visibility = 0 AND p.owner_user_id = $3))
+                 AND ($4 = '%' OR p.display_name ILIKE $4 OR p.package_key ILIKE $4 OR p.code ILIKE $4)
+         ) package_rows
+         ORDER BY featured DESC, sort_weight DESC, updated_at DESC, code ASC LIMIT $5 OFFSET $6"
+    );
+    let rows = sqlx::query(&sql)
+        .bind(tenant_id as i64)
+        .bind(organization_id as i64)
+        .bind(user_id as i64)
+        .bind(search_pattern(keyword))
+        .bind(params.page_size)
+        .bind(params.offset)
+        .fetch_all(pool)
+        .await
+        .map_err(map_sqlx)?;
+    page(rows, row_to_package)
+}
+
+pub async fn get_marketplace_skill_package(
+    pool: &PgPool,
+    tenant_id: u64,
+    organization_id: u64,
+    user_id: u64,
+    package_id: u64,
+) -> SkillsResult<SkillPackageRecord> {
+    let sql = format!(
+        "{PACKAGE_SELECT}
+         WHERE p.tenant_id = $1 AND p.id = $2 AND p.status = 1 AND p.deleted_at IS NULL
+           AND (p.visibility IN (1, 3)
+                OR (p.visibility = 2 AND p.organization_id = $3)
+                OR (p.visibility = 0 AND p.owner_user_id = $4))
+         LIMIT 1"
+    );
+    let row = sqlx::query(&sql)
+        .bind(tenant_id as i64)
+        .bind(package_id as i64)
+        .bind(organization_id as i64)
+        .bind(user_id as i64)
+        .fetch_optional(pool)
+        .await
+        .map_err(map_sqlx)?;
+    row.as_ref()
+        .map(row_to_package)
+        .transpose()?
+        .ok_or_else(|| SkillsServiceError::NotFound(format!("skill package {package_id}")))
+}
+
+pub async fn list_skills_page(
+    pool: &PgPool,
+    tenant_id: u64,
+    organization_id: u64,
+    user_id: u64,
+    params: OffsetListPageParams,
+    keyword: Option<&str>,
+) -> SkillsResult<(Vec<SkillRecord>, i64)> {
+    let sql = format!(
+        "SELECT skill_rows.*, COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+         FROM ({SKILL_SELECT}
+               WHERE s.tenant_id = $1 AND s.deleted_at IS NULL AND s.enabled = 1
+                 AND s.market_status = 'published' AND s.review_status = 'approved'
+                 AND (p.visibility IN (1, 3)
+                      OR (p.visibility = 2 AND p.organization_id = $2)
+                      OR (p.visibility = 0 AND p.owner_user_id = $3))
+                 AND ($4 = '%' OR p.display_name ILIKE $4 OR s.skill_key ILIKE $4 OR COALESCE(p.summary, '') ILIKE $4)
+         ) skill_rows
+         ORDER BY featured DESC, updated_at DESC, skill_key ASC LIMIT $5 OFFSET $6"
+    );
+    let rows = sqlx::query(&sql)
+        .bind(tenant_id as i64)
+        .bind(organization_id as i64)
+        .bind(user_id as i64)
+        .bind(search_pattern(keyword))
+        .bind(params.page_size)
+        .bind(params.offset)
+        .fetch_all(pool)
+        .await
+        .map_err(map_sqlx)?;
+    page(rows, row_to_skill)
+}
+
+pub async fn get_skill(
+    pool: &PgPool,
+    tenant_id: u64,
+    organization_id: u64,
+    user_id: u64,
+    skill_key: &str,
+) -> SkillsResult<SkillRecord> {
+    let sql = format!(
+        "{SKILL_SELECT}
+         WHERE s.tenant_id = $1 AND s.skill_key = $2 AND s.deleted_at IS NULL
+           AND s.enabled = 1 AND s.market_status = 'published' AND s.review_status = 'approved'
+           AND (p.visibility IN (1, 3)
+                OR (p.visibility = 2 AND p.organization_id = $3)
+                OR (p.visibility = 0 AND p.owner_user_id = $4))
+         LIMIT 1"
+    );
+    let row = sqlx::query(&sql)
+        .bind(tenant_id as i64)
+        .bind(skill_key)
+        .bind(organization_id as i64)
+        .bind(user_id as i64)
+        .fetch_optional(pool)
+        .await
+        .map_err(map_sqlx)?;
+    row.as_ref()
+        .map(row_to_skill)
+        .transpose()?
+        .ok_or_else(|| SkillsServiceError::NotFound(skill_key.to_string()))
+}
+
+fn page<T>(
+    rows: Vec<sqlx::postgres::PgRow>,
+    mapper: fn(&sqlx::postgres::PgRow) -> SkillsResult<T>,
+) -> SkillsResult<(Vec<T>, i64)> {
     let total = rows
         .first()
-        .map(|row| row.try_get::<i64, _>(LIST_TOTAL_SQL_COLUMN).unwrap_or(0))
+        .and_then(|row| row.try_get::<i64, _>(LIST_TOTAL_SQL_COLUMN).ok())
         .unwrap_or(0);
-    let items = rows
-        .iter()
-        .map(row_to_skill_package)
-        .collect::<SkillsResult<Vec<_>>>()?;
+    let items = rows.iter().map(mapper).collect::<SkillsResult<Vec<_>>>()?;
     Ok((items, total))
+}
+
+pub async fn get_category(
+    pool: &PgPool,
+    tenant_id: u64,
+    category_id: u64,
+) -> SkillsResult<SkillCategoryRecord> {
+    let row = sqlx::query(
+        "SELECT id, uuid, tenant_id, organization_id, category_type, code, name, description,
+                parent_id, sort_weight, permission_code, visible, status, version,
+                created_at, updated_at
+         FROM ai_skill_category
+         WHERE id=$1 AND tenant_id IN (0,$2) AND deleted_at IS NULL LIMIT 1",
+    )
+    .bind(category_id as i64)
+    .bind(tenant_id as i64)
+    .fetch_optional(pool)
+    .await
+    .map_err(map_sqlx)?;
+    row.as_ref()
+        .map(row_to_category)
+        .transpose()?
+        .ok_or_else(|| SkillsServiceError::NotFound(format!("skill category {category_id}")))
 }
 
 pub async fn list_categories_page(
@@ -410,109 +469,45 @@ pub async fn list_categories_page(
     params: OffsetListPageParams,
     keyword: Option<&str>,
 ) -> SkillsResult<(Vec<SkillCategoryRecord>, i64)> {
-    let pattern = search_pattern(keyword);
-    let rows = sqlx::query(&format!(
-        r#"
-        SELECT id, tenant_id, organization_id, category_type, code, name, description,
-               parent_id, sort_weight, permission_code, visible, status,
-               COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
-        FROM ai_skill_category
-        WHERE category_type = $1 AND tenant_id IN (0, $2) AND deleted_at IS NULL AND status = 1
-          AND ($3 = '%' OR name ILIKE $3 OR code ILIKE $3)
-        ORDER BY sort_weight ASC, code ASC
-        LIMIT $4 OFFSET $5
-        "#
-    ))
-    .bind(category_type)
-    .bind(tenant_id as i64)
-    .bind(pattern)
-    .bind(params.page_size)
-    .bind(params.offset)
-    .fetch_all(pool)
-    .await
-    .map_err(map_sqlx)?;
-
-    let total = rows
-        .first()
-        .map(|row| row.try_get::<i64, _>(LIST_TOTAL_SQL_COLUMN).unwrap_or(0))
-        .unwrap_or(0);
-    let items = rows.iter().map(row_to_category).collect::<SkillsResult<Vec<_>>>()?;
-    Ok((items, total))
-}
-
-pub async fn get_skill(
-    pool: &PgPool,
-    tenant_id: u64,
-    skill_key: &str,
-) -> SkillsResult<SkillRecord> {
-    let row = sqlx::query(
-        r#"
-        SELECT id, tenant_id, organization_id, owner_user_id, skill_key, package_id, name,
-               summary, description, runtime, entrypoint, market_status, visibility,
-               review_status, categories_json, enabled, featured, install_count, tags_json,
-               capabilities_json, version, created_at, updated_at, deleted_at
-        FROM ai_agent_skill
-        WHERE tenant_id = $1 AND skill_key = $2 AND deleted_at IS NULL
-        LIMIT 1
-        "#,
-    )
-    .bind(tenant_id as i64)
-    .bind(skill_key)
-    .fetch_optional(pool)
-    .await
-    .map_err(map_sqlx)?;
-
-    row.as_ref()
-        .map(row_to_skill)
-        .transpose()?
-        .ok_or_else(|| SkillsServiceError::NotFound(skill_key.to_string()))
-}
-
-pub async fn list_categories(
-    pool: &PgPool,
-    tenant_id: u64,
-    category_type: &str,
-) -> SkillsResult<Vec<SkillCategoryRecord>> {
-    let rows = sqlx::query(
-        r#"
-        SELECT id, tenant_id, organization_id, category_type, code, name, description,
-               parent_id, sort_weight, permission_code, visible, status
-        FROM ai_skill_category
-        WHERE category_type = $1 AND tenant_id IN (0, $2) AND deleted_at IS NULL AND status = 1
-        ORDER BY sort_weight ASC, code ASC
-        "#,
-    )
-    .bind(category_type)
-    .bind(tenant_id as i64)
-    .fetch_all(pool)
-    .await
-    .map_err(map_sqlx)?;
-
-    rows.iter().map(row_to_category).collect()
+    let sql = format!(
+        "SELECT id, uuid, tenant_id, organization_id, category_type, code, name, description,
+                parent_id, sort_weight, permission_code, visible, status, version,
+                created_at, updated_at,
+                COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+         FROM ai_skill_category
+         WHERE category_type = $1 AND tenant_id IN (0, $2) AND deleted_at IS NULL
+           AND ($3 = '%' OR name ILIKE $3 OR code ILIKE $3)
+         ORDER BY sort_weight ASC, code ASC LIMIT $4 OFFSET $5"
+    );
+    let rows = sqlx::query(&sql)
+        .bind(category_type)
+        .bind(tenant_id as i64)
+        .bind(search_pattern(keyword))
+        .bind(params.page_size)
+        .bind(params.offset)
+        .fetch_all(pool)
+        .await
+        .map_err(map_sqlx)?;
+    page(rows, row_to_category)
 }
 
 pub async fn upsert_category(
     pool: &PgPool,
+    id_generator: &SnowflakeIdGenerator,
     record: SkillCategoryRecord,
 ) -> SkillsResult<SkillCategoryRecord> {
-    let uuid = format!(
-        "skill_category_{}_{}_{}",
-        record.tenant_id, record.category_type, record.code
-    );
-    let visible = if record.visible { 1_i16 } else { 0_i16 };
-
     let row = if record.id == 0 {
         sqlx::query(
-            r#"
-            INSERT INTO ai_skill_category (
-                uuid, tenant_id, organization_id, category_type, code, name, description,
-                parent_id, sort_weight, permission_code, visible, status
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-            RETURNING id, tenant_id, organization_id, category_type, code, name, description,
-                      parent_id, sort_weight, permission_code, visible, status
-            "#,
+            "INSERT INTO ai_skill_category (
+                 id, uuid, tenant_id, organization_id, category_type, code, name, description,
+                 parent_id, sort_weight, permission_code, visible, status, version
+             ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,1)
+             RETURNING id, uuid, tenant_id, organization_id, category_type, code, name,
+                       description, parent_id, sort_weight, permission_code, visible, status,
+                       version, created_at, updated_at",
         )
-        .bind(uuid)
+        .bind(next_id(id_generator)?)
+        .bind(new_uuid())
         .bind(record.tenant_id as i64)
         .bind(record.organization_id as i64)
         .bind(&record.category_type)
@@ -522,149 +517,659 @@ pub async fn upsert_category(
         .bind(record.parent_id.map(|value| value as i64))
         .bind(record.sort_weight)
         .bind(&record.permission_code)
-        .bind(visible)
+        .bind(i16::from(record.visible))
         .bind(record.status)
         .fetch_one(pool)
         .await
         .map_err(map_sqlx)?
     } else {
         sqlx::query(
-            r#"
-            UPDATE ai_skill_category SET
-                name = $3,
-                description = $4,
-                parent_id = $5,
-                sort_weight = $6,
-                permission_code = $7,
-                visible = $8,
-                status = $9,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = $1 AND tenant_id = $2
-            RETURNING id, tenant_id, organization_id, category_type, code, name, description,
-                      parent_id, sort_weight, permission_code, visible, status
-            "#,
+            "UPDATE ai_skill_category SET name=$4, description=$5, parent_id=$6,
+                    sort_weight=$7, permission_code=$8, visible=$9, status=$10,
+                    version=version+1, updated_at=CURRENT_TIMESTAMP
+             WHERE id=$1 AND tenant_id IN (0,$2) AND version=$3 AND deleted_at IS NULL
+             RETURNING id, uuid, tenant_id, organization_id, category_type, code, name,
+                       description, parent_id, sort_weight, permission_code, visible, status,
+                       version, created_at, updated_at",
         )
         .bind(record.id as i64)
         .bind(record.tenant_id as i64)
+        .bind(record.version as i64)
         .bind(&record.name)
         .bind(&record.description)
         .bind(record.parent_id.map(|value| value as i64))
         .bind(record.sort_weight)
         .bind(&record.permission_code)
-        .bind(visible)
+        .bind(i16::from(record.visible))
+        .bind(record.status)
+        .fetch_optional(pool)
+        .await
+        .map_err(map_sqlx)?
+        .ok_or_else(|| SkillsServiceError::Conflict("category version changed".to_string()))?
+    };
+    row_to_category(&row)
+}
+
+pub async fn list_capabilities_page(
+    pool: &PgPool,
+    tenant_id: u64,
+    params: OffsetListPageParams,
+    keyword: Option<&str>,
+) -> SkillsResult<(Vec<SkillCapabilityRecord>, i64)> {
+    let sql = format!(
+        "SELECT id, uuid, tenant_id, organization_id, capability_key, display_name,
+                description, risk_level, status, version, created_at, updated_at,
+                COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+         FROM ai_skill_capability
+         WHERE tenant_id IN (0,$1) AND deleted_at IS NULL
+           AND ($2='%' OR capability_key ILIKE $2 OR display_name ILIKE $2)
+         ORDER BY capability_key ASC LIMIT $3 OFFSET $4"
+    );
+    let rows = sqlx::query(&sql)
+        .bind(tenant_id as i64)
+        .bind(search_pattern(keyword))
+        .bind(params.page_size)
+        .bind(params.offset)
+        .fetch_all(pool)
+        .await
+        .map_err(map_sqlx)?;
+    page(rows, row_to_capability)
+}
+
+pub async fn get_capability(
+    pool: &PgPool,
+    tenant_id: u64,
+    capability_id: u64,
+) -> SkillsResult<SkillCapabilityRecord> {
+    let row = sqlx::query(
+        "SELECT id, uuid, tenant_id, organization_id, capability_key, display_name,
+                description, risk_level, status, version, created_at, updated_at
+         FROM ai_skill_capability
+         WHERE id=$1 AND tenant_id IN (0,$2) AND deleted_at IS NULL LIMIT 1",
+    )
+    .bind(capability_id as i64)
+    .bind(tenant_id as i64)
+    .fetch_optional(pool)
+    .await
+    .map_err(map_sqlx)?;
+    row.as_ref()
+        .map(row_to_capability)
+        .transpose()?
+        .ok_or_else(|| SkillsServiceError::NotFound(format!("skill capability {capability_id}")))
+}
+
+pub async fn upsert_capability(
+    pool: &PgPool,
+    id_generator: &SnowflakeIdGenerator,
+    record: SkillCapabilityRecord,
+) -> SkillsResult<SkillCapabilityRecord> {
+    let row = if record.id == 0 {
+        sqlx::query(
+            "INSERT INTO ai_skill_capability (
+                 id, uuid, tenant_id, organization_id, capability_key, display_name,
+                 description, risk_level, status, version
+             ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,1)
+             RETURNING id, uuid, tenant_id, organization_id, capability_key, display_name,
+                       description, risk_level, status, version, created_at, updated_at",
+        )
+        .bind(next_id(id_generator)?)
+        .bind(new_uuid())
+        .bind(record.tenant_id as i64)
+        .bind(record.organization_id as i64)
+        .bind(&record.capability_key)
+        .bind(&record.display_name)
+        .bind(&record.description)
+        .bind(record.risk_level.as_str())
         .bind(record.status)
         .fetch_one(pool)
         .await
         .map_err(map_sqlx)?
+    } else {
+        sqlx::query(
+            "UPDATE ai_skill_capability SET display_name=$4, description=$5, risk_level=$6,
+                    status=$7, version=version+1, updated_at=CURRENT_TIMESTAMP
+             WHERE id=$1 AND tenant_id IN (0,$2) AND version=$3 AND deleted_at IS NULL
+             RETURNING id, uuid, tenant_id, organization_id, capability_key, display_name,
+                       description, risk_level, status, version, created_at, updated_at",
+        )
+        .bind(record.id as i64)
+        .bind(record.tenant_id as i64)
+        .bind(record.version as i64)
+        .bind(&record.display_name)
+        .bind(&record.description)
+        .bind(record.risk_level.as_str())
+        .bind(record.status)
+        .fetch_optional(pool)
+        .await
+        .map_err(map_sqlx)?
+        .ok_or_else(|| SkillsServiceError::Conflict("capability version changed".to_string()))?
     };
-
-    row_to_category(&row)
+    row_to_capability(&row)
 }
 
-pub async fn install_skill_for_user(
+pub async fn list_artifacts_page(
     pool: &PgPool,
-    record: UserSkillInstallRecord,
-) -> SkillsResult<UserSkillInstallRecord> {
-    let uuid = format!(
-        "user_skill_{}_{}_{}",
-        record.tenant_id, record.user_id, record.skill_id
+    tenant_id: u64,
+    package_id: u64,
+    params: OffsetListPageParams,
+) -> SkillsResult<(Vec<SkillArtifactRecord>, i64)> {
+    let sql = format!(
+        "SELECT artifact_rows.*, COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+         FROM ({ARTIFACT_SELECT} WHERE a.tenant_id=$1 AND a.package_id=$2) artifact_rows
+         ORDER BY created_at DESC, id DESC LIMIT $3 OFFSET $4"
     );
-    let enabled = if record.enabled { 1_i16 } else { 0_i16 };
+    let rows = sqlx::query(&sql)
+        .bind(tenant_id as i64)
+        .bind(package_id as i64)
+        .bind(params.page_size)
+        .bind(params.offset)
+        .fetch_all(pool)
+        .await
+        .map_err(map_sqlx)?;
+    page(rows, row_to_artifact)
+}
 
-    let row = sqlx::query(
-        r#"
-        INSERT INTO ai_user_agent_skill (
-            uuid, tenant_id, organization_id, user_id, skill_id, package_id,
-            install_status, enabled, config_json
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        ON CONFLICT (tenant_id, user_id, skill_id) DO UPDATE SET
-            package_id = EXCLUDED.package_id,
-            install_status = EXCLUDED.install_status,
-            enabled = EXCLUDED.enabled,
-            config_json = EXCLUDED.config_json,
-            updated_at = CURRENT_TIMESTAMP,
-            deleted_at = NULL
-        RETURNING id, tenant_id, organization_id, user_id, skill_id, package_id,
-                  install_status, enabled, config_json, installed_at, updated_at
-        "#,
+pub async fn list_installable_artifacts_page(
+    pool: &PgPool,
+    tenant_id: u64,
+    organization_id: u64,
+    user_id: u64,
+    package_id: u64,
+    params: OffsetListPageParams,
+) -> SkillsResult<(Vec<SkillArtifactRecord>, i64)> {
+    let sql = format!(
+        "SELECT artifact_rows.*, COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+         FROM ({ARTIFACT_SELECT}
+               JOIN ai_agent_skill_package p
+                 ON p.id=a.package_id AND p.tenant_id=a.tenant_id AND p.deleted_at IS NULL
+               JOIN ai_agent_skill s
+                 ON s.package_id=p.id AND s.tenant_id=p.tenant_id AND s.deleted_at IS NULL
+               WHERE a.tenant_id=$1 AND a.package_id=$2 AND a.status='published'
+                 AND p.status=1
+                 AND s.enabled=1 AND s.market_status='published' AND s.review_status='approved'
+                 AND (p.visibility IN (1, 3)
+                      OR (p.visibility=2 AND p.organization_id=$3)
+                      OR (p.visibility=0 AND p.owner_user_id=$4))
+         ) artifact_rows
+         ORDER BY published_at DESC, created_at DESC, id DESC LIMIT $5 OFFSET $6"
+    );
+    let rows = sqlx::query(&sql)
+        .bind(tenant_id as i64)
+        .bind(package_id as i64)
+        .bind(organization_id as i64)
+        .bind(user_id as i64)
+        .bind(params.page_size)
+        .bind(params.offset)
+        .fetch_all(pool)
+        .await
+        .map_err(map_sqlx)?;
+    page(rows, row_to_artifact)
+}
+
+pub async fn create_artifact(
+    pool: &PgPool,
+    id_generator: &SnowflakeIdGenerator,
+    artifact: SkillArtifactRecord,
+) -> SkillsResult<SkillArtifactRecord> {
+    let mut tx = pool.begin().await.map_err(map_sqlx)?;
+    ensure_package(&mut tx, artifact.tenant_id, artifact.package_id).await?;
+    let artifact_id = insert_artifact(&mut tx, id_generator, artifact).await?;
+    tx.commit().await.map_err(map_sqlx)?;
+    get_artifact(pool, artifact_id as u64).await
+}
+
+async fn get_artifact(pool: &PgPool, artifact_id: u64) -> SkillsResult<SkillArtifactRecord> {
+    let sql = format!("{ARTIFACT_SELECT} WHERE a.id=$1 LIMIT 1");
+    let row = sqlx::query(&sql)
+        .bind(artifact_id as i64)
+        .fetch_optional(pool)
+        .await
+        .map_err(map_sqlx)?;
+    row.as_ref()
+        .map(row_to_artifact)
+        .transpose()?
+        .ok_or_else(|| SkillsServiceError::NotFound(format!("skill artifact {artifact_id}")))
+}
+
+pub async fn create_skill_package(
+    pool: &PgPool,
+    id_generator: &SnowflakeIdGenerator,
+    record: SkillPackageRecord,
+    mut initial_artifact: SkillArtifactRecord,
+) -> SkillsResult<SkillPackageRecord> {
+    let mut tx = pool.begin().await.map_err(map_sqlx)?;
+    let tags_json = string_list_to_json(&record.tags, "tags")?;
+    let package_id = next_id(id_generator)?;
+    let skill_id = next_id(id_generator)?;
+    sqlx::query(
+        "INSERT INTO ai_agent_skill_package (
+             id, uuid, tenant_id, organization_id, owner_user_id, package_key, code,
+             display_name, summary, description, tags_json, status, visibility,
+             featured, sort_weight, version
+         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,1)",
     )
-    .bind(uuid)
+    .bind(package_id)
+    .bind(new_uuid())
     .bind(record.tenant_id as i64)
     .bind(record.organization_id as i64)
-    .bind(record.user_id as i64)
-    .bind(record.skill_id as i64)
-    .bind(record.package_id.map(|value| value as i64))
-    .bind(&record.install_status)
-    .bind(enabled)
-    .bind(&record.config_json)
-    .fetch_one(pool)
+    .bind(record.owner_user_id as i64)
+    .bind(&record.package_key)
+    .bind(&record.code)
+    .bind(&record.display_name)
+    .bind(&record.summary)
+    .bind(&record.description)
+    .bind(tags_json)
+    .bind(record.status.as_db_code())
+    .bind(record.visibility.as_db_code())
+    .bind(i16::from(record.featured))
+    .bind(record.sort_weight)
+    .execute(&mut *tx)
     .await
     .map_err(map_sqlx)?;
+    sqlx::query(
+        "INSERT INTO ai_agent_skill (
+             id, uuid, tenant_id, organization_id, skill_key, package_id, market_status,
+             review_status, enabled, featured, version
+         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,1)",
+    )
+    .bind(skill_id)
+    .bind(new_uuid())
+    .bind(record.tenant_id as i64)
+    .bind(record.organization_id as i64)
+    .bind(&record.skill_key)
+    .bind(package_id)
+    .bind(package_market_status(record.status))
+    .bind(package_review_status(record.status))
+    .bind(i16::from(record.status == SkillLifecycleStatus::Active))
+    .bind(i16::from(record.featured))
+    .execute(&mut *tx)
+    .await
+    .map_err(map_sqlx)?;
+    replace_category_bindings(
+        &mut tx,
+        id_generator,
+        record.tenant_id,
+        skill_id,
+        &record.categories,
+    )
+    .await?;
+    initial_artifact.tenant_id = record.tenant_id;
+    initial_artifact.package_id = package_id as u64;
+    insert_artifact(&mut tx, id_generator, initial_artifact).await?;
+    tx.commit().await.map_err(map_sqlx)?;
+    get_skill_package(pool, record.tenant_id, package_id as u64).await
+}
 
-    row_to_user_install(&row)
+pub async fn update_skill_package(
+    pool: &PgPool,
+    id_generator: &SnowflakeIdGenerator,
+    record: SkillPackageRecord,
+) -> SkillsResult<SkillPackageRecord> {
+    let mut tx = pool.begin().await.map_err(map_sqlx)?;
+    let tags_json = string_list_to_json(&record.tags, "tags")?;
+    let updated = sqlx::query(
+        "UPDATE ai_agent_skill_package SET display_name=$4, summary=$5, description=$6,
+                tags_json=$7, status=$8, visibility=$9, featured=$10, sort_weight=$11,
+                version=version+1, updated_at=CURRENT_TIMESTAMP
+         WHERE id=$1 AND tenant_id=$2 AND version=$3 AND deleted_at IS NULL",
+    )
+    .bind(record.id as i64)
+    .bind(record.tenant_id as i64)
+    .bind(record.version as i64)
+    .bind(&record.display_name)
+    .bind(&record.summary)
+    .bind(&record.description)
+    .bind(tags_json)
+    .bind(record.status.as_db_code())
+    .bind(record.visibility.as_db_code())
+    .bind(i16::from(record.featured))
+    .bind(record.sort_weight)
+    .execute(&mut *tx)
+    .await
+    .map_err(map_sqlx)?;
+    if updated.rows_affected() != 1 {
+        return Err(SkillsServiceError::Conflict(
+            "skill package version changed".to_string(),
+        ));
+    }
+    let skill_id = sqlx::query_scalar::<_, i64>(
+        "UPDATE ai_agent_skill SET market_status=$3, review_status=$4, enabled=$5, featured=$6,
+                version=version+1, updated_at=CURRENT_TIMESTAMP
+         WHERE package_id=$1 AND tenant_id=$2 AND deleted_at IS NULL RETURNING id",
+    )
+    .bind(record.id as i64)
+    .bind(record.tenant_id as i64)
+    .bind(package_market_status(record.status))
+    .bind(package_review_status(record.status))
+    .bind(i16::from(record.status == SkillLifecycleStatus::Active))
+    .bind(i16::from(record.featured))
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(map_sqlx)?;
+    replace_category_bindings(
+        &mut tx,
+        id_generator,
+        record.tenant_id,
+        skill_id,
+        &record.categories,
+    )
+    .await?;
+    tx.commit().await.map_err(map_sqlx)?;
+    get_skill_package(pool, record.tenant_id, record.id).await
+}
+
+async fn replace_category_bindings(
+    tx: &mut Transaction<'_, Postgres>,
+    id_generator: &SnowflakeIdGenerator,
+    tenant_id: u64,
+    skill_id: i64,
+    category_codes: &[String],
+) -> SkillsResult<()> {
+    sqlx::query("DELETE FROM ai_skill_category_binding WHERE skill_id=$1")
+        .bind(skill_id)
+        .execute(&mut **tx)
+        .await
+        .map_err(map_sqlx)?;
+    for code in category_codes {
+        let category_id = sqlx::query_scalar::<_, i64>(
+            "SELECT id FROM ai_skill_category
+             WHERE tenant_id IN (0,$1) AND code=$2 AND category_type='skill_market'
+               AND status=1 AND deleted_at IS NULL
+             ORDER BY tenant_id DESC LIMIT 1",
+        )
+        .bind(tenant_id as i64)
+        .bind(code)
+        .fetch_optional(&mut **tx)
+        .await
+        .map_err(map_sqlx)?
+        .ok_or_else(|| SkillsServiceError::InvalidArgument(format!("unknown category: {code}")))?;
+        sqlx::query(
+            "INSERT INTO ai_skill_category_binding (id, tenant_id, skill_id, category_id)
+             VALUES ($1,$2,$3,$4)",
+        )
+        .bind(next_id(id_generator)?)
+        .bind(tenant_id as i64)
+        .bind(skill_id)
+        .bind(category_id)
+        .execute(&mut **tx)
+        .await
+        .map_err(map_sqlx)?;
+    }
+    Ok(())
+}
+
+async fn ensure_package(
+    tx: &mut Transaction<'_, Postgres>,
+    tenant_id: u64,
+    package_id: u64,
+) -> SkillsResult<()> {
+    let exists = sqlx::query_scalar::<_, bool>(
+        "SELECT EXISTS(SELECT 1 FROM ai_agent_skill_package
+         WHERE id=$1 AND tenant_id=$2 AND deleted_at IS NULL)",
+    )
+    .bind(package_id as i64)
+    .bind(tenant_id as i64)
+    .fetch_one(&mut **tx)
+    .await
+    .map_err(map_sqlx)?;
+    if !exists {
+        return Err(SkillsServiceError::NotFound(format!(
+            "skill package {package_id}"
+        )));
+    }
+    Ok(())
+}
+
+async fn insert_artifact(
+    tx: &mut Transaction<'_, Postgres>,
+    id_generator: &SnowflakeIdGenerator,
+    artifact: SkillArtifactRecord,
+) -> SkillsResult<i64> {
+    let artifact_id = next_id(id_generator)?;
+    let input_schema_json = json_value_to_text(&artifact.input_schema, "input_schema")?;
+    let output_schema_json = json_value_to_text(&artifact.output_schema, "output_schema")?;
+    let config_schema_json = json_value_to_text(&artifact.config_schema, "config_schema")?;
+    let default_config_json = json_value_to_text(&artifact.default_config, "default_config")?;
+    sqlx::query(
+        "INSERT INTO ai_skill_artifact (
+             id, uuid, tenant_id, package_id, version_label, artifact_ref, checksum_sha256,
+             size_bytes, invocation_kind, entrypoint, input_schema_json, output_schema_json,
+             config_schema_json, default_config_json, security_profile_id, status, published_at
+         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,
+                   CASE WHEN $16='published' THEN CURRENT_TIMESTAMP ELSE NULL END)",
+    )
+    .bind(artifact_id)
+    .bind(new_uuid())
+    .bind(artifact.tenant_id as i64)
+    .bind(artifact.package_id as i64)
+    .bind(&artifact.version_label)
+    .bind(&artifact.artifact_ref)
+    .bind(&artifact.checksum_sha256)
+    .bind(artifact.size_bytes.map(|value| value as i64))
+    .bind(artifact.invocation_kind.as_str())
+    .bind(&artifact.entrypoint)
+    .bind(input_schema_json)
+    .bind(output_schema_json)
+    .bind(config_schema_json)
+    .bind(default_config_json)
+    .bind(&artifact.security_profile_id)
+    .bind(artifact.status.as_str())
+    .execute(&mut **tx)
+    .await
+    .map_err(map_sqlx)?;
+    for key in artifact.capability_keys {
+        let capability_id = sqlx::query_scalar::<_, i64>(
+            "SELECT id FROM ai_skill_capability
+             WHERE tenant_id IN (0,$1) AND capability_key=$2 AND status=1 AND deleted_at IS NULL
+             ORDER BY tenant_id DESC LIMIT 1",
+        )
+        .bind(artifact.tenant_id as i64)
+        .bind(&key)
+        .fetch_optional(&mut **tx)
+        .await
+        .map_err(map_sqlx)?
+        .ok_or_else(|| SkillsServiceError::InvalidArgument(format!("unknown capability: {key}")))?;
+        sqlx::query(
+            "INSERT INTO ai_skill_artifact_capability
+             (id, tenant_id, artifact_id, capability_id, required) VALUES ($1,$2,$3,$4,1)",
+        )
+        .bind(next_id(id_generator)?)
+        .bind(artifact.tenant_id as i64)
+        .bind(artifact_id)
+        .bind(capability_id)
+        .execute(&mut **tx)
+        .await
+        .map_err(map_sqlx)?;
+    }
+    Ok(artifact_id)
 }
 
 pub async fn delete_skill_package(
     pool: &PgPool,
     tenant_id: u64,
-    skill_id: &str,
-) -> SkillsResult<SkillPackageRecord> {
-    let row = sqlx::query(
-        r#"
-        UPDATE ai_agent_skill_package
-        SET status = 4,
-            deleted_at = CURRENT_TIMESTAMP,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE tenant_id = $1 AND skill_id = $2 AND deleted_at IS NULL
-        RETURNING id, tenant_id, organization_id, owner_user_id, skill_id, package_key, code,
-                  display_name, summary, description, invocation_kind, package_ref, entrypoint,
-                  input_schema_json, output_schema_json, capability_ids_json, categories_json,
-                  tags_json, security_profile_id, status, visibility, version,
-                  created_at, updated_at, deleted_at
-        "#,
+    package_id: u64,
+) -> SkillsResult<()> {
+    let mut tx = pool.begin().await.map_err(map_sqlx)?;
+    let result = sqlx::query(
+        "UPDATE ai_agent_skill_package SET status=4, version=version+1,
+                deleted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP
+         WHERE id=$1 AND tenant_id=$2 AND deleted_at IS NULL",
     )
+    .bind(package_id as i64)
     .bind(tenant_id as i64)
+    .execute(&mut *tx)
+    .await
+    .map_err(map_sqlx)?;
+    if result.rows_affected() != 1 {
+        return Err(SkillsServiceError::NotFound(format!(
+            "skill package {package_id}"
+        )));
+    }
+    sqlx::query(
+        "UPDATE ai_agent_skill SET market_status='removed', enabled=0, version=version+1,
+                deleted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP
+         WHERE package_id=$1 AND tenant_id=$2 AND deleted_at IS NULL",
+    )
+    .bind(package_id as i64)
+    .bind(tenant_id as i64)
+    .execute(&mut *tx)
+    .await
+    .map_err(map_sqlx)?;
+    sqlx::query(
+        "UPDATE ai_skill_installation SET install_status='removed', enabled=0,
+                version=version+1, deleted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP
+         WHERE package_id=$1 AND tenant_id=$2 AND deleted_at IS NULL",
+    )
+    .bind(package_id as i64)
+    .bind(tenant_id as i64)
+    .execute(&mut *tx)
+    .await
+    .map_err(map_sqlx)?;
+    tx.commit().await.map_err(map_sqlx)
+}
+
+pub async fn install_skill(
+    pool: &PgPool,
+    id_generator: &SnowflakeIdGenerator,
+    record: SkillInstallationRecord,
+) -> SkillsResult<SkillInstallationRecord> {
+    let mut tx = pool.begin().await.map_err(map_sqlx)?;
+    let config_json = json_value_to_text(&record.config, "config")?;
+    let skill_id = sqlx::query_scalar::<_, i64>(
+        "SELECT s.id FROM ai_agent_skill s
+         JOIN ai_agent_skill_package p ON p.id=s.package_id AND p.deleted_at IS NULL
+         JOIN ai_skill_artifact a ON a.package_id=p.id AND a.tenant_id=p.tenant_id
+         WHERE p.id=$1 AND p.tenant_id=$2 AND p.status=1
+           AND a.id=$3 AND a.status='published'
+           AND s.enabled=1 AND s.market_status='published' AND s.review_status='approved'
+           AND s.deleted_at IS NULL LIMIT 1",
+    )
+    .bind(record.package_id as i64)
+    .bind(record.tenant_id as i64)
+    .bind(record.artifact_id as i64)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(map_sqlx)?
+    .ok_or_else(|| {
+        SkillsServiceError::InvalidArgument("artifact is not installable".to_string())
+    })?;
+    let existing_id = sqlx::query_scalar::<_, i64>(
+        "SELECT id FROM ai_skill_installation
+         WHERE tenant_id=$1 AND organization_id=$2 AND subject_kind=$3 AND subject_id=$4
+           AND skill_id=$5 AND deleted_at IS NULL LIMIT 1",
+    )
+    .bind(record.tenant_id as i64)
+    .bind(record.organization_id as i64)
+    .bind(record.subject_kind.as_str())
+    .bind(record.subject_id as i64)
     .bind(skill_id)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(map_sqlx)?;
+    let installation_id = if let Some(id) = existing_id {
+        sqlx::query(
+            "UPDATE ai_skill_installation SET artifact_id=$2, installed_by_user_id=$3,
+                    install_status='installed', enabled=1, config_json=$4, version=version+1,
+                    updated_at=CURRENT_TIMESTAMP
+             WHERE id=$1",
+        )
+        .bind(id)
+        .bind(record.artifact_id as i64)
+        .bind(record.installed_by_user_id as i64)
+        .bind(&config_json)
+        .execute(&mut *tx)
+        .await
+        .map_err(map_sqlx)?;
+        id
+    } else {
+        let id = next_id(id_generator)?;
+        sqlx::query(
+            "INSERT INTO ai_skill_installation (
+                 id, uuid, tenant_id, organization_id, subject_kind, subject_id, skill_id,
+                 package_id, artifact_id, installed_by_user_id, install_status, enabled,
+                 config_json, version
+             ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'installed',1,$11,1)",
+        )
+        .bind(id)
+        .bind(new_uuid())
+        .bind(record.tenant_id as i64)
+        .bind(record.organization_id as i64)
+        .bind(record.subject_kind.as_str())
+        .bind(record.subject_id as i64)
+        .bind(skill_id)
+        .bind(record.package_id as i64)
+        .bind(record.artifact_id as i64)
+        .bind(record.installed_by_user_id as i64)
+        .bind(&config_json)
+        .execute(&mut *tx)
+        .await
+        .map_err(map_sqlx)?;
+        sqlx::query("UPDATE ai_agent_skill SET install_count=install_count+1 WHERE id=$1")
+            .bind(skill_id)
+            .execute(&mut *tx)
+            .await
+            .map_err(map_sqlx)?;
+        id
+    };
+    tx.commit().await.map_err(map_sqlx)?;
+    get_installation(pool, installation_id as u64).await
+}
+
+async fn get_installation(
+    pool: &PgPool,
+    installation_id: u64,
+) -> SkillsResult<SkillInstallationRecord> {
+    let row = sqlx::query(
+        "SELECT id, uuid, tenant_id, organization_id, subject_kind, subject_id, skill_id,
+                package_id, artifact_id, installed_by_user_id, install_status, enabled,
+                config_json, version, installed_at, updated_at
+         FROM ai_skill_installation WHERE id=$1 AND deleted_at IS NULL",
+    )
+    .bind(installation_id as i64)
     .fetch_optional(pool)
     .await
     .map_err(map_sqlx)?;
-
-    let package = row
-        .as_ref()
-        .map(row_to_skill_package)
+    row.as_ref()
+        .map(row_to_installation)
         .transpose()?
-        .ok_or_else(|| SkillsServiceError::NotFound(skill_id.to_string()))?;
-
-    sqlx::query(
-        r#"
-        UPDATE ai_agent_skill
-        SET enabled = 0,
-            market_status = 'removed',
-            deleted_at = CURRENT_TIMESTAMP,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE tenant_id = $1 AND skill_key = $2 AND deleted_at IS NULL
-        "#,
-    )
-    .bind(tenant_id as i64)
-    .bind(skill_id)
-    .execute(pool)
-    .await
-    .map_err(map_sqlx)?;
-
-    Ok(package)
+        .ok_or_else(|| {
+            SkillsServiceError::NotFound(format!("skill installation {installation_id}"))
+        })
 }
 
-fn package_visibility_to_market(value: SkillVisibility) -> &'static str {
-    match value {
-        SkillVisibility::Private => "private",
-        SkillVisibility::Tenant => "tenant",
-        SkillVisibility::Organization => "organization",
-        SkillVisibility::Public => "public",
-    }
+pub async fn list_installations_page(
+    pool: &PgPool,
+    tenant_id: u64,
+    organization_id: u64,
+    subject_kind_value: &str,
+    subject_id: u64,
+    params: OffsetListPageParams,
+) -> SkillsResult<(Vec<SkillInstallationRecord>, i64)> {
+    let sql = format!(
+        "SELECT id, uuid, tenant_id, organization_id, subject_kind, subject_id, skill_id,
+                package_id, artifact_id, installed_by_user_id, install_status, enabled,
+                config_json, version, installed_at, updated_at,
+                COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+         FROM ai_skill_installation
+         WHERE tenant_id=$1 AND organization_id=$2 AND subject_kind=$3 AND subject_id=$4
+           AND deleted_at IS NULL
+         ORDER BY updated_at DESC, id DESC LIMIT $5 OFFSET $6"
+    );
+    let rows = sqlx::query(&sql)
+        .bind(tenant_id as i64)
+        .bind(organization_id as i64)
+        .bind(subject_kind_value)
+        .bind(subject_id as i64)
+        .bind(params.page_size)
+        .bind(params.offset)
+        .fetch_all(pool)
+        .await
+        .map_err(map_sqlx)?;
+    page(rows, row_to_installation)
 }
 
-fn package_status_to_market(value: SkillLifecycleStatus) -> &'static str {
-    match value {
+fn package_market_status(status: SkillLifecycleStatus) -> &'static str {
+    match status {
         SkillLifecycleStatus::Draft => "draft",
         SkillLifecycleStatus::Active => "published",
         SkillLifecycleStatus::Disabled => "disabled",
@@ -673,73 +1178,10 @@ fn package_status_to_market(value: SkillLifecycleStatus) -> &'static str {
     }
 }
 
-pub async fn sync_skill_from_package(
-    pool: &PgPool,
-    package: &SkillPackageRecord,
-) -> SkillsResult<SkillRecord> {
-    let uuid = format!("agent_skill_{}_{}", package.tenant_id, package.skill_id);
-    let tags_json = string_list_to_json(&package.tags, "tags")?;
-    let capabilities_json = string_list_to_json(&package.capability_ids, "capabilities")?;
-    let categories_json = string_list_to_json(&package.categories, "categories")?;
-    let enabled = if package.status == SkillLifecycleStatus::Active {
-        1_i16
+fn package_review_status(status: SkillLifecycleStatus) -> &'static str {
+    if status == SkillLifecycleStatus::Active {
+        "approved"
     } else {
-        0_i16
-    };
-    let market_status = package_status_to_market(package.status);
-    let visibility = package_visibility_to_market(package.visibility);
-
-    let row = sqlx::query(
-        r#"
-        INSERT INTO ai_agent_skill (
-            uuid, tenant_id, organization_id, owner_user_id, skill_key, package_id, name,
-            summary, description, runtime, entrypoint, market_status, visibility, review_status,
-            categories_json, enabled, tags_json, capabilities_json
-        ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'approved', $14, $15, $16, $17
-        )
-        ON CONFLICT (tenant_id, organization_id, skill_key) DO UPDATE SET
-            package_id = EXCLUDED.package_id,
-            name = EXCLUDED.name,
-            summary = EXCLUDED.summary,
-            description = EXCLUDED.description,
-            runtime = EXCLUDED.runtime,
-            entrypoint = EXCLUDED.entrypoint,
-            market_status = EXCLUDED.market_status,
-            visibility = EXCLUDED.visibility,
-            categories_json = EXCLUDED.categories_json,
-            enabled = EXCLUDED.enabled,
-            tags_json = EXCLUDED.tags_json,
-            capabilities_json = EXCLUDED.capabilities_json,
-            version = ai_agent_skill.version + 1,
-            updated_at = CURRENT_TIMESTAMP,
-            deleted_at = NULL
-        RETURNING id, tenant_id, organization_id, owner_user_id, skill_key, package_id, name,
-                  summary, description, runtime, entrypoint, market_status, visibility,
-                  review_status, categories_json, enabled, featured, install_count, tags_json,
-                  capabilities_json, version, created_at, updated_at, deleted_at
-        "#,
-    )
-    .bind(uuid)
-    .bind(package.tenant_id as i64)
-    .bind(package.organization_id as i64)
-    .bind(package.owner_user_id as i64)
-    .bind(&package.skill_id)
-    .bind(package.id as i64)
-    .bind(&package.display_name)
-    .bind(&package.summary)
-    .bind(&package.description)
-    .bind(package.invocation_kind.as_str())
-    .bind(&package.entrypoint)
-    .bind(market_status)
-    .bind(visibility)
-    .bind(categories_json)
-    .bind(enabled)
-    .bind(tags_json)
-    .bind(capabilities_json)
-    .fetch_one(pool)
-    .await
-    .map_err(map_sqlx)?;
-
-    row_to_skill(&row)
+        "pending"
+    }
 }

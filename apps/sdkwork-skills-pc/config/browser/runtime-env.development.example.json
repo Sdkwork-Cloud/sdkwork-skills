@@ -3,6 +3,5 @@
   "deploymentProfile": "standalone",
   "runtimeTarget": "browser",
   "appApiBaseUrl": "",
-  "backendApiBaseUrl": "",
-  "tenantId": "1"
+  "backendApiBaseUrl": ""
 }

@@ -1,4 +1,7 @@
 import { isBlank, trim } from '@sdkwork/utils';
+import type { SkillCategoryRecord } from '@sdkwork/skills-backend-sdk';
+
+type CategoryPermissionView = Pick<SkillCategoryRecord, 'code' | 'permissionCode'>;
 
 export const SKILLS_ADMIN_PERMISSIONS = {
   packageManage: 'skills.packages.manage',
@@ -19,11 +22,8 @@ export function packageManagePermissionForCategory(categoryCode: string): string
   return `skills.packages.manage.${categoryCode}`;
 }
 
-export function resolveCategoryPackagePermission(category: {
-  code: string;
-  permission_code?: string | null;
-}): string {
-  const explicit = category.permission_code ? trim(category.permission_code) : '';
+export function resolveCategoryPackagePermission(category: CategoryPermissionView): string {
+  const explicit = category.permissionCode ? trim(category.permissionCode) : '';
   return !isBlank(explicit) ? explicit : packageManagePermissionForCategory(category.code);
 }
 
@@ -31,7 +31,7 @@ export function canManagePackagesInCategories(
   granted: readonly string[],
   roleCodes: readonly string[],
   categoryCodes: readonly string[],
-  categories: ReadonlyArray<{ code: string; permission_code?: string | null }> = [],
+  categories: readonly CategoryPermissionView[] = [],
 ): boolean {
   if (roleCodes.includes(SKILLS_ADMIN_ROLES.superAdmin)) {
     return true;
@@ -45,7 +45,9 @@ export function canManagePackagesInCategories(
   const categoryByCode = new Map(categories.map((item) => [item.code, item]));
   return categoryCodes.every((code) =>
     granted.includes(
-      resolveCategoryPackagePermission(categoryByCode.get(code) ?? { code }),
+      resolveCategoryPackagePermission(
+        categoryByCode.get(code) ?? { code, permissionCode: '' },
+      ),
     ),
   );
 }

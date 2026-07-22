@@ -18,7 +18,7 @@ pnpm add sdkwork-skills-backend-sdk-generated-typescript
 import { SdkworkBackendClient } from 'sdkwork-skills-backend-sdk-generated-typescript';
 
 const client = new SdkworkBackendClient({
-  baseUrl: 'http://127.0.0.1:18091',
+  baseUrl: 'http://127.0.0.1:18092',
   timeout: 30000,
 });
 
@@ -33,7 +33,7 @@ const params = {
   cursor: 'cursor',
   q: 'q',
 };
-const result = await client.skills.management.list(params);
+const result = await client.skills.marketplace.list(params);
 ```
 
 ## Authentication
@@ -50,7 +50,7 @@ Access-Token: <accessToken>
 import { SdkworkBackendClient } from 'sdkwork-skills-backend-sdk-generated-typescript';
 
 const client = new SdkworkBackendClient({
-  baseUrl: 'http://127.0.0.1:18091',
+  baseUrl: 'http://127.0.0.1:18092',
   timeout: 30000, // Request timeout in ms
   headers: {      // Custom headers
     'X-Custom-Header': 'value',
@@ -67,14 +67,14 @@ const client = new SdkworkBackendClient({
 ### skills
 
 ```typescript
-// Skills skills.management.list
+// marketplace.list
 const params = {
   page: 1,
   page_size: 2,
   cursor: 'cursor',
   q: 'q',
 };
-const result = await client.skills.management.list(params);
+const result = await client.skills.marketplace.list(params);
 ```
 
 ## Error Handling
@@ -89,7 +89,7 @@ try {
     cursor: 'cursor',
     q: 'q',
   };
-  const result = await client.skills.management.list(params);
+  const result = await client.skills.marketplace.list(params);
 } catch (error) {
   if (error instanceof AuthenticationError) {
     console.error('Authentication failed:', error.message);

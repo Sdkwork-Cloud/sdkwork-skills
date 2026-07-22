@@ -2,7 +2,7 @@
 
 ## Audience Routing
 
-| I am… | Read first | Then read |
+| Audience | Read First | Then Read |
 | --- | --- | --- |
 | Product or business | [product/prd/PRD.md](product/prd/PRD.md) | [product/requirements/](product/requirements/) |
 | Architect | [architecture/tech/TECH_ARCHITECTURE.md](architecture/tech/TECH_ARCHITECTURE.md) | [architecture/decisions/](architecture/decisions/) |
@@ -17,6 +17,7 @@
 | --- | --- |
 | Product PRD | [product/prd/PRD.md](product/prd/PRD.md) |
 | Technical architecture | [architecture/tech/TECH_ARCHITECTURE.md](architecture/tech/TECH_ARCHITECTURE.md) |
+| Domain decision | [architecture/decisions/ADR-20260722-skills-domain-ownership-and-artifact-model.md](architecture/decisions/ADR-20260722-skills-domain-ownership-and-artifact-model.md) |
 
 ## Related Specs
 
@@ -34,4 +35,3 @@ node ../sdkwork-specs/tools/check-repository-docs-standard.mjs --root .
 pnpm api:assembly:validate
 pnpm topology:validate
 ```
-

@@ -2,7 +2,6 @@ import { createClient as createDriveSdkClient, type SdkworkDriveAppClient } from
 import type { AuthTokenManager } from '@sdkwork/sdk-common';
 import { createClient as createAppSdkClient, type SdkworkAppClient } from '@sdkwork/skills-app-sdk';
 import type { SdkworkBackendClient } from '@sdkwork/skills-backend-sdk';
-import { isBlank, trim } from '@sdkwork/utils';
 import { normalizeApiBaseUrl, readRuntimeEnv } from '@sdkwork/skills-pc-commons/runtime';
 
 import { createSkillsTokenManager } from './session';
@@ -10,7 +9,6 @@ import { createSkillsTokenManager } from './session';
 export type SkillsAppClientConfig = {
   appApiBaseUrl?: string;
   driveAppApiBaseUrl?: string;
-  tenantId?: string;
   tokenManager?: AuthTokenManager;
 };
 
@@ -43,13 +41,7 @@ function resolveDriveAppApiBaseUrl(config?: SkillsAppClientConfig): string {
   );
 }
 
-function resolveTenantHeader(config?: SkillsAppClientConfig): string {
-  const tenantId = trim(config?.tenantId ?? readRuntimeEnv('VITE_SDKWORK_SKILLS_TENANT_ID') ?? '100001');
-  return isBlank(tenantId) ? '100001' : tenantId;
-}
-
 function createAuthenticatedClientConfig(
-  config: SkillsAppClientConfig,
   baseUrl: string,
   tokenManager: AuthTokenManager,
 ) {
@@ -57,9 +49,6 @@ function createAuthenticatedClientConfig(
     baseUrl,
     authMode: 'dual-token' as const,
     platform: 'pc' as const,
-    headers: {
-      'x-sdkwork-tenant-id': resolveTenantHeader(config),
-    },
     tokenManager,
   };
 }
@@ -68,12 +57,12 @@ export function createSkillsAppClients(config: SkillsAppClientConfig = {}): Skil
   const tokenManager = config.tokenManager ?? createSkillsTokenManager();
 
   const app = createAppSdkClient(
-    createAuthenticatedClientConfig(config, resolveAppApiBaseUrl(config), tokenManager),
+    createAuthenticatedClientConfig(resolveAppApiBaseUrl(config), tokenManager),
   );
   app.setTokenManager(tokenManager);
 
   const drive = createDriveSdkClient(
-    createAuthenticatedClientConfig(config, resolveDriveAppApiBaseUrl(config), tokenManager),
+    createAuthenticatedClientConfig(resolveDriveAppApiBaseUrl(config), tokenManager),
   );
   drive.setTokenManager(tokenManager);
 

@@ -1,13 +1,12 @@
 export interface UpdateSkillPackageCommand {
-  package_key?: string;
-  code?: string;
-  display_name?: string;
-  summary?: string;
-  invocation_kind?: string;
-  package_ref?: string;
-  entrypoint?: string;
-  capability_ids?: string[];
+  version: string;
+  displayName?: string;
+  summary?: string | null;
+  description?: string | null;
   categories?: string[];
   tags?: string[];
-  visibility?: string;
+  status?: 'draft' | 'active' | 'disabled' | 'archived' | 'deleted';
+  visibility?: 'private' | 'tenant' | 'organization' | 'public';
+  featured?: boolean;
+  sortWeight?: number;
 }

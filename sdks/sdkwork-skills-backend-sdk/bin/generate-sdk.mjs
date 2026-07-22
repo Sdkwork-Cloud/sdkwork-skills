@@ -3,9 +3,9 @@ import { resolveFamilySdkRoot, runSkillsSdkGenerator } from "../../../tools/skil
 
 runSkillsSdkGenerator(
   {
-    apiAuthority: "sdkwork-skills.backend",
+    apiAuthority: "sdkwork-skills-backend-api",
     apiPrefix: "/backend/v3/api",
-    defaultBaseUrl: "http://127.0.0.1:18091",
+    defaultBaseUrl: "http://127.0.0.1:18092",
     defaultOpenapiRelativePath: "backend-api/skills/skills-backend-api.openapi.json",
     sdkName: "sdkwork-skills-backend-sdk",
     sdkRoot: resolveFamilySdkRoot(import.meta.url),

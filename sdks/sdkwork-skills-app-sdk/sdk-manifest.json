@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "sdkName": "sdkwork-skills-app-sdk",
   "sdkOwner": "sdkwork-skills",
-  "apiAuthority": "sdkwork-skills.app",
+  "apiAuthority": "sdkwork-skills-app-api",
   "sdkFamily": "sdkwork-skills-app-sdk",
   "sdkType": "app",
   "apiPrefix": "/app/v3/api",
@@ -17,15 +17,40 @@
   },
   "generatorName": "@sdkwork/sdk-generator",
   "generatorPath": "E:\\sdkwork-space\\sdkwork-sdk-generator\\bin\\sdkgen.js",
-  "baseUrl": "http://127.0.0.1:18090",
+  "baseUrl": "http://127.0.0.1:18092",
   "standardProfile": "sdkwork-v3",
   "fixedSdkVersion": "0.1.0",
-  "ownerOnlyOperationCount": 6,
+  "ownerOnlyOperationCount": 8,
   "operations": [
     {
       "method": "GET",
-      "operationId": "categories.list",
-      "path": "/app/v3/api/categories"
+      "operationId": "marketplace.list",
+      "path": "/app/v3/api/skills"
+    },
+    {
+      "method": "GET",
+      "operationId": "marketplace.retrieve",
+      "path": "/app/v3/api/skills/{skillKey}"
+    },
+    {
+      "method": "GET",
+      "operationId": "skillCategories.list",
+      "path": "/app/v3/api/skill_categories"
+    },
+    {
+      "method": "GET",
+      "operationId": "skillInstallations.list",
+      "path": "/app/v3/api/skill_installations"
+    },
+    {
+      "method": "GET",
+      "operationId": "skillPackages.artifacts.list",
+      "path": "/app/v3/api/skill_packages/{packageId}/artifacts"
+    },
+    {
+      "method": "POST",
+      "operationId": "skillPackages.installations.create",
+      "path": "/app/v3/api/skill_packages/{packageId}/installations"
     },
     {
       "method": "GET",
@@ -35,22 +60,7 @@
     {
       "method": "GET",
       "operationId": "skillPackages.retrieve",
-      "path": "/app/v3/api/skill_packages/{skillId}"
-    },
-    {
-      "method": "GET",
-      "operationId": "skills.list",
-      "path": "/app/v3/api/skills"
-    },
-    {
-      "method": "GET",
-      "operationId": "skills.retrieve",
-      "path": "/app/v3/api/skills/{skillKey}"
-    },
-    {
-      "method": "POST",
-      "operationId": "userSkills.install",
-      "path": "/app/v3/api/user/skills/install"
+      "path": "/app/v3/api/skill_packages/{packageId}"
     }
   ],
   "managedBy": "tools/skills_sdk_generator_runner.mjs",

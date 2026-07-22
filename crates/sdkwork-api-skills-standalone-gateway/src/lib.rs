@@ -1,31 +1,9 @@
-use axum::Router;
-use sdkwork_api_skills_assembly::{
-    assemble_app_surface_router, assemble_api_router,
-    assemble_backend_surface_router,
-};
+use axum::{extract::State, http::StatusCode, routing::get, Json, Router};
+use sdkwork_api_skills_assembly::{assemble_api_router_from_env, SkillsReadiness};
+use serde_json::{json, Value};
 use tokio::net::TcpListener;
 use tokio::signal;
 use tracing::info;
-
-mod runtime;
-
-use std::sync::Arc;
-
-use crate::runtime::SkillsRuntime;
-
-async fn build_app_router(runtime: Arc<SkillsRuntime>) -> Router {
-    let service = runtime.service();
-    let tenant_id = runtime.default_tenant_id();
-    let pool = runtime.postgres_pool();
-    assemble_app_surface_router(service, tenant_id, pool).await
-}
-
-async fn build_backend_router(runtime: Arc<SkillsRuntime>) -> Router {
-    let service = runtime.service();
-    let tenant_id = runtime.default_tenant_id();
-    let pool = runtime.postgres_pool();
-    assemble_backend_surface_router(service, tenant_id, pool).await
-}
 
 async fn serve_with_shutdown(app: Router, addr: &str, label: &str) -> Result<(), String> {
     let listener = TcpListener::bind(addr)
@@ -62,32 +40,32 @@ async fn shutdown_signal() {
     }
 }
 
-pub async fn serve_app_api(runtime: Arc<SkillsRuntime>) -> Result<(), String> {
-    let addr = std::env::var("SDKWORK_SKILLS_APP_BIND")
-        .unwrap_or_else(|_| "127.0.0.1:18092".to_string());
-    let app = build_app_router(runtime).await;
-    serve_with_shutdown(app, addr.as_str(), "app api").await
+async fn livez() -> Json<Value> {
+    Json(json!({ "status": "ok" }))
 }
 
-pub async fn serve_backend_api(runtime: Arc<SkillsRuntime>) -> Result<(), String> {
-    let addr = std::env::var("SDKWORK_SKILLS_BACKEND_BIND")
-        .unwrap_or_else(|_| "127.0.0.1:18093".to_string());
-    let app = build_backend_router(runtime).await;
-    serve_with_shutdown(app, addr.as_str(), "backend api").await
+async fn readyz(
+    State(readiness): State<SkillsReadiness>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    readiness
+        .check()
+        .await
+        .map_err(|message| (StatusCode::SERVICE_UNAVAILABLE, message))?;
+    Ok(Json(json!({ "status": "ok" })))
 }
 
-pub async fn serve_standalone_gateway(runtime: Arc<SkillsRuntime>) -> Result<(), String> {
+fn operations_router(readiness: SkillsReadiness) -> Router {
+    Router::new()
+        .route("/healthz", get(livez))
+        .route("/livez", get(livez))
+        .route("/readyz", get(readyz))
+        .with_state(readiness)
+}
+
+pub async fn serve_standalone_gateway() -> Result<(), String> {
     let addr = std::env::var("SDKWORK_SKILLS_APPLICATION_PUBLIC_INGRESS_BIND")
         .unwrap_or_else(|_| "127.0.0.1:18092".to_string());
-    let service = runtime.service();
-    let tenant_id = runtime.default_tenant_id();
-    let pool = runtime.postgres_pool();
-    let app = assemble_api_router(service, tenant_id, pool)
-        .await
-        .router;
+    let assembly = assemble_api_router_from_env().await?;
+    let app = operations_router(assembly.readiness).merge(assembly.router);
     serve_with_shutdown(app, addr.as_str(), "standalone gateway").await
-}
-
-pub async fn bootstrap_runtime() -> Result<Arc<SkillsRuntime>, String> {
-    Ok(Arc::new(SkillsRuntime::bootstrap_from_env().await?))
 }

@@ -1,17 +1,22 @@
 # SDKWork Skills
+
 repository-kind: application
 
-Skills Hub application root with PC client, Rust APIs, and `ai_*` intelligence-domain tables.
+Single-owner Skills application root with a PC client, Rust APIs, generated SDK
+families, and a portable ten-table `ai_*` persistence module.
 
 ## Surfaces
 
 | Surface | Path |
 | --- | --- |
-| Skills Hub | `apps/sdkwork-skills-pc` → `/skills-hub` |
-| Console CRUD | `/console/skills` |
+| Skills Hub | `apps/sdkwork-skills-pc` at `/skills-hub` |
+| Tenant console | `/console/skills` |
 | Admin CRUD | `/admin/skills`, `/admin/categories` |
 
-## Quick start
+The HTTP product exposes app-api and backend-api only. No public open-api is
+declared until a separate public-product requirement is approved.
+
+## Quick Start
 
 ```bash
 pnpm install

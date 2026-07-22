@@ -2,70 +2,89 @@
 
 ## Overview
 
-Integrate with Skills marketplace APIs through generated SDK families in `sdks/`. Wire contracts
-from `apis/app-api/skills/` (user-facing Hub) and `apis/backend-api/skills/` (admin Console).
+Integrate with Skills through the composed SDK families under `sdks/`. The
+owner-only contracts are under `apis/app-api/skills/` for authenticated
+user-facing capabilities and `apis/backend-api/skills/` for operator
+capabilities.
 
-Application authority: `sdkwork-skills.app` (app-api), `sdkwork-skills.backend` (backend-api).
+| Surface | API Authority | SDK Family | OpenAPI |
+| --- | --- | --- | --- |
+| App | `sdkwork-skills-app-api` | `sdkwork-skills-app-sdk` | `apis/app-api/skills/skills-app-api.openapi.json` |
+| Backend | `sdkwork-skills-backend-api` | `sdkwork-skills-backend-sdk` | `apis/backend-api/skills/skills-backend-api.openapi.json` |
 
-## SDK Families
+No Skills open-api is currently declared. Do not expose app-api routes as a
+public contract without a separate product requirement and API authority.
 
-| Surface | SDK | OpenAPI |
-| --- | --- | --- |
-| App (Hub, user install) | `sdks/sdkwork-skills-app-sdk/` | `apis/app-api/skills/skills-app-api.openapi.json` |
-| Backend (Admin CRUD) | `sdks/sdkwork-skills-backend-sdk/` | `apis/backend-api/skills/skills-backend-api.openapi.json` |
-| Cross-domain contract | `crates/sdkwork-skills-contract/` | Rust types shared with kernel |
+Use `@sdkwork/skills-app-sdk` or `@sdkwork/skills-backend-sdk`. Consumers must
+not import generated transport package names, construct raw HTTP requests,
+assemble authentication headers, or redefine Skills DTOs.
 
-Generate TypeScript SDKs:
+## Runtime Topology
 
-```bash
-pnpm sdk:generate
-```
-
-Standard profile: `sdkwork-v3` (success envelope unwrap enabled in HTTP clients).
+Cloud deployment consumes the host-neutral `sdkwork-api-skills-assembly`
+through the platform gateway. Standalone deployment uses
+`sdkwork-api-skills-standalone-gateway`. App-api and backend-api are surfaces on
+one listener, not independent business servers.
 
 ## Authentication
 
-Dual-token model (`AuthToken` bearer + `Access-Token` header) per SDKWork IAM. Route manifests
-in `crates/sdkwork-routes-skills-*/src/http_route_manifest.rs` declare IAM operation IDs aligned
-with OpenAPI `operationId` values.
+Protected routes use the SDKWork dual-token model through the shared IAM
+runtime. Route manifests declare typed `WebRequestContext`, surface,
+operation IDs, and permissions. Consumers inject the shared token manager.
 
-## Response Envelope
+The server derives tenant, organization, user, and operator identity from
+`WebRequestContext`. Consumers must not add tenant selectors, default tenants,
+or identity headers.
 
-HTTP 2xx JSON:
+## Installation Flow
 
-```json
-{
-  "code": 0,
-  "data": { "items": [], "pageInfo": { "mode": "offset", "page": 1 } },
-  "traceId": "<uuid>"
-}
+```ts
+const artifacts = await client.skills.skillPackages.artifacts.list(packageId, {
+  page: 1,
+  pageSize: 20,
+});
+
+const installation = await client.skills.skillPackages.installations.create(
+  packageId,
+  {
+    artifactId: artifacts.items[0].id,
+    target: { kind: 'workspace', id: workspaceId },
+    config: {},
+  },
+);
 ```
 
-Single resource:
+The artifact endpoint returns only releases installable in the authenticated
+context. The client still chooses an exact artifact; there is no
+latest-artifact projection.
 
-```json
-{
-  "code": 0,
-  "data": { "item": { } },
-  "traceId": "<uuid>"
-}
-```
+## Response Contract
 
-Errors: HTTP 4xx/5xx with `application/problem+json` including numeric `code` and `traceId`.
+- Create returns HTTP `201` with `data.item`.
+- Retrieve and update return HTTP `200` with `data.item`.
+- List returns HTTP `200` with `data.items` and `data.pageInfo`.
+- Delete returns HTTP `204` with no body.
+- Errors return HTTP 4xx or 5xx `application/problem+json` with numeric `code`
+  and `traceId`.
 
-## Kernel Integration
+## Cross-Domain Ownership
 
-`sdkwork-kernel` references skills by ID through `sdkwork-skills-contract`. Skill package
-persistence and CRUD remain in this repository only.
+Skills owns package, marketplace, artifact, capability, installation, asset,
+and action metadata. Drive owns uploaded file bytes; IAM owns login, tokens,
+identity, and permissions; Agents owns agent sessions; messaging domains own
+conversation semantics and IM transport. Dependency-owned APIs and data are
+not copied into Skills or consumer authorities.
 
-## Verification
+## SDK Generation And Verification
 
 ```bash
+pnpm sdk:generate
 pnpm api:check
-pnpm verify
+pnpm api:assembly:validate
+node ../sdkwork-specs/tools/check-api-operation-patterns.mjs --workspace .
 node ../sdkwork-specs/tools/check-api-response-envelope.mjs --workspace .
-node ../sdkwork-specs/tools/verify-repo.mjs --root .
+node ../sdkwork-specs/tools/check-pagination.mjs --workspace .
+node ../sdkwork-specs/tools/check-app-sdk-consumer-imports.mjs --workspace .
 ```
 
-`pnpm api:check` materializes OpenAPI, runs `tools/skills_schema_quality_gate.mjs` (envelope,
-list query params, OpenAPI ↔ route manifest parity), and validates generated SDK drift.
+A second `pnpm sdk:generate` must produce no generated changes.

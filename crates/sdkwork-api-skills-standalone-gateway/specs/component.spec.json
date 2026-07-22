@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-api-skills-standalone-gateway",
+    "displayName": "SDKWork Skills Standalone Gateway",
+    "version": "0.1.0",
+    "type": "rust-api-standalone-gateway",
+    "root": "crates/sdkwork-api-skills-standalone-gateway",
+    "domain": "application",
+    "capability": "api-gateway",
+    "surface": "gateway-api",
+    "languages": [
+      "rust"
+    ],
+    "generated": false,
+    "manifests": [
+      "Cargo.toml"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "CODE_STYLE_SPEC.md",
+      "path": "../../../sdkwork-specs/CODE_STYLE_SPEC.md",
+      "purpose": "Authored gateway source boundaries."
+    },
+    {
+      "file": "NAMING_SPEC.md",
+      "path": "../../../sdkwork-specs/NAMING_SPEC.md",
+      "purpose": "Canonical gateway and runtime naming."
+    },
+    {
+      "file": "RUST_CODE_SPEC.md",
+      "path": "../../../sdkwork-specs/RUST_CODE_SPEC.md",
+      "purpose": "Rust gateway implementation."
+    },
+    {
+      "file": "API_ASSEMBLY_SPEC.md",
+      "path": "../../../sdkwork-specs/API_ASSEMBLY_SPEC.md",
+      "purpose": "Host-neutral API assembly consumption."
+    },
+    {
+      "file": "APPLICATION_GATEWAY_SPEC.md",
+      "path": "../../../sdkwork-specs/APPLICATION_GATEWAY_SPEC.md",
+      "purpose": "Standalone ingress and operational endpoints."
+    },
+    {
+      "file": "DATABASE_SPEC_PROCESS_SHARED_POOL.md",
+      "path": "../../../sdkwork-specs/DATABASE_SPEC_PROCESS_SHARED_POOL.md",
+      "purpose": "Process pool enablement before database bootstrap."
+    },
+    {
+      "file": "TEST_SPEC.md",
+      "path": "../../../sdkwork-specs/TEST_SPEC.md",
+      "purpose": "Gateway, readiness, and shutdown verification."
+    }
+  ],
+  "contracts": {
+    "layerRole": "runtime-gateway",
+    "publicExports": [
+      "."
+    ],
+    "providedPorts": [
+      {
+        "name": "standaloneGateway",
+        "export": "."
+      }
+    ],
+    "requiredPorts": [
+      {
+        "name": "skillsApiAssembly",
+        "export": ".",
+        "target": "sdkwork_api_skills_assembly::assemble_api_router_from_env"
+      },
+      {
+        "name": "processDatabasePool",
+        "export": ".",
+        "target": "sdkwork_database_sqlx::enable_process_database_pool_from_env"
+      }
+    ],
+    "runtimeEntrypoints": [
+      "sdkwork_api_skills_standalone_gateway::serve_standalone_gateway",
+      "sdkwork-api-skills-standalone-gateway"
+    ],
+    "routeManifest": null,
+    "sdkClients": [],
+    "sdkDependencies": [],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "events": [],
+    "configKeys": [
+      "SDKWORK_SKILLS_APPLICATION_PUBLIC_INGRESS_BIND"
+    ]
+  },
+  "verification": {
+    "commands": [
+      "cargo check -p sdkwork-api-skills-standalone-gateway",
+      "node ../sdkwork-specs/tools/check-process-shared-database-pool.mjs --root ."
+    ]
+  }
+}

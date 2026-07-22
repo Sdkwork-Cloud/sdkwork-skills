@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-intelligence-skills-repository-sqlx",
+    "displayName": "SDKWork Skills SQLx Repository",
+    "version": "0.1.0",
+    "type": "rust-crate",
+    "root": "crates/sdkwork-intelligence-skills-repository-sqlx",
+    "domain": "intelligence",
+    "capability": "skills",
+    "surface": "backend-service",
+    "languages": [
+      "rust"
+    ],
+    "generated": false,
+    "manifests": [
+      "Cargo.toml"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "CODE_STYLE_SPEC.md",
+      "path": "../../../sdkwork-specs/CODE_STYLE_SPEC.md",
+      "purpose": "Authored repository source structure and generated-source boundaries."
+    },
+    {
+      "file": "NAMING_SPEC.md",
+      "path": "../../../sdkwork-specs/NAMING_SPEC.md",
+      "purpose": "Canonical crate, database, and persistence naming."
+    },
+    {
+      "file": "RUST_CODE_SPEC.md",
+      "path": "../../../sdkwork-specs/RUST_CODE_SPEC.md",
+      "purpose": "Rust repository implementation and verification rules."
+    },
+    {
+      "file": "DATABASE_SPEC.md",
+      "path": "../../../sdkwork-specs/DATABASE_SPEC.md",
+      "purpose": "Portable table semantics, tenant isolation, identifiers, and repository contracts."
+    },
+    {
+      "file": "DATABASE_FRAMEWORK_SPEC.md",
+      "path": "../../../sdkwork-specs/DATABASE_FRAMEWORK_SPEC.md",
+      "purpose": "Shared database pool and lifecycle integration."
+    },
+    {
+      "file": "PAGINATION_SPEC.md",
+      "path": "../../../sdkwork-specs/PAGINATION_SPEC.md",
+      "purpose": "Store-level list pagination and total-count semantics."
+    },
+    {
+      "file": "TEST_SPEC.md",
+      "path": "../../../sdkwork-specs/TEST_SPEC.md",
+      "purpose": "Cross-engine persistence, isolation, and conflict verification."
+    }
+  ],
+  "contracts": {
+    "layerRole": "backend-repository",
+    "publicExports": [
+      "."
+    ],
+    "providedPorts": [
+      {
+        "name": "skillsRepository",
+        "export": "."
+      }
+    ],
+    "requiredPorts": [
+      {
+        "name": "databasePool",
+        "export": ".",
+        "target": "sdkwork_database_sqlx::DatabasePool"
+      },
+      {
+        "name": "snowflakeIdGenerator",
+        "export": ".",
+        "target": "sdkwork_database_id::SnowflakeIdGenerator"
+      }
+    ],
+    "runtimeEntrypoints": [
+      "sdkwork_intelligence_skills_repository_sqlx::SqlxSkillsRepository::new"
+    ],
+    "routeManifest": null,
+    "sdkClients": [],
+    "sdkDependencies": [],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "events": [],
+    "configKeys": []
+  },
+  "verification": {
+    "commands": [
+      "cargo test -p sdkwork-intelligence-skills-repository-sqlx",
+      "cargo clippy -p sdkwork-intelligence-skills-repository-sqlx --tests -- -D warnings"
+    ]
+  }
+}

@@ -21,19 +21,37 @@
       "lifecycle_status": "active"
     },
     {
-      "table_name": "ai_user_agent_skill",
+      "table_name": "ai_skill_category_binding",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
     },
     {
-      "table_name": "ai_skill_asset",
+      "table_name": "ai_skill_capability",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
     },
     {
       "table_name": "ai_skill_artifact",
+      "owner": "skills-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "ai_skill_artifact_capability",
+      "owner": "skills-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "ai_skill_installation",
+      "owner": "skills-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "ai_skill_asset",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"

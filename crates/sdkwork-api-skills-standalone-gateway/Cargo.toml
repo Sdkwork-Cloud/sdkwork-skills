@@ -12,13 +12,10 @@ name = "sdkwork-api-skills-standalone-gateway"
 path = "src/bin/app_main.rs"
 
 [dependencies]
-sdkwork_api_skills_assembly = { package = "sdkwork-api-skills-assembly", path = "../sdkwork-api-skills-assembly" }
+sdkwork-api-skills-assembly.workspace = true
+sdkwork-database-sqlx.workspace = true
 axum.workspace = true
-sdkwork-intelligence-skills-repository-sqlx = { path = "../sdkwork-intelligence-skills-repository-sqlx" }
-sdkwork-intelligence-skills-service = { path = "../sdkwork-intelligence-skills-service" }
-sdkwork-skills-database-host = { path = "../sdkwork-skills-database-host" }
-sqlx.workspace = true
+serde_json.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-

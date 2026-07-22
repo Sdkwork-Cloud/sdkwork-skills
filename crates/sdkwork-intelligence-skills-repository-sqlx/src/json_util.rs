@@ -27,6 +27,17 @@ pub fn string_list_to_json(items: &[String], field: &str) -> SkillsResult<String
     })
 }
 
+pub fn json_value_from_text(input: &str, field: &str) -> SkillsResult<serde_json::Value> {
+    serde_json::from_str(input)
+        .map_err(|error| SkillsServiceError::Repository(format!("invalid {field} json: {error}")))
+}
+
+pub fn json_value_to_text(value: &serde_json::Value, field: &str) -> SkillsResult<String> {
+    serde_json::to_string(value).map_err(|error| {
+        SkillsServiceError::Repository(format!("encode {field} json failed: {error}"))
+    })
+}
+
 pub fn timestamp_to_rfc3339(value: chrono::DateTime<chrono::Utc>) -> String {
     value.to_rfc3339_opts(chrono::SecondsFormat::Secs, true)
 }

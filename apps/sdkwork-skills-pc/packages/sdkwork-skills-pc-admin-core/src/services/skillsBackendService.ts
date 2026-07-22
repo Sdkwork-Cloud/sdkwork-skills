@@ -1,24 +1,24 @@
 import type {
-  CategoriesManagementPageData,
   CreateSkillCategoryCommand,
   CreateSkillPackageCommand,
+  SkillCategoriesPageData,
   SkillCategoryRecord,
   SkillPackageRecord,
-  SkillPackagesManagementPageData,
+  SkillPackagesPageData,
 } from '@sdkwork/skills-backend-sdk';
 
 import type { SkillsBackendClients } from '../clients';
 
 export async function listManagedSkillPackages(
   clients: SkillsBackendClients,
-): Promise<SkillPackagesManagementPageData> {
-  return clients.backend.skills.skillPackages.management.list();
+): Promise<SkillPackagesPageData> {
+  return clients.backend.skills.skillPackages.list();
 }
 
 export async function listManagedSkillCategories(
   clients: SkillsBackendClients,
-): Promise<CategoriesManagementPageData> {
-  return clients.backend.skills.categories.management.list();
+): Promise<SkillCategoriesPageData> {
+  return clients.backend.skills.skillCategories.list();
 }
 
 export async function createSkillPackage(
@@ -30,14 +30,14 @@ export async function createSkillPackage(
 
 export async function deleteSkillPackage(
   clients: SkillsBackendClients,
-  skillId: string,
-): Promise<SkillPackageRecord> {
-  return clients.backend.skills.skillPackages.delete(skillId);
+  packageId: string,
+): Promise<void> {
+  return clients.backend.skills.skillPackages.delete(packageId);
 }
 
 export async function createSkillCategory(
   clients: SkillsBackendClients,
   input: CreateSkillCategoryCommand,
 ): Promise<SkillCategoryRecord> {
-  return clients.backend.skills.categories.create(input);
+  return clients.backend.skills.skillCategories.create(input);
 }

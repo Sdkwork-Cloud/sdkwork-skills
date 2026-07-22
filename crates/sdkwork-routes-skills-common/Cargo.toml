@@ -6,11 +6,15 @@ license.workspace = true
 
 [dependencies]
 axum.workspace = true
-sdkwork-intelligence-skills-service = { path = "../sdkwork-intelligence-skills-service" }
+sdkwork-intelligence-skills-service.workspace = true
 sdkwork-skills-contract.workspace = true
 sdkwork-utils-rust.workspace = true
 sdkwork-web-core.workspace = true
 serde.workspace = true
+serde_json.workspace = true
 
 [lib]
 path = "src/lib.rs"
+
+[dev-dependencies]
+tokio.workspace = true

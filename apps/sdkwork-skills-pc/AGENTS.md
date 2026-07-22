@@ -4,202 +4,88 @@
 
 ## SDKWORK Soul
 
-Read `../../../sdkwork-specs/SOUL.md` before executing tasks in this app surface. Follow specs before memory, dictionary before context, stop on ambiguity, and evidence before completion.
+Read `../../../sdkwork-specs/SOUL.md` before executing tasks in this application root. Apply specs
+before memory, dictionary before context, exact sources before inference, and evidence before
+completion.
 
 ## SDKWORK Standards
 
-Canonical SDKWORK specs path from this app surface:
-
-- `../../../sdkwork-specs/README.md`
-- `../../../sdkwork-specs/SOUL.md`
-- `../../../sdkwork-specs/AGENTS_SPEC.md`
-- `../../../sdkwork-specs/PNPM_SCRIPT_SPEC.md`
-- `../../../sdkwork-specs/GITHUB_WORKFLOW_SPEC.md`
-- `../../../sdkwork-specs/CODE_STYLE_SPEC.md`
-- `../../../sdkwork-specs/NAMING_SPEC.md`
+The canonical standards entrypoint is `../../../sdkwork-specs/README.md`. This entrypoint follows
+`../../../sdkwork-specs/AGENTS_SPEC.md` and narrows the parent `../../AGENTS.md` contract.
 
 ## Application Identity
 
-This is the PC browser app surface for the root Skills application. Read `../../sdkwork.app.config.json` only when the task touches app identity, runtime config, SDK wiring, release metadata, app-owned capabilities, packaging, or deployment.
+This is the React PC application for SDKWork Skills. The parent root owns API contracts, SDK
+generation, Rust services, database lifecycle, and release identity. Read
+`../../sdkwork.app.config.json` when application identity, runtime, SDK wiring, release, packaging,
+or app-owned capabilities are in scope.
 
 ## Local Dictionary Structure
 
-- `AGENTS.md`: app-surface agent entrypoint and relative SDKWork spec index.
-- `package.json`: app-surface scripts and dependencies governed by `PNPM_SCRIPT_SPEC.md`.
-- `packages/`: PC React packages (`sdkwork-skills-pc-core`, `-commons`, `-hub`, `-console`, `-admin`, `-admin-core`, `-shell`).
-- `src/`: app bootstrap, shell entrypoint, and routes.
-- `vite.config.ts`, `tsconfig.json`: TypeScript and Vite build manifests.
+- `AGENTS.md`: PC application execution entrypoint.
+- `etc/`: deployable-root source configuration governed by `SOURCE_CONFIG_SPEC.md`.
+- `packages/`: focused Hub, Console, Admin, Core, Commons, and Shell packages.
+- `src/`: application bootstrap, routes, and shell entrypoint.
+- `package.json`: PC application scripts and dependency authority.
+- `vite.config.ts`, `tsconfig.json`: Vite and TypeScript build authority.
 
 ## Spec Resolution Order
 
-Use dynamic progressive loading:
-
-1. Read this `AGENTS.md` and any nearer component-level `AGENTS.md`.
-2. Read `../../AGENTS.md` only when repository-root rules or scripts are needed.
-3. Read `../../sdkwork.app.config.json` only when app behavior, runtime config, SDK wiring, release, packaging, or app-owned capabilities are touched.
-4. Read local package manifests only for the affected package/surface.
-5. Read `../../../sdkwork-specs/README.md`, then only the task-specific root specs.
-6. Inspect implementation files after the dictionary and relevant specs are clear.
-
-Do not load the whole app surface or every root spec before identifying the task surface.
+1. Read this `AGENTS.md`.
+2. Read `../../AGENTS.md` for repository-wide boundaries.
+3. Read `../../sdkwork.app.config.json` only for application identity or runtime composition work.
+4. Read the nearest package manifest and `specs/` only for the affected package.
+5. Resolve the task row in `../../../sdkwork-specs/README.md` and read only selected specs.
+6. Inspect implementation files.
 
 ## Required Specs By Task Type
 
-- Agent/workflow changes: `../../../sdkwork-specs/SOUL.md`, `../../../sdkwork-specs/AGENTS_SPEC.md`, `../../../sdkwork-specs/SDKWORK_WORKSPACE_SPEC.md`, `../../../sdkwork-specs/GITHUB_WORKFLOW_SPEC.md`, and `../../../sdkwork-specs/TEST_SPEC.md`.
-- Package script changes: `../../../sdkwork-specs/PNPM_SCRIPT_SPEC.md`, `../../../sdkwork-specs/APP_RUNTIME_TOPOLOGY_SPEC.md`, `../../../sdkwork-specs/CONFIG_SPEC.md`, and `../../../sdkwork-specs/TEST_SPEC.md`.
-- Any code change: `../../../sdkwork-specs/CODE_STYLE_SPEC.md`, `../../../sdkwork-specs/NAMING_SPEC.md`, plus only the touched language/framework spec.
-- TypeScript/Node code: `../../../sdkwork-specs/TYPESCRIPT_CODE_SPEC.md`.
-- Frontend/UI code: `../../../sdkwork-specs/FRONTEND_CODE_SPEC.md`, `../../../sdkwork-specs/FRONTEND_SPEC.md`, `../../../sdkwork-specs/UI_ARCHITECTURE_SPEC.md`, `../../../sdkwork-specs/APP_PC_ARCHITECTURE_SPEC.md`, and `../../../sdkwork-specs/APP_PC_REACT_UI_SPEC.md`.
-- SDK integration changes: `../../../sdkwork-specs/APP_SDK_INTEGRATION_SPEC.md`, `../../../sdkwork-specs/SDK_SPEC.md`, `../../../sdkwork-specs/SDK_WORKSPACE_GENERATION_SPEC.md`, and `../../../sdkwork-specs/TEST_SPEC.md`.
+- Agent/workflow: `SOUL.md`, `AGENTS_SPEC.md`, `SDKWORK_WORKSPACE_SPEC.md`, and `TEST_SPEC.md`.
+- Package scripts: `PNPM_SCRIPT_SPEC.md`, `CONFIG_SPEC.md`, and `TEST_SPEC.md`.
+- Any code: `CODE_STYLE_SPEC.md`, `NAMING_SPEC.md`, `TYPESCRIPT_CODE_SPEC.md`, and `TEST_SPEC.md`.
+- Frontend/UI: `FRONTEND_CODE_SPEC.md`, `FRONTEND_SPEC.md`, `UI_ARCHITECTURE_SPEC.md`,
+  `APP_PC_ARCHITECTURE_SPEC.md`, and `APP_PC_REACT_UI_SPEC.md`.
+- SDK integration: `APP_SDK_INTEGRATION_SPEC.md`, `SDK_SPEC.md`,
+  `SDK_WORKSPACE_GENERATION_SPEC.md`, and `TEST_SPEC.md`.
+- List/search: add `PAGINATION_SPEC.md`.
+- Source config/runtime: `SOURCE_CONFIG_SPEC.md`, `CONFIG_SPEC.md`, `ENVIRONMENT_SPEC.md`,
+  `DEPLOYMENT_SPEC.md`, and `TEST_SPEC.md`.
+- Packaging/workflows: `PNPM_SCRIPT_SPEC.md`, `GITHUB_WORKFLOW_SPEC.md`, `RELEASE_SPEC.md`, and
+  `SUPPLY_CHAIN_SECURITY_SPEC.md`.
 
-Language-specific specs are on-demand; do not load Rust, Java, TypeScript, and frontend specs for unrelated tasks.
+Language-specific specs are on-demand; do not load unrelated language or framework specs.
 
 ## Code Style Rules
 
-Read `../../../sdkwork-specs/CODE_STYLE_SPEC.md` and `../../../sdkwork-specs/NAMING_SPEC.md` before code changes. Keep package boundaries focused. Prefer generated app/backend SDKs over ad-hoc HTTP wrappers in production surfaces.
-
-Build scripts, dev runners, and `pnpm clean` must follow `CODE_STYLE_SPEC.md` §7 (Build Source Integrity And Self-Healing). Git-tracked build-critical source files must be verified before builds and self-healed from git when missing; `clean` must not delete them.
-
-## Build, Test, and Verification
-
-- `pnpm dev`: browser development with Vite proxy to local skills APIs.
-- `pnpm build`: browser bundle build.
-- `pnpm typecheck`: TypeScript check.
-
-From the repository root, use `pnpm dev`, `pnpm build`, `pnpm test`, `pnpm check`, and `pnpm verify` for cross-surface validation.
+- UI and feature packages consume injected generated SDK clients or approved composed facades.
+- Do not add raw HTTP, manual auth headers, local SDK forks, duplicate wire DTOs, or imports into
+  generator-owned internals.
+- Bootstrap owns runtime configuration and SDK client construction; UI components do not.
+- Use shared utilities from `sdkwork-utils` when an approved implementation exists.
 
 ## Agent Execution Rules
 
-Use the convention dictionary before broad source loading. Follow dynamic progressive loading: nearest AGENTS, relevant manifests/specs, task-specific root standards, then implementation. Record exact verification commands and important outputs before reporting completion.
-
-## App SDK Consumer Imports
-
-
-
-Application, feature, shell, and service packages `MUST` consume HTTP SDKs through scoped composed consumer packages, not generator transport package names.
-
-
-
-- App API clients: `@sdkwork/<application-code>-app-sdk`
-
-- Backend API clients (`backend-admin` only): `@sdkwork/<application-code>-backend-sdk`
-
-- Federated Claw Router domain surfaces: `@sdkwork/clawrouter-app-sdk/domains` and `@sdkwork/clawrouter-backend-sdk/domains`
-
-- Open/domain API clients: `@sdkwork/<domain>-sdk`
-
-
-
-Canonical examples (IAM):
-
-
-
-```typescript
-
-import { createClient, type SdkworkAppClient } from '@sdkwork/iam-app-sdk';
-
-import type { SdkworkBackendClient } from '@sdkwork/iam-backend-sdk'; // backend-admin only
-
-import { createClient as createClawRouterDomainsClient } from '@sdkwork/clawrouter-app-sdk/domains';
-
-```
-
-
-
-Forbidden in application `apps/`, `packages/`, bootstrap, services, UI, contract tests, and composed SDK `src/**` outside generator ownership:
-
-
-
-- `sdkwork-*-app-sdk-generated-typescript`, `sdkwork-*-backend-sdk-generated-typescript`, and other generator transport names as consumer imports
-
-- `@sdkwork/commerce-app-sdk`, `@sdkwork/commerce-backend-sdk`, `@sdkwork/clawrouter-*-domain-transport-sdk`
-
-- filesystem paths containing `domain-transport-typescript`, `domain-transport-sdk`, or sibling `*-typescript/generated` hops from composed `src/**`
-
-- deep imports into `generated/server-openapi/src/*` from consumers when a composed facade exists
-
-
-
-Allowed:
-
-
-
-- Composed facade entry imports such as `@sdkwork/iam-app-sdk`, `@sdkwork/knowledgebase-app-sdk`, and `@sdkwork/clawrouter-app-sdk/domains`
-
-- Composed re-exports that import only from `../generated/**` within the same `*-sdk-typescript` family root
-
-- Generated transport ownership inside `sdks/**/generated/**` only
-
-
-
-Each SDK family `MUST` expose the composed TypeScript facade at `sdks/<sdk-family>/<sdk-family>-typescript/src/index.ts` (and optional subpath exports such as `./domains`) with `package.json#name` equal to the scoped consumer package.
-
-
-
-Before completing SDK integration or frontend service work, run:
-
-
-
-```bash
-
-node <sdkwork-specs>/tools/check-app-sdk-consumer-imports.mjs --workspace <workspace-root>
-
-```
-
-
-
-Authority: `APP_SDK_INTEGRATION_SPEC.md` section 9, `SDK_SPEC.md` package naming table, `SDK_WORKSPACE_GENERATION_SPEC.md` composed facade rules.
-
-## HTTP API Response Envelope
-
-All L2+ SDKWork-owned custom HTTP contracts, including `app-api`, `backend-api`, and SDKWork-owned business `open-api`, `MUST` follow `API_SPEC.md` section 4.5, section 14, and section 15:
-
-- **Default classification:** omitted `x-sdkwork-wire-protocol` means SDKWork-owned custom API (`sdkwork-v3`); only operation-level `x-sdkwork-wire-protocol: external` plus `x-sdkwork-external-protocol-id` identifies a third-party compatibility `open-api` operation.
-- **Input:** typed request bodies, section 14.1 list/search/command input, `SdkWorkListQuery`, and `q` for free-text search.
-- **Success output:** `SdkWorkApiResponse` with `{ "code": 0, "data": <payload>, "traceId": "<server-uuid>" }`.
-- **Error output:** HTTP 4xx/5xx `application/problem+json` (`ProblemDetail`) with numeric `code` and `traceId`.
-- Success `code` is numeric `int32`; HTTP 2xx JSON bodies `MUST` use `0` only. REST semantics remain on HTTP status (`201`, `202`, etc.).
-- Platform error codes are numeric non-zero values per section 15.3 (`40001`, `40101`, `40401`, …).
-- Single resource: `data.item`
-- Lists: `data.items` + `data.pageInfo` (`PageInfo.mode` is `offset` or `cursor`)
-- Commands: `data.accepted` plus optional `resourceId` / `status`
-- Async accept (`202`): `data.operationId`, `data.status`, optional `pollUrl`
-- Operation patterns: retrieve/list/search/create/update/delete/command/async/bulk semantics follow `API_SPEC.md` section 15.4; create uses `201`, delete uses `204` with no JSON body, and `PUT`/`PATCH` use SDK action `update`.
-
-Vendor compatibility `open-api` routes that mirror upstream tool or provider wire (for example OpenAI `/v1/*`, Anthropic/Claude `/anthropic/v1/*`, Google/Gemini `/google/v1beta/*`, Claude Code, or Codex) `MAY` opt out only when every exempt operation declares operation-level `x-sdkwork-wire-protocol: external` and `x-sdkwork-external-protocol-id` per `API_SPEC.md` section 4.5.2. SDKWork-owned business `open-api` operations `MUST NOT` opt out. Mixed OpenAPI documents are validated per operation; one external operation never exempts SDKWork-owned operations in the same document.
-
-Errors `MUST` use HTTP 4xx/5xx with `application/problem+json` (`ProblemDetail`) including required numeric `code` and `traceId`. Business failures `MUST NOT` use HTTP 2xx with non-zero `code`, string wire codes, `success`, or human `message`.
-
-Forbidden legacy envelopes and fields: `PlusApiResult`, `AppbaseApiResult`, `StoreApiResult`, `SdkWorkResponse`, per-domain `*ApiResult`, wire field `requestId`, bare domain DTOs at the HTTP root, and top-level `{ items, pageInfo, traceId }` without `data`.
-
-Handlers `MUST` serialize success and map errors through `sdkwork-web-framework` response mapping. Generated HTTP SDKs (`--standard-profile sdkwork-v3`) unwrap `data` by default and expose typed numeric `ProblemDetail.code` / `traceId` on errors; use `.raw` when the full envelope is required.
-
-Before completing API contract, SDK generation, or frontend service work, run:
-
-```bash
-node <sdkwork-specs>/tools/check-api-operation-patterns.mjs --workspace <workspace-root>
-node <sdkwork-specs>/tools/check-api-response-envelope.mjs --workspace <workspace-root>
-```
-
-Authority: `sdkwork-specs/API_SPEC.md` section 4.5 and sections 14–16, `SDK_SPEC.md` section 4.2, `FRONTEND_SPEC.md`, `MIGRATION_SPEC.md` section 4.2.
-
-## List And Search Pagination
-
-All L2+ list/search APIs and their backing services, repositories, SDK consumers, and interactive frontend lists `MUST` follow `PAGINATION_SPEC.md`:
-
-- **Input:** standard `SdkWorkListQuery` or query params (`page`/`page_size` or `cursor`/`page_size` per `API_SPEC.md` §14.1); default `page_size` `20`; max `200` unless a documented exception exists.
-- **Output:** `SdkWorkApiResponse.data.items` + `data.pageInfo` with `PageInfo.mode` (`offset` or `cursor`) per `API_SPEC.md` §16.
-- **Store-level pagination:** push filtering, sorting, and page selection to SQL `LIMIT`/keyset or incrementally maintained indexes — never unbounded collect then `skip`/`take`/`slice` in process memory (`PAGINATION_SPEC.md` §2).
-- **SDK and frontend:** interactive lists request one page at a time from the server; no default `listAll*` on P0/P1 paths; no client-side `slice` pagination over full downloads.
-
-Before completing list/search API, repository, SDK list helper, projection read model, or paginated UI work, run:
-
-```bash
-node <sdkwork-specs>/tools/check-pagination.mjs --workspace <workspace-root>
-```
-
-Authority: `PAGINATION_SPEC.md`, `API_SPEC.md` §14.1/§16, `DATABASE_SPEC.md` §20.5, `WEB_BACKEND_SPEC.md` §12, `SDK_SPEC.md` §4.2/§6, `FRONTEND_SPEC.md`, `APP_SDK_INTEGRATION_SPEC.md` §9.
+Use dynamic progressive loading before implementation files: nearest dictionary, relevant package
+contract, task-specific global specs, then the affected source. Do not replace generated SDK
+integration with raw HTTP or report completion without recorded verification evidence.
+
+## Task-Specific Standards
+
+- App SDK consumer work is governed by `APP_SDK_INTEGRATION_SPEC.md`; verify from the parent root
+  with `node ../sdkwork-specs/tools/check-app-sdk-consumer-imports.mjs --workspace .`.
+- HTTP API input, response envelope, errors, and operation semantics are governed by `API_SPEC.md`;
+  verify with `check-api-operation-patterns.mjs` and `check-api-response-envelope.mjs`.
+- List/search behavior is governed by `PAGINATION_SPEC.md`; verify with
+  `node ../sdkwork-specs/tools/check-pagination.mjs --workspace .` from the parent root.
+- `etc/` source configuration is governed by `SOURCE_CONFIG_SPEC.md`; verify from the parent root
+  with `node ../sdkwork-specs/tools/check-source-config-standard.mjs --root .`.
+
+## Build, Test, And Verification
+
+From this application root use `pnpm typecheck`, `pnpm test`, and `pnpm build`. Use `pnpm check` and
+`pnpm verify` from the parent root for cross-surface verification.
 
 ## Human Review Rules
 
-Request human review before breaking SDKWork standards, changing public naming, altering security/auth behavior, changing runtime config semantics, changing package/release metadata, deleting data/files, or changing generated SDK ownership. Surface unresolved spec paths instead of guessing.
+Human review is required for breaking API/SDK behavior, security or auth changes, runtime config
+semantics, generated ownership changes, and release or deployment governance changes.

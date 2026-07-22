@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { listSkillPackages, useSkillsClients, type SkillPackageRecord } from '@sdkwork/skills-pc-core';
+import {
+  listSkillPackages,
+  useSkillsClients,
+  type SkillPackageRecord,
+} from '@sdkwork/skills-pc-core';
 
 export function ConsoleSkillsPage() {
   const clients = useSkillsClients();
@@ -19,7 +23,7 @@ export function ConsoleSkillsPage() {
       <ul>
         {packages.map((item) => (
           <li key={item.id}>
-            {item.display_name} — {item.invocation_kind}
+            {item.displayName} - {item.status}
           </li>
         ))}
       </ul>

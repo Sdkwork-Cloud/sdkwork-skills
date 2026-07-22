@@ -9,15 +9,10 @@ use sdkwork_web_core::{
 };
 
 use crate::http_route_manifest::backend_route_manifest;
-use crate::paths;
 use crate::SkillsBackendRequestContext;
 
 pub fn skills_backend_public_path_prefixes() -> Vec<String> {
-    vec![
-        paths::LIVEZ.to_owned(),
-        paths::READYZ.to_owned(),
-        paths::HEALTHZ.to_owned(),
-    ]
+    Vec::new()
 }
 
 #[derive(Clone, Default)]
@@ -35,10 +30,24 @@ fn skills_backend_context_from_web_request(
     context: &WebRequestContext,
 ) -> Option<SkillsBackendRequestContext> {
     let principal = context.principal.as_ref()?;
-    let tenant_id = principal.tenant_id().parse().ok()?;
-    let operator_id = principal.user_id().parse().ok();
+    let tenant_id = principal
+        .tenant_id()
+        .parse::<u64>()
+        .ok()
+        .filter(|value| *value > 0)?;
+    let organization_id = principal
+        .organization_id()?
+        .parse::<u64>()
+        .ok()
+        .filter(|value| *value > 0)?;
+    let operator_id = principal
+        .user_id()
+        .parse::<u64>()
+        .ok()
+        .filter(|value| *value > 0)?;
     Some(SkillsBackendRequestContext {
         tenant_id,
+        organization_id,
         operator_id,
     })
 }
