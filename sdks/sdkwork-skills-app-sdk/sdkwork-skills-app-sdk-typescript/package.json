@@ -17,6 +17,9 @@
   "dependencies": {
     "@sdkwork/sdk-common": "workspace:*"
   },
+  "devDependencies": {
+    "typescript": "catalog:"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit"
   },

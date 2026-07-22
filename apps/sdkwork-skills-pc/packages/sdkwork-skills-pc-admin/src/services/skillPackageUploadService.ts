@@ -19,14 +19,22 @@ export interface SkillArtifactUploadResult {
   sizeBytes: string;
 }
 
-const CHECKSUM_CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
-
 async function calculateSha256(file: File): Promise<string> {
   const hasher = new Sha256Hasher();
-  for (let offset = 0; offset < file.size; offset += CHECKSUM_CHUNK_SIZE_BYTES) {
-    const chunk = file.slice(offset, offset + CHECKSUM_CHUNK_SIZE_BYTES);
-    hasher.update(new Uint8Array(await chunk.arrayBuffer()));
+  const reader = file.stream().getReader();
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      hasher.update(value);
+    }
+  } finally {
+    reader.releaseLock();
   }
+
   return hexEncode(hasher.digest());
 }
 
