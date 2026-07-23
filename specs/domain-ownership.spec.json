@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.application-domain-ownership",
+  "application": "sdkwork-skills",
+  "status": "active",
+  "updatedAt": "2026-07-22",
+  "authority": {
+    "globalSpecs": [
+      "../../sdkwork-specs/DOMAIN_SPEC.md",
+      "../../sdkwork-specs/COMPOSABLE_ARCHITECTURE_SPEC.md",
+      "../../sdkwork-specs/DATABASE_SPEC.md",
+      "../../sdkwork-specs/SCHEMA_REGISTRY_SPEC.md",
+      "../../sdkwork-specs/API_SPEC.md",
+      "../../sdkwork-specs/SDK_SPEC.md",
+      "../../sdkwork-specs/MIGRATION_SPEC.md"
+    ],
+    "decision": "docs/architecture/decisions/ADR-20260722-skills-domain-ownership-and-artifact-model.md",
+    "migration": "docs/migrations/MIG-2026-0010-skills-greenfield-boundary-cutover.md"
+  },
+  "principles": {
+    "preLaunchDirectCutover": true,
+    "singleWriteOwnerPerBusinessFact": true,
+    "crossDomainReferencesByStableId": true,
+    "crossDomainForeignKeys": false,
+    "persistentProjections": false,
+    "shadowTables": false,
+    "synchronizedCacheTables": false,
+    "dualWrite": false,
+    "compatibilityFacade": false
+  },
+  "ownedBoundedContext": {
+    "domain": "intelligence",
+    "capability": "skills",
+    "owner": "sdkwork-skills",
+    "databasePrefix": "ai",
+    "businessFacts": [
+      "skill package identity and lifecycle",
+      "marketplace publication and review state",
+      "immutable versioned skill artifacts",
+      "skill capability and category relationships",
+      "subject-scoped skill installation state",
+      "skill assets and user marketplace actions"
+    ]
+  },
+  "persistence": {
+    "systemOfRecord": "sdkwork-skills",
+    "tableRegistry": "database/contract/table-registry.json",
+    "baselines": [
+      "database/ddl/baseline/postgres/0001_skills_baseline.sql",
+      "database/ddl/baseline/sqlite/0001_skills_baseline.sql"
+    ],
+    "engines": [
+      "postgres",
+      "sqlite"
+    ],
+    "tables": [
+      "ai_skill_category",
+      "ai_agent_skill_package",
+      "ai_agent_skill",
+      "ai_skill_category_binding",
+      "ai_skill_capability",
+      "ai_skill_artifact",
+      "ai_skill_artifact_capability",
+      "ai_skill_installation",
+      "ai_skill_asset",
+      "ai_skill_action"
+    ],
+    "externalReferences": [
+      {
+        "contract": "Drive node URI",
+        "owner": "sdkwork-drive",
+        "storage": "ai_skill_artifact.artifact_ref",
+        "foreignKey": false
+      },
+      {
+        "contract": "IAM user subject id",
+        "owner": "sdkwork-iam",
+        "storage": "tenant, organization, owner, actor, and user subject fields",
+        "foreignKey": false
+      },
+      {
+        "contract": "consumer-owned installation subject id",
+        "owner": "subject type owner",
+        "storage": "ai_skill_installation.subject_type and subject_id",
+        "foreignKey": false
+      }
+    ]
+  },
+  "apiOwnership": {
+    "appApi": {
+      "authority": "sdkwork-skills-app-api",
+      "sdkFamily": "sdkwork-skills-app-sdk",
+      "authorityFile": "apis/app-api/skills/skills-app-api.openapi.json",
+      "operationCount": 8
+    },
+    "backendApi": {
+      "authority": "sdkwork-skills-backend-api",
+      "sdkFamily": "sdkwork-skills-backend-sdk",
+      "authorityFile": "apis/backend-api/skills/skills-backend-api.openapi.json",
+      "operationCount": 16
+    },
+    "openApi": {
+      "owned": false,
+      "operationCount": 0,
+      "reason": "Skills does not publish an unauthenticated or partner-facing public contract."
+    }
+  },
+  "dependencies": [
+    {
+      "owner": "sdkwork-drive",
+      "capabilities": [
+        "artifact bytes",
+        "asset bytes",
+        "upload and download lifecycle"
+      ],
+      "consumerBoundary": "generated Drive App SDK and canonical drive:// reference",
+      "forbiddenLocalFacts": [
+        "object storage credentials",
+        "presigned URLs",
+        "file bytes",
+        "Drive node lifecycle"
+      ]
+    },
+    {
+      "owner": "sdkwork-agents",
+      "capabilities": [
+        "agent projects",
+        "sessions",
+        "turns",
+        "session items",
+        "interactions"
+      ],
+      "consumerBoundary": "opaque installation subject reference only",
+      "forbiddenLocalFacts": [
+        "agent execution session",
+        "agent transcript",
+        "model or provider runtime state"
+      ]
+    },
+    {
+      "owner": "sdkwork-im",
+      "capabilities": [
+        "conversations",
+        "messages",
+        "members",
+        "read cursors"
+      ],
+      "consumerBoundary": "none",
+      "forbiddenLocalFacts": [
+        "communication conversation",
+        "communication message",
+        "delivery or read state"
+      ]
+    }
+  ],
+  "dependencyDirection": [
+    "sdkwork-agents -> sdkwork-skills",
+    "sdkwork-birdcoder -> sdkwork-skills",
+    "sdkwork-skills -> sdkwork-drive",
+    "sdkwork-skills -/-> sdkwork-agents",
+    "sdkwork-skills -/-> sdkwork-im"
+  ]
+}

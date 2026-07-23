@@ -7,15 +7,18 @@ use sdkwork_skills_contract::{
 };
 use sdkwork_utils_rust::OffsetListPageParams;
 use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::{Row, SqlitePool};
 
 use crate::SqlxSkillsRepository;
 
 const SQLITE_BASELINE: &str =
     include_str!("../../../database/ddl/baseline/sqlite/0001_skills_baseline.sql");
 
-async fn service() -> SkillsService<SqlxSkillsRepository> {
+async fn service_and_pool(
+    max_connections: u32,
+) -> (SkillsService<SqlxSkillsRepository>, SqlitePool) {
     let pool = SqlitePoolOptions::new()
-        .max_connections(1)
+        .max_connections(max_connections)
         .connect("sqlite::memory:")
         .await
         .expect("connect in-memory SQLite");
@@ -23,8 +26,17 @@ async fn service() -> SkillsService<SqlxSkillsRepository> {
         .execute(&pool)
         .await
         .expect("apply Skills SQLite baseline");
+    sqlx::raw_sql(SQLITE_BASELINE)
+        .execute(&pool)
+        .await
+        .expect("reapply Skills SQLite baseline idempotently");
     let generator = SnowflakeIdGenerator::new(731).expect("create test Snowflake generator");
-    SkillsService::new(SqlxSkillsRepository::from_sqlite(pool, generator))
+    let service = SkillsService::new(SqlxSkillsRepository::from_sqlite(pool.clone(), generator));
+    (service, pool)
+}
+
+async fn service() -> SkillsService<SqlxSkillsRepository> {
+    service_and_pool(1).await.0
 }
 
 fn page(page: i64, page_size: i64) -> OffsetListPageParams {
@@ -409,4 +421,169 @@ async fn sqlite_lists_only_installable_artifacts_visible_to_the_current_subject(
         .await
         .expect("hide artifacts from disabled package");
     assert_eq!(disabled_total, 0);
+}
+
+#[tokio::test]
+async fn sqlite_enforces_normalized_installation_and_asset_integrity() {
+    let tenant_id = 19;
+    let (service, pool) = service_and_pool(1).await;
+    service
+        .create_category(category(tenant_id))
+        .await
+        .expect("create category");
+    service
+        .create_capability(capability(tenant_id))
+        .await
+        .expect("create capability");
+    let first = service
+        .create_skill_package(
+            package(tenant_id, "integrity-first"),
+            artifact(tenant_id, 0, "1.0.0"),
+        )
+        .await
+        .expect("create first package");
+    let second = service
+        .create_skill_package(
+            package(tenant_id, "integrity-second"),
+            artifact(tenant_id, 0, "1.0.0"),
+        )
+        .await
+        .expect("create second package");
+    let first_artifact_id = service
+        .list_artifacts_page(tenant_id, first.id, page(1, 10))
+        .await
+        .expect("list first package artifacts")
+        .0[0]
+        .id;
+    let second_artifact_id = service
+        .list_artifacts_page(tenant_id, second.id, page(1, 10))
+        .await
+        .expect("list second package artifacts")
+        .0[0]
+        .id;
+    let first_skill_id = sqlx::query_scalar::<_, i64>(
+        "SELECT id FROM ai_agent_skill WHERE tenant_id=?1 AND package_id=?2",
+    )
+    .bind(tenant_id as i64)
+    .bind(first.id as i64)
+    .fetch_one(&pool)
+    .await
+    .expect("resolve first skill id");
+
+    let multi_owner = sqlx::query(
+        "INSERT INTO ai_skill_asset (
+             id, uuid, tenant_id, skill_id, package_id, asset_type, purpose, media_resource_id
+         ) VALUES (91, 'multi-owner', ?1, ?2, ?3, 'image', 'icon', 'media-91')",
+    )
+    .bind(tenant_id as i64)
+    .bind(first_skill_id)
+    .bind(first.id as i64)
+    .execute(&pool)
+    .await;
+    assert!(multi_owner.is_err(), "an asset must have exactly one owner");
+
+    let invalid_lifecycle = sqlx::query("UPDATE ai_skill_artifact SET status='draft' WHERE id=?1")
+        .bind(first_artifact_id as i64)
+        .execute(&pool)
+        .await;
+    assert!(
+        invalid_lifecycle.is_err(),
+        "artifact status and lifecycle timestamps must remain consistent"
+    );
+
+    let installed = service
+        .install_skill(installation(
+            tenant_id,
+            first.id,
+            first_artifact_id,
+            SkillInstallationSubjectKind::User,
+            23,
+        ))
+        .await
+        .expect("install first package artifact");
+    let cross_package_artifact =
+        sqlx::query("UPDATE ai_skill_installation SET artifact_id=?1 WHERE id=?2")
+            .bind(second_artifact_id as i64)
+            .bind(installed.id as i64)
+            .execute(&pool)
+            .await;
+    assert!(
+        cross_package_artifact.is_err(),
+        "an installation artifact must belong to its package"
+    );
+
+    let installation_columns = sqlx::query("PRAGMA table_info(ai_skill_installation)")
+        .fetch_all(&pool)
+        .await
+        .expect("inspect installation table");
+    assert!(installation_columns
+        .iter()
+        .all(|row| row.get::<String, _>("name") != "skill_id"));
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn sqlite_serializes_concurrent_installations_without_duplicate_side_effects() {
+    let tenant_id = 23;
+    let (service, pool) = service_and_pool(4).await;
+    service
+        .create_category(category(tenant_id))
+        .await
+        .expect("create category");
+    service
+        .create_capability(capability(tenant_id))
+        .await
+        .expect("create capability");
+    let created = service
+        .create_skill_package(
+            package(tenant_id, "concurrent-install"),
+            artifact(tenant_id, 0, "1.0.0"),
+        )
+        .await
+        .expect("create package");
+    let artifact_id = service
+        .list_artifacts_page(tenant_id, created.id, page(1, 10))
+        .await
+        .expect("list package artifacts")
+        .0[0]
+        .id;
+    let first_service = service.clone();
+    let second_service = service.clone();
+    let first_record = installation(
+        tenant_id,
+        created.id,
+        artifact_id,
+        SkillInstallationSubjectKind::Workspace,
+        101,
+    );
+    let second_record = first_record.clone();
+
+    let (first_result, second_result) = tokio::join!(
+        first_service.install_skill(first_record),
+        second_service.install_skill(second_record)
+    );
+    let first_installation = first_result.expect("first concurrent installation succeeds");
+    let second_installation = second_result.expect("second concurrent installation succeeds");
+    assert_eq!(first_installation.id, second_installation.id);
+
+    let installation_count = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM ai_skill_installation
+         WHERE tenant_id=?1 AND organization_id=17 AND subject_kind='workspace'
+           AND subject_id=101 AND package_id=?2 AND deleted_at IS NULL",
+    )
+    .bind(tenant_id as i64)
+    .bind(created.id as i64)
+    .fetch_one(&pool)
+    .await
+    .expect("count active installations");
+    assert_eq!(installation_count, 1);
+
+    let install_count = sqlx::query_scalar::<_, i64>(
+        "SELECT install_count FROM ai_agent_skill WHERE tenant_id=?1 AND package_id=?2",
+    )
+    .bind(tenant_id as i64)
+    .bind(created.id as i64)
+    .fetch_one(&pool)
+    .await
+    .expect("read aggregate install count");
+    assert_eq!(install_count, 1);
 }

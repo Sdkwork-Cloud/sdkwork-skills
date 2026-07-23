@@ -1,8 +1,8 @@
 use regex_lite::Regex;
 use sdkwork_drive_contract::DriveUri;
 use sdkwork_skills_contract::{
-    SkillArtifactRecord, SkillCapabilityRecord, SkillCategoryRecord, SkillInstallationRecord,
-    SkillInstallationSubjectKind, SkillPackageRecord,
+    SkillArtifactRecord, SkillArtifactStatus, SkillCapabilityRecord, SkillCategoryRecord,
+    SkillInstallationRecord, SkillInstallationSubjectKind, SkillPackageRecord,
 };
 use sdkwork_utils_rust::trim;
 
@@ -42,6 +42,11 @@ fn validate_json_object(value: &serde_json::Value, field: &str) -> SkillsResult<
 }
 
 pub fn validate_artifact_record(record: &SkillArtifactRecord) -> SkillsResult<()> {
+    if record.status == SkillArtifactStatus::Yanked {
+        return Err(invalid(
+            "a new artifact must be draft or published; yanked is a post-publication lifecycle state",
+        ));
+    }
     if trim(&record.version_label).is_empty() || record.version_label.len() > 128 {
         return Err(invalid("version_label must contain 1 to 128 characters"));
     }

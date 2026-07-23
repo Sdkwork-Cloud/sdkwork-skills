@@ -7,8 +7,8 @@
     "version": "0.1.0",
     "type": "rust-api-assembly",
     "root": "crates/sdkwork-api-skills-assembly",
-    "domain": "application",
-    "capability": "api-assembly",
+    "domain": "intelligence",
+    "capability": "skills",
     "surface": "api-assembly",
     "languages": [
       "rust"

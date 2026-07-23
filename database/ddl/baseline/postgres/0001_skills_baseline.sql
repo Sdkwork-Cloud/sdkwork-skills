@@ -68,6 +68,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS uk_ai_agent_skill_package_scope_key_active
 CREATE UNIQUE INDEX IF NOT EXISTS uk_ai_agent_skill_package_scope_code_active
     ON ai_agent_skill_package (tenant_id, organization_id, code)
     WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS uk_ai_agent_skill_package_tenant_id
+    ON ai_agent_skill_package (tenant_id, id);
 CREATE INDEX IF NOT EXISTS idx_ai_agent_skill_package_market
     ON ai_agent_skill_package (tenant_id, visibility, status, featured, sort_weight, updated_at DESC)
     WHERE deleted_at IS NULL;
@@ -78,7 +80,7 @@ CREATE TABLE IF NOT EXISTS ai_agent_skill (
     tenant_id BIGINT NOT NULL,
     organization_id BIGINT NOT NULL DEFAULT 0,
     skill_key VARCHAR(128) NOT NULL,
-    package_id BIGINT NOT NULL REFERENCES ai_agent_skill_package(id),
+    package_id BIGINT NOT NULL,
     market_status VARCHAR(32) NOT NULL DEFAULT 'draft',
     review_status VARCHAR(32) NOT NULL DEFAULT 'pending',
     enabled SMALLINT NOT NULL DEFAULT 0,
@@ -98,7 +100,10 @@ CREATE TABLE IF NOT EXISTS ai_agent_skill (
     CONSTRAINT ck_ai_agent_skill_enabled CHECK (enabled IN (0, 1)),
     CONSTRAINT ck_ai_agent_skill_featured CHECK (featured IN (0, 1)),
     CONSTRAINT ck_ai_agent_skill_rating CHECK (rating_avg >= 0 AND rating_avg <= 5 AND rating_count >= 0),
-    CONSTRAINT ck_ai_agent_skill_version CHECK (version > 0)
+    CONSTRAINT ck_ai_agent_skill_version CHECK (version > 0),
+    CONSTRAINT fk_ai_agent_skill_tenant_package
+        FOREIGN KEY (tenant_id, package_id)
+        REFERENCES ai_agent_skill_package (tenant_id, id)
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uk_ai_agent_skill_scope_key_active
@@ -155,7 +160,7 @@ CREATE TABLE IF NOT EXISTS ai_skill_artifact (
     id BIGINT NOT NULL PRIMARY KEY,
     uuid VARCHAR(96) NOT NULL,
     tenant_id BIGINT NOT NULL,
-    package_id BIGINT NOT NULL REFERENCES ai_agent_skill_package(id),
+    package_id BIGINT NOT NULL,
     version_label VARCHAR(128) NOT NULL,
     artifact_ref TEXT NOT NULL,
     checksum_sha256 VARCHAR(64) NOT NULL,
@@ -173,6 +178,7 @@ CREATE TABLE IF NOT EXISTS ai_skill_artifact (
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_ai_skill_artifact_uuid UNIQUE (uuid),
     CONSTRAINT uk_ai_skill_artifact_version UNIQUE (package_id, version_label),
+    CONSTRAINT uk_ai_skill_artifact_tenant_package_id UNIQUE (tenant_id, package_id, id),
     CONSTRAINT ck_ai_skill_artifact_ref CHECK (artifact_ref ~ '^drive://spaces/[^/]+/nodes/[^/]+$'),
     CONSTRAINT ck_ai_skill_artifact_checksum CHECK (checksum_sha256 ~ '^[0-9a-f]{64}$'),
     CONSTRAINT ck_ai_skill_artifact_size CHECK (size_bytes IS NULL OR size_bytes >= 0),
@@ -181,7 +187,15 @@ CREATE TABLE IF NOT EXISTS ai_skill_artifact (
     CONSTRAINT ck_ai_skill_artifact_output_schema CHECK (jsonb_typeof(output_schema_json::jsonb) = 'object'),
     CONSTRAINT ck_ai_skill_artifact_config_schema CHECK (jsonb_typeof(config_schema_json::jsonb) = 'object'),
     CONSTRAINT ck_ai_skill_artifact_default_config CHECK (jsonb_typeof(default_config_json::jsonb) = 'object'),
-    CONSTRAINT ck_ai_skill_artifact_status CHECK (status IN ('draft', 'published', 'yanked'))
+    CONSTRAINT ck_ai_skill_artifact_status CHECK (status IN ('draft', 'published', 'yanked')),
+    CONSTRAINT ck_ai_skill_artifact_lifecycle CHECK (
+        (status = 'draft' AND published_at IS NULL AND yanked_at IS NULL)
+        OR (status = 'published' AND published_at IS NOT NULL AND yanked_at IS NULL)
+        OR (status = 'yanked' AND published_at IS NOT NULL AND yanked_at IS NOT NULL AND yanked_at >= published_at)
+    ),
+    CONSTRAINT fk_ai_skill_artifact_tenant_package
+        FOREIGN KEY (tenant_id, package_id)
+        REFERENCES ai_agent_skill_package (tenant_id, id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_ai_skill_artifact_release
@@ -208,9 +222,8 @@ CREATE TABLE IF NOT EXISTS ai_skill_installation (
     organization_id BIGINT NOT NULL DEFAULT 0,
     subject_kind VARCHAR(32) NOT NULL,
     subject_id BIGINT NOT NULL,
-    skill_id BIGINT NOT NULL REFERENCES ai_agent_skill(id),
-    package_id BIGINT NOT NULL REFERENCES ai_agent_skill_package(id),
-    artifact_id BIGINT NOT NULL REFERENCES ai_skill_artifact(id),
+    package_id BIGINT NOT NULL,
+    artifact_id BIGINT NOT NULL,
     installed_by_user_id BIGINT NOT NULL,
     install_status VARCHAR(32) NOT NULL DEFAULT 'installed',
     enabled SMALLINT NOT NULL DEFAULT 1,
@@ -224,12 +237,20 @@ CREATE TABLE IF NOT EXISTS ai_skill_installation (
     CONSTRAINT ck_ai_skill_installation_subject_id CHECK (subject_id > 0),
     CONSTRAINT ck_ai_skill_installation_status CHECK (install_status IN ('installed', 'disabled', 'removed')),
     CONSTRAINT ck_ai_skill_installation_enabled CHECK (enabled IN (0, 1)),
+    CONSTRAINT ck_ai_skill_installation_state CHECK (
+        (install_status = 'installed' AND enabled = 1)
+        OR (install_status IN ('disabled', 'removed') AND enabled = 0)
+    ),
+    CONSTRAINT ck_ai_skill_installation_actor CHECK (installed_by_user_id > 0),
     CONSTRAINT ck_ai_skill_installation_config CHECK (jsonb_typeof(config_json::jsonb) = 'object'),
-    CONSTRAINT ck_ai_skill_installation_version CHECK (version > 0)
+    CONSTRAINT ck_ai_skill_installation_version CHECK (version > 0),
+    CONSTRAINT fk_ai_skill_installation_artifact
+        FOREIGN KEY (tenant_id, package_id, artifact_id)
+        REFERENCES ai_skill_artifact (tenant_id, package_id, id)
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS uk_ai_skill_installation_subject_skill_active
-    ON ai_skill_installation (tenant_id, organization_id, subject_kind, subject_id, skill_id)
+CREATE UNIQUE INDEX IF NOT EXISTS uk_ai_skill_installation_subject_package_active
+    ON ai_skill_installation (tenant_id, organization_id, subject_kind, subject_id, package_id)
     WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_ai_skill_installation_subject
     ON ai_skill_installation (tenant_id, organization_id, subject_kind, subject_id, enabled, updated_at DESC)
@@ -254,7 +275,11 @@ CREATE TABLE IF NOT EXISTS ai_skill_asset (
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_ai_skill_asset_uuid UNIQUE (uuid),
-    CONSTRAINT ck_ai_skill_asset_owner CHECK (skill_id IS NOT NULL OR package_id IS NOT NULL OR artifact_id IS NOT NULL),
+    CONSTRAINT ck_ai_skill_asset_owner CHECK (
+        (skill_id IS NOT NULL)::INTEGER
+        + (package_id IS NOT NULL)::INTEGER
+        + (artifact_id IS NOT NULL)::INTEGER = 1
+    ),
     CONSTRAINT ck_ai_skill_asset_metadata CHECK (jsonb_typeof(metadata_json::jsonb) = 'object'),
     CONSTRAINT ck_ai_skill_asset_version CHECK (version > 0)
 );

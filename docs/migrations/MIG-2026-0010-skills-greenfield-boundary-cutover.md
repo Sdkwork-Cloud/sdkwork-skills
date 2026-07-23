@@ -24,6 +24,11 @@ projection table, or compatibility period exists.
    schemas; consumers now use the canonical SDK family.
 6. Verified SDK regeneration idempotence, database parity, route/OpenAPI
    parity, pagination, response envelopes, and authorization tests.
+7. Removed the redundant installation `skill_id` column, retained `skillId` as
+   a canonical package join in API output, and added atomic subject/package
+   installation conflict handling.
+8. Added database checks for artifact lifecycle timestamps, package/artifact
+   integrity, and exactly-one asset ownership.
 
 ## Rollback Policy
 

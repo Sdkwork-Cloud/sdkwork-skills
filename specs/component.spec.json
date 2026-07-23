@@ -9,6 +9,7 @@
     "root": "sdkwork-skills",
     "domain": "intelligence",
     "capability": "skills",
+    "surface": "app",
     "languages": ["rust", "typescript"],
     "generated": false,
     "manifests": [
@@ -18,6 +19,36 @@
     ]
   },
   "canonicalSpecs": [
+    {
+      "file": "COMPONENT_SPEC.md",
+      "path": "../sdkwork-specs/COMPONENT_SPEC.md",
+      "purpose": "Component contract and composable port rules."
+    },
+    {
+      "file": "DOMAIN_SPEC.md",
+      "path": "../sdkwork-specs/DOMAIN_SPEC.md",
+      "purpose": "Intelligence domain and Skills bounded-context ownership."
+    },
+    {
+      "file": "COMPOSABLE_ARCHITECTURE_SPEC.md",
+      "path": "../sdkwork-specs/COMPOSABLE_ARCHITECTURE_SPEC.md",
+      "purpose": "Building-block layer, port, and dependency closure."
+    },
+    {
+      "file": "API_SPEC.md",
+      "path": "../sdkwork-specs/API_SPEC.md",
+      "purpose": "App and backend API input/output contracts."
+    },
+    {
+      "file": "SDK_SPEC.md",
+      "path": "../sdkwork-specs/SDK_SPEC.md",
+      "purpose": "Owner-only SDK generation and consumer boundaries."
+    },
+    {
+      "file": "SCHEMA_REGISTRY_SPEC.md",
+      "path": "../sdkwork-specs/SCHEMA_REGISTRY_SPEC.md",
+      "purpose": "Owned table registry and schema composition."
+    },
     {
       "file": "IAM_MODULE_MANIFEST_SPEC.md",
       "path": "../sdkwork-specs/IAM_MODULE_MANIFEST_SPEC.md",
@@ -42,30 +73,87 @@
       "file": "DATABASE_SPEC.md",
       "path": "../sdkwork-specs/DATABASE_SPEC.md",
       "purpose": "ai_* table naming."
+    },
+    {
+      "file": "CODE_STYLE_SPEC.md",
+      "path": "../sdkwork-specs/CODE_STYLE_SPEC.md",
+      "purpose": "Authored source and generated boundary rules."
+    },
+    {
+      "file": "NAMING_SPEC.md",
+      "path": "../sdkwork-specs/NAMING_SPEC.md",
+      "purpose": "Canonical domain, capability, API, SDK, and database naming."
+    },
+    {
+      "file": "RUST_CODE_SPEC.md",
+      "path": "../sdkwork-specs/RUST_CODE_SPEC.md",
+      "purpose": "Rust service, repository, route, and host structure."
+    },
+    {
+      "file": "TYPESCRIPT_CODE_SPEC.md",
+      "path": "../sdkwork-specs/TYPESCRIPT_CODE_SPEC.md",
+      "purpose": "TypeScript application and tooling structure."
     }
   ],
   "contracts": {
+    "layerRole": "runtime-composition",
+    "providedPorts": [],
+    "requiredPorts": [],
     "iamModuleManifest": "specs/iam.module.manifest.json",
     "publicExports": [],
     "runtimeEntrypoints": [
       "package.json#scripts.dev",
       "package.json#scripts.verify"
     ],
-    "routeManifest": [
+    "routeManifest": null,
+    "routeManifests": [
       "crates/sdkwork-routes-skills-app-api/src/http_route_manifest.rs",
       "crates/sdkwork-routes-skills-backend-api/src/http_route_manifest.rs"
     ],
-    "sdkClients": [
+    "apiAuthorities": [
+      "apis/app-api/skills/skills-app-api.openapi.json",
+      "apis/backend-api/skills/skills-backend-api.openapi.json"
+    ],
+    "sdkClients": [],
+    "sdkFamilies": [
       "sdkwork-skills-app-sdk",
       "sdkwork-skills-backend-sdk"
+    ],
+    "sdkDependencies": [],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "databaseTableRegistries": [
+      "database/contract/table-registry.json"
     ],
     "events": [],
     "configKeys": []
   },
+  "localExtensionSpecs": [
+    {
+      "file": "domain-ownership.spec.json",
+      "path": "./domain-ownership.spec.json",
+      "purpose": "Skills persistence, API, dependency, and semantic ownership."
+    }
+  ],
+  "ownership": {
+    "boundedContext": "intelligence/skills",
+    "domainContract": "specs/domain-ownership.spec.json",
+    "databaseTableCount": 10,
+    "appApiOperationCount": 8,
+    "backendApiOperationCount": 16,
+    "openApiOperationCount": 0
+  },
+  "integration": {
+    "authority": "Root SDKWork specs and specs/domain-ownership.spec.json are authoritative.",
+    "dependencyPolicy": "Consumers use generated Skills SDK families and never copy Skills tables, OpenAPI, DTOs, or persistence.",
+    "artifactPolicy": "Skills stores canonical Drive references; sdkwork-drive owns file bytes and storage lifecycle.",
+    "messagePolicy": "Skills owns no Agent Session, Agent Session Item, IM Conversation, or IM Message facts."
+  },
   "verification": {
     "commands": [
       "pnpm verify",
-      "node ../sdkwork-specs/tools/check-repository-docs-standard.mjs --root ."
+      "node ../sdkwork-specs/tools/check-repository-docs-standard.mjs --root .",
+      "node ../sdkwork-specs/tools/check-component-port-bindings.mjs --root . --strict"
     ]
   }
 }

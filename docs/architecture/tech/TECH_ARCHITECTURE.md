@@ -82,7 +82,10 @@ The database module owns exactly ten `ai_*` tables. Category and capability
 relationships are normalized through binding tables. Artifacts are immutable
 releases; package rows do not carry release payloads or a latest-artifact
 projection. Installations reference one exact artifact and support `user`,
-`workspace`, `project`, and `agent` subjects.
+`workspace`, `project`, and `agent` subjects. An installation persists its
+stable package slot and selected artifact; its response `skillId` is derived by
+joining the package's one-to-one marketplace entry. Composite referential
+integrity prevents an artifact from drifting to another package.
 
 The module owns lifecycle assets but not the process pool. The gateway supplies
 one shared `DatabasePool`; the assembly constructs one `SqlxSkillsRepository`
@@ -101,6 +104,10 @@ contract.
   organization, user ownership, publication, approval, and lifecycle state.
 - Installation applies subject-level authorization and requires an explicit
   published `artifactId`.
+- Concurrent installation uses the active subject/package unique boundary and
+  atomic conflict handling; only the first insertion increments `installCount`.
+- Artifact lifecycle timestamps and single-owner asset relationships are
+  database-checked on PostgreSQL and SQLite.
 - Filtering, ordering, total counting, authorization, and pagination execute in
   SQL with bounded page sizes.
 - Mutable aggregates use Snowflake IDs, optimistic versions, and soft deletion.

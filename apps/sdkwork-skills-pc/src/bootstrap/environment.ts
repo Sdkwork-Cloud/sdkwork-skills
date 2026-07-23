@@ -8,14 +8,6 @@ export type SdkworkSkillsPcConfigProfile = 'dev' | 'test' | 'staging' | 'prod';
 export type SdkworkSkillsPcDeploymentMode = 'web' | 'desktop';
 export type SdkworkSkillsPcRuntimeTarget = 'browser' | 'desktop';
 
-export interface SdkworkSkillsPcAuthRuntimeConfig {
-  accessTokenHeader: 'Access-Token';
-  authTokenHeader: 'Authorization';
-  refreshEnabled: boolean;
-  tokenManagerMode: 'appbase-global';
-  tokenStorage: 'browser-session';
-}
-
 export interface SdkworkSkillsPcI18nRuntimeConfig {
   defaultLocale: string;
   fallbackLocale: string;
@@ -38,7 +30,6 @@ export interface SdkworkSkillsPcRuntimeConfig {
   appApiBaseUrl: string;
   appDisplayName: string;
   appKey: string;
-  auth: SdkworkSkillsPcAuthRuntimeConfig;
   backendApiBaseUrl: string;
   buildMode: SdkworkSkillsPcEnvironment;
   configProfile: SdkworkSkillsPcConfigProfile;
@@ -121,13 +112,6 @@ export function resolveSdkworkSkillsPcRuntimeConfig(
       APP_API_PREFIX,
     appDisplayName: manifest.app.displayName,
     appKey: manifest.app.key,
-    auth: {
-      accessTokenHeader: 'Access-Token',
-      authTokenHeader: 'Authorization',
-      refreshEnabled: true,
-      tokenManagerMode: 'appbase-global',
-      tokenStorage: 'browser-session',
-    },
     backendApiBaseUrl:
       envValue('VITE_SDKWORK_SKILLS_BACKEND_API_BASE_URL') ??
       sdkBaseUrls?.backendApiBaseUrl ??

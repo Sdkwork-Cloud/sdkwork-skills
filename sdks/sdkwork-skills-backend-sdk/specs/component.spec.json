@@ -8,7 +8,7 @@
     "type": "sdk-family",
     "root": "sdks/sdkwork-skills-backend-sdk",
     "domain": "intelligence",
-    "capability": "skills-backend-sdk",
+    "capability": "skills",
     "surface": "backend-api",
     "status": "standardized",
     "languages": [
@@ -56,6 +56,7 @@
     "standardProfile": "sdkwork-v3"
   },
   "contracts": {
+    "layerRole": "sdk-generated",
     "apiAuthority": {
       "name": "sdkwork-skills-backend-api",
       "owner": "sdkwork-skills",
@@ -67,6 +68,13 @@
     "publicExports": [
       "@sdkwork/skills-backend-sdk"
     ],
+    "providedPorts": [
+      {
+        "name": "skillsBackendSdk",
+        "export": "@sdkwork/skills-backend-sdk"
+      }
+    ],
+    "requiredPorts": [],
     "runtimeEntrypoints": [
       "sdkwork-skills-backend-sdk-typescript/src/index.ts",
       "sdk-manifest.json"

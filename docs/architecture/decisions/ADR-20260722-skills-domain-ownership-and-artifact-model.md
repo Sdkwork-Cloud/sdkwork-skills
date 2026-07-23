@@ -25,7 +25,10 @@ projection layers.
    checksum, Drive reference, schemas, entrypoint, and capability bindings.
    Packages do not carry version payloads or a latest-artifact projection.
 4. Installation always selects an explicit published artifact and records an
-   authorized `user`, `workspace`, `project`, or `agent` subject.
+   authorized `user`, `workspace`, `project`, or `agent` subject. Persistence
+   keeps the package installation slot and selected artifact only; `skill_id`
+   is derived through the canonical one-to-one package relation. The active
+   subject/package key is the atomic concurrency and idempotency boundary.
 5. Consumers use the generated `@sdkwork/skills-app-sdk` or
    `@sdkwork/skills-backend-sdk`. They do not copy Skills API paths, DTOs,
    tables, storage bindings, or runtime configuration authorities.
@@ -39,6 +42,8 @@ projection layers.
 - There is one database and one API authority for each Skills capability.
 - Marketplace reads and artifact installation apply tenant, organization,
   user, publication, lifecycle, and object authorization before SQL pagination.
+- Database checks prevent cross-package artifact selection, ambiguous asset
+  ownership, and inconsistent draft/published/yanked timestamps.
 - Consumers retain only references needed for their own orchestration; they do
   not synchronize Skill state.
 - No projection, double write, shadow table, compatibility facade, or default

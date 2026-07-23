@@ -23,9 +23,17 @@ exactly the ten tables below.
 | `ai_skill_action` | User download, favorite, rating, and view events |
 
 Packages never store a latest-artifact projection. Installation commands select
-an explicit published `artifact_id`, and the installation row preserves that
-immutable release identity. Categories and capabilities use binding tables;
-there are no JSON authority lists, shadow tables, or synchronized copies.
+an explicit published `artifact_id`. Each installation stores the stable
+`package_id` slot and selected immutable artifact; `skill_id` is derived through
+the package's one-to-one marketplace entry and is not duplicated in the table.
+The database enforces that the artifact belongs to the package. Categories and
+capabilities use binding tables; there are no JSON authority lists, shadow
+tables, synchronized copies, or latest-version projections.
+
+Artifact lifecycle timestamps form a database-checked state machine: drafts
+have no publication timestamps, published artifacts have `published_at`, and
+yanked artifacts have ordered `published_at` and `yanked_at` values. Every
+asset belongs to exactly one Skill, package, or artifact.
 
 ## Isolation And Concurrency
 
@@ -33,6 +41,9 @@ there are no JSON authority lists, shadow tables, or synchronized copies.
   applied before pagination.
 - Identifiers come from the process-shared Snowflake allocator.
 - Mutable aggregates use optimistic `version` checks and soft deletion.
+- The active installation uniqueness boundary is tenant, organization,
+  subject, and package. Atomic conflict handling serializes concurrent install
+  requests and increments marketplace `install_count` only for the first row.
 - Filtering, ordering, total counting, and pagination execute in SQL.
 - PostgreSQL and SQLite baselines express the same logical contract.
 

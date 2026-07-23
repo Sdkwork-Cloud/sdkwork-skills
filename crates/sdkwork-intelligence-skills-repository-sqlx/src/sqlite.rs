@@ -257,6 +257,15 @@ const ARTIFACT_SELECT: &str = r#"
     FROM ai_skill_artifact a
 "#;
 
+const INSTALLATION_SELECT: &str = r#"
+    SELECT i.id, i.uuid, i.tenant_id, i.organization_id, i.subject_kind, i.subject_id,
+           s.id AS skill_id, i.package_id, i.artifact_id, i.installed_by_user_id,
+           i.install_status, i.enabled, i.config_json, i.version, i.installed_at, i.updated_at
+    FROM ai_skill_installation i
+    JOIN ai_agent_skill s
+      ON s.tenant_id=i.tenant_id AND s.package_id=i.package_id AND s.deleted_at IS NULL
+"#;
+
 pub async fn list_skill_packages_page(
     pool: &SqlitePool,
     tenant_id: u64,
@@ -1049,68 +1058,80 @@ pub async fn install_skill(
 ) -> SkillsResult<SkillInstallationRecord> {
     let mut tx = pool.begin().await.map_err(map_sqlx)?;
     let config_json = json_value_to_text(&record.config, "config")?;
-    let skill_id = sqlx::query_scalar::<_, i64>(
-        "SELECT s.id FROM ai_agent_skill s
-         JOIN ai_agent_skill_package p ON p.id=s.package_id AND p.deleted_at IS NULL
-         JOIN ai_skill_artifact a ON a.package_id=p.id AND a.tenant_id=p.tenant_id
-         WHERE p.id=?1 AND p.tenant_id=?2 AND p.status=1
-           AND a.id=?3 AND a.status='published'
+    let candidate_id = next_id(id_generator)?;
+    let insert_result = sqlx::query(
+        "INSERT INTO ai_skill_installation (
+             id, uuid, tenant_id, organization_id, subject_kind, subject_id,
+             package_id, artifact_id, installed_by_user_id, install_status, enabled,
+             config_json, version
+         )
+         SELECT ?1,?2,?3,?4,?5,?6,?7,?8,?9,'installed',1,?10,1
+         FROM ai_agent_skill s
+         JOIN ai_agent_skill_package p
+           ON p.id=s.package_id AND p.tenant_id=s.tenant_id AND p.deleted_at IS NULL
+         JOIN ai_skill_artifact a
+           ON a.package_id=p.id AND a.tenant_id=p.tenant_id
+         WHERE p.id=?7 AND p.tenant_id=?3 AND p.status=1
+           AND a.id=?8 AND a.status='published'
            AND s.enabled=1 AND s.market_status='published' AND s.review_status='approved'
-           AND s.deleted_at IS NULL LIMIT 1",
+           AND s.deleted_at IS NULL
+         ON CONFLICT (tenant_id, organization_id, subject_kind, subject_id, package_id)
+         WHERE deleted_at IS NULL DO NOTHING",
     )
-    .bind(record.package_id as i64)
-    .bind(record.tenant_id as i64)
-    .bind(record.artifact_id as i64)
-    .fetch_optional(&mut *tx)
-    .await
-    .map_err(map_sqlx)?
-    .ok_or_else(|| {
-        SkillsServiceError::InvalidArgument("artifact is not installable".to_string())
-    })?;
-    let existing_id = sqlx::query_scalar::<_, i64>(
-        "SELECT id FROM ai_skill_installation
-         WHERE tenant_id=?1 AND organization_id=?2 AND subject_kind=?3 AND subject_id=?4
-           AND skill_id=?5 AND deleted_at IS NULL LIMIT 1",
-    )
+    .bind(candidate_id)
+    .bind(new_uuid())
     .bind(record.tenant_id as i64)
     .bind(record.organization_id as i64)
     .bind(record.subject_kind.as_str())
     .bind(record.subject_id as i64)
-    .bind(skill_id)
-    .fetch_optional(&mut *tx)
+    .bind(record.package_id as i64)
+    .bind(record.artifact_id as i64)
+    .bind(record.installed_by_user_id as i64)
+    .bind(&config_json)
+    .execute(&mut *tx)
     .await
     .map_err(map_sqlx)?;
-    let installation_id = if let Some(id) = existing_id {
-        sqlx::query(
-            "UPDATE ai_skill_installation SET artifact_id=?2, installed_by_user_id=?3,
-                    install_status='installed', enabled=1, config_json=?4, version=version+1,
-                    updated_at=strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-             WHERE id=?1",
+    let installation_id = if insert_result.rows_affected() == 1 {
+        let count_result = sqlx::query(
+            "UPDATE ai_agent_skill SET install_count=install_count+1
+             WHERE tenant_id=?1 AND package_id=?2 AND deleted_at IS NULL",
         )
-        .bind(id)
-        .bind(record.artifact_id as i64)
-        .bind(record.installed_by_user_id as i64)
-        .bind(&config_json)
+        .bind(record.tenant_id as i64)
+        .bind(record.package_id as i64)
         .execute(&mut *tx)
         .await
         .map_err(map_sqlx)?;
-        id
+        if count_result.rows_affected() != 1 {
+            return Err(SkillsServiceError::Repository(
+                "installed skill aggregate disappeared during the transaction".to_string(),
+            ));
+        }
+        candidate_id
     } else {
-        let id = next_id(id_generator)?;
-        sqlx::query(
-            "INSERT INTO ai_skill_installation (
-                 id, uuid, tenant_id, organization_id, subject_kind, subject_id, skill_id,
-                 package_id, artifact_id, installed_by_user_id, install_status, enabled,
-                 config_json, version
-             ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,'installed',1,?11,1)",
+        let update_result = sqlx::query(
+            "UPDATE ai_skill_installation AS i
+             SET artifact_id=?6, installed_by_user_id=?7, install_status='installed', enabled=1,
+                 config_json=?8, version=version+1,
+                 updated_at=strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+             WHERE i.tenant_id=?1 AND i.organization_id=?2
+               AND i.subject_kind=?3 AND i.subject_id=?4 AND i.package_id=?5
+               AND i.deleted_at IS NULL
+               AND EXISTS (
+                   SELECT 1 FROM ai_agent_skill s
+                   JOIN ai_agent_skill_package p
+                     ON p.id=s.package_id AND p.tenant_id=s.tenant_id AND p.deleted_at IS NULL
+                   JOIN ai_skill_artifact a
+                     ON a.package_id=p.id AND a.tenant_id=p.tenant_id
+                   WHERE p.id=i.package_id AND p.tenant_id=i.tenant_id AND p.status=1
+                     AND a.id=?6 AND a.status='published'
+                     AND s.enabled=1 AND s.market_status='published'
+                     AND s.review_status='approved' AND s.deleted_at IS NULL
+               )",
         )
-        .bind(id)
-        .bind(new_uuid())
         .bind(record.tenant_id as i64)
         .bind(record.organization_id as i64)
         .bind(record.subject_kind.as_str())
         .bind(record.subject_id as i64)
-        .bind(skill_id)
         .bind(record.package_id as i64)
         .bind(record.artifact_id as i64)
         .bind(record.installed_by_user_id as i64)
@@ -1118,12 +1139,24 @@ pub async fn install_skill(
         .execute(&mut *tx)
         .await
         .map_err(map_sqlx)?;
-        sqlx::query("UPDATE ai_agent_skill SET install_count=install_count+1 WHERE id=?1")
-            .bind(skill_id)
-            .execute(&mut *tx)
-            .await
-            .map_err(map_sqlx)?;
-        id
+        if update_result.rows_affected() != 1 {
+            return Err(SkillsServiceError::InvalidArgument(
+                "artifact is not installable".to_string(),
+            ));
+        }
+        sqlx::query_scalar::<_, i64>(
+            "SELECT id FROM ai_skill_installation
+             WHERE tenant_id=?1 AND organization_id=?2 AND subject_kind=?3 AND subject_id=?4
+               AND package_id=?5 AND deleted_at IS NULL LIMIT 1",
+        )
+        .bind(record.tenant_id as i64)
+        .bind(record.organization_id as i64)
+        .bind(record.subject_kind.as_str())
+        .bind(record.subject_id as i64)
+        .bind(record.package_id as i64)
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(map_sqlx)?
     };
     tx.commit().await.map_err(map_sqlx)?;
     get_installation(pool, installation_id as u64).await
@@ -1133,16 +1166,12 @@ async fn get_installation(
     pool: &SqlitePool,
     installation_id: u64,
 ) -> SkillsResult<SkillInstallationRecord> {
-    let row = sqlx::query(
-        "SELECT id, uuid, tenant_id, organization_id, subject_kind, subject_id, skill_id,
-                package_id, artifact_id, installed_by_user_id, install_status, enabled,
-                config_json, version, installed_at, updated_at
-         FROM ai_skill_installation WHERE id=?1 AND deleted_at IS NULL",
-    )
-    .bind(installation_id as i64)
-    .fetch_optional(pool)
-    .await
-    .map_err(map_sqlx)?;
+    let sql = format!("{INSTALLATION_SELECT} WHERE i.id=?1 AND i.deleted_at IS NULL LIMIT 1");
+    let row = sqlx::query(&sql)
+        .bind(installation_id as i64)
+        .fetch_optional(pool)
+        .await
+        .map_err(map_sqlx)?;
     row.as_ref()
         .map(row_to_installation)
         .transpose()?
@@ -1160,13 +1189,11 @@ pub async fn list_installations_page(
     params: OffsetListPageParams,
 ) -> SkillsResult<(Vec<SkillInstallationRecord>, i64)> {
     let sql = format!(
-        "SELECT id, uuid, tenant_id, organization_id, subject_kind, subject_id, skill_id,
-                package_id, artifact_id, installed_by_user_id, install_status, enabled,
-                config_json, version, installed_at, updated_at,
-                COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
-         FROM ai_skill_installation
-         WHERE tenant_id=?1 AND organization_id=?2 AND subject_kind=?3 AND subject_id=?4
-           AND deleted_at IS NULL
+        "SELECT installation_rows.*, COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+         FROM ({INSTALLATION_SELECT}
+               WHERE i.tenant_id=?1 AND i.organization_id=?2
+                 AND i.subject_kind=?3 AND i.subject_id=?4 AND i.deleted_at IS NULL
+         ) installation_rows
          ORDER BY updated_at DESC, id DESC LIMIT ?5 OFFSET ?6"
     );
     let rows = sqlx::query(&sql)

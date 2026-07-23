@@ -7,8 +7,8 @@
     "version": "0.1.0",
     "type": "rust-api-standalone-gateway",
     "root": "crates/sdkwork-api-skills-standalone-gateway",
-    "domain": "application",
-    "capability": "api-gateway",
+    "domain": "intelligence",
+    "capability": "skills",
     "surface": "gateway-api",
     "languages": [
       "rust"

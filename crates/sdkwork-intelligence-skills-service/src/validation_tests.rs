@@ -71,3 +71,14 @@ fn rejects_non_drive_artifact_and_invalid_checksum() {
     let record = artifact("https://example.com/demo.zip", "bad");
     assert!(validate_artifact_record(&record).is_err());
 }
+
+#[test]
+fn rejects_artifact_created_directly_in_yanked_state() {
+    let mut record = artifact(
+        "drive://spaces/skills-dev/nodes/yanked-package",
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    );
+    record.status = SkillArtifactStatus::Yanked;
+
+    assert!(validate_artifact_record(&record).is_err());
+}

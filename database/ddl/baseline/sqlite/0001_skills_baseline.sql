@@ -53,6 +53,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS uk_ai_agent_skill_package_scope_key_active
     ON ai_agent_skill_package (tenant_id, organization_id, package_key) WHERE deleted_at IS NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS uk_ai_agent_skill_package_scope_code_active
     ON ai_agent_skill_package (tenant_id, organization_id, code) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS uk_ai_agent_skill_package_tenant_id
+    ON ai_agent_skill_package (tenant_id, id);
 CREATE INDEX IF NOT EXISTS idx_ai_agent_skill_package_market
     ON ai_agent_skill_package (tenant_id, visibility, status, featured, sort_weight, updated_at DESC) WHERE deleted_at IS NULL;
 
@@ -62,7 +64,7 @@ CREATE TABLE IF NOT EXISTS ai_agent_skill (
     tenant_id BIGINT NOT NULL,
     organization_id BIGINT NOT NULL DEFAULT 0,
     skill_key TEXT NOT NULL,
-    package_id BIGINT NOT NULL REFERENCES ai_agent_skill_package(id),
+    package_id BIGINT NOT NULL,
     market_status TEXT NOT NULL DEFAULT 'draft' CHECK (market_status IN ('draft', 'published', 'disabled', 'archived', 'removed')),
     review_status TEXT NOT NULL DEFAULT 'pending' CHECK (review_status IN ('pending', 'approved', 'rejected')),
     enabled INTEGER NOT NULL DEFAULT 0 CHECK (enabled IN (0, 1)),
@@ -74,7 +76,9 @@ CREATE TABLE IF NOT EXISTS ai_agent_skill (
     version BIGINT NOT NULL DEFAULT 1 CHECK (version > 0),
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
     updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-    deleted_at TEXT
+    deleted_at TEXT,
+    FOREIGN KEY (tenant_id, package_id)
+        REFERENCES ai_agent_skill_package (tenant_id, id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS uk_ai_agent_skill_scope_key_active
     ON ai_agent_skill (tenant_id, organization_id, skill_key) WHERE deleted_at IS NULL;
@@ -118,7 +122,7 @@ CREATE TABLE IF NOT EXISTS ai_skill_artifact (
     id BIGINT NOT NULL PRIMARY KEY,
     uuid TEXT NOT NULL UNIQUE,
     tenant_id BIGINT NOT NULL,
-    package_id BIGINT NOT NULL REFERENCES ai_agent_skill_package(id),
+    package_id BIGINT NOT NULL,
     version_label TEXT NOT NULL,
     artifact_ref TEXT NOT NULL CHECK (artifact_ref LIKE 'drive://spaces/%/nodes/%'),
     checksum_sha256 TEXT NOT NULL CHECK (length(checksum_sha256) = 64 AND checksum_sha256 NOT GLOB '*[^0-9a-f]*'),
@@ -134,7 +138,15 @@ CREATE TABLE IF NOT EXISTS ai_skill_artifact (
     published_at TEXT,
     yanked_at TEXT,
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-    UNIQUE (package_id, version_label)
+    UNIQUE (package_id, version_label),
+    UNIQUE (tenant_id, package_id, id),
+    CHECK (
+        (status = 'draft' AND published_at IS NULL AND yanked_at IS NULL)
+        OR (status = 'published' AND published_at IS NOT NULL AND yanked_at IS NULL)
+        OR (status = 'yanked' AND published_at IS NOT NULL AND yanked_at IS NOT NULL AND yanked_at >= published_at)
+    ),
+    FOREIGN KEY (tenant_id, package_id)
+        REFERENCES ai_agent_skill_package (tenant_id, id)
 );
 CREATE INDEX IF NOT EXISTS idx_ai_skill_artifact_release
     ON ai_skill_artifact (tenant_id, package_id, status, published_at DESC, created_at DESC);
@@ -158,20 +170,25 @@ CREATE TABLE IF NOT EXISTS ai_skill_installation (
     organization_id BIGINT NOT NULL DEFAULT 0,
     subject_kind TEXT NOT NULL CHECK (subject_kind IN ('user', 'workspace', 'project', 'agent')),
     subject_id BIGINT NOT NULL CHECK (subject_id > 0),
-    skill_id BIGINT NOT NULL REFERENCES ai_agent_skill(id),
-    package_id BIGINT NOT NULL REFERENCES ai_agent_skill_package(id),
-    artifact_id BIGINT NOT NULL REFERENCES ai_skill_artifact(id),
-    installed_by_user_id BIGINT NOT NULL,
+    package_id BIGINT NOT NULL,
+    artifact_id BIGINT NOT NULL,
+    installed_by_user_id BIGINT NOT NULL CHECK (installed_by_user_id > 0),
     install_status TEXT NOT NULL DEFAULT 'installed' CHECK (install_status IN ('installed', 'disabled', 'removed')),
     enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),
     config_json TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(config_json) AND json_type(config_json) = 'object'),
     version BIGINT NOT NULL DEFAULT 1 CHECK (version > 0),
     installed_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
     updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-    deleted_at TEXT
+    deleted_at TEXT,
+    CHECK (
+        (install_status = 'installed' AND enabled = 1)
+        OR (install_status IN ('disabled', 'removed') AND enabled = 0)
+    ),
+    FOREIGN KEY (tenant_id, package_id, artifact_id)
+        REFERENCES ai_skill_artifact (tenant_id, package_id, id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS uk_ai_skill_installation_subject_skill_active
-    ON ai_skill_installation (tenant_id, organization_id, subject_kind, subject_id, skill_id) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS uk_ai_skill_installation_subject_package_active
+    ON ai_skill_installation (tenant_id, organization_id, subject_kind, subject_id, package_id) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_ai_skill_installation_subject
     ON ai_skill_installation (tenant_id, organization_id, subject_kind, subject_id, enabled, updated_at DESC) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_ai_skill_installation_artifact
@@ -192,7 +209,11 @@ CREATE TABLE IF NOT EXISTS ai_skill_asset (
     version BIGINT NOT NULL DEFAULT 1 CHECK (version > 0),
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
     updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-    CHECK (skill_id IS NOT NULL OR package_id IS NOT NULL OR artifact_id IS NOT NULL)
+    CHECK (
+        (skill_id IS NOT NULL)
+        + (package_id IS NOT NULL)
+        + (artifact_id IS NOT NULL) = 1
+    )
 );
 CREATE INDEX IF NOT EXISTS idx_ai_skill_asset_owner
     ON ai_skill_asset (tenant_id, skill_id, package_id, artifact_id, purpose, sort_weight);
