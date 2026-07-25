@@ -3,7 +3,7 @@
   "kind": "sdkwork.application-domain-ownership",
   "application": "sdkwork-skills",
   "status": "active",
-  "updatedAt": "2026-07-24",
+  "updatedAt": "2026-07-25",
   "authority": {
     "globalSpecs": [
       "../../sdkwork-specs/DOMAIN_SPEC.md",
@@ -32,7 +32,7 @@
     "domain": "intelligence",
     "capability": "skills",
     "owner": "sdkwork-skills",
-    "databasePrefix": "ai",
+    "databasePrefix": "skills",
     "businessFacts": [
       "skill package identity and lifecycle",
       "marketplace publication and review state",
@@ -53,22 +53,22 @@
       "postgres"
     ],
     "tables": [
-      "ai_skill_category",
-      "ai_agent_skill_package",
-      "ai_agent_skill",
-      "ai_skill_category_binding",
-      "ai_skill_capability",
-      "ai_skill_artifact",
-      "ai_skill_artifact_capability",
-      "ai_skill_installation",
-      "ai_skill_asset",
-      "ai_skill_action"
+      "skills_category",
+      "skills_package",
+      "skills_definition",
+      "skills_category_binding",
+      "skills_capability",
+      "skills_artifact",
+      "skills_artifact_capability",
+      "skills_installation",
+      "skills_asset",
+      "skills_action"
     ],
     "externalReferences": [
       {
         "contract": "Drive node URI",
         "owner": "sdkwork-drive",
-        "storage": "ai_skill_artifact.artifact_ref",
+        "storage": "skills_artifact.artifact_ref",
         "foreignKey": false
       },
       {
@@ -80,7 +80,7 @@
       {
         "contract": "IAM user/organization or Agents project/agent subject id",
         "owner": "sdkwork-iam or sdkwork-agents according to subject_kind",
-        "storage": "ai_skill_installation.subject_kind and subject_id",
+        "storage": "skills_installation.subject_kind and subject_id",
         "foreignKey": false
       }
     ]

@@ -240,14 +240,14 @@ const PACKAGE_SELECT: &str = r#"
            s.skill_key, p.package_key, p.code, p.display_name, p.summary, p.description,
            COALESCE((
                SELECT jsonb_agg(c.code ORDER BY c.code)::text
-               FROM ai_skill_category_binding b
-               JOIN ai_skill_category c ON c.id = b.category_id AND c.deleted_at IS NULL
+               FROM skills_category_binding b
+               JOIN skills_category c ON c.id = b.category_id AND c.deleted_at IS NULL
                WHERE b.skill_id = s.id
            ), '[]') AS category_codes_json,
            p.tags_json, p.status, p.visibility, p.featured, p.sort_weight, p.version,
            p.created_at, p.updated_at, p.deleted_at
-    FROM ai_agent_skill_package p
-    JOIN ai_agent_skill s ON s.package_id = p.id AND s.deleted_at IS NULL
+    FROM skills_package p
+    JOIN skills_definition s ON s.package_id = p.id AND s.deleted_at IS NULL
 "#;
 
 const SKILL_SELECT: &str = r#"
@@ -256,14 +256,14 @@ const SKILL_SELECT: &str = r#"
            s.review_status,
            COALESCE((
                SELECT jsonb_agg(c.code ORDER BY c.code)::text
-               FROM ai_skill_category_binding b
-               JOIN ai_skill_category c ON c.id = b.category_id AND c.deleted_at IS NULL
+               FROM skills_category_binding b
+               JOIN skills_category c ON c.id = b.category_id AND c.deleted_at IS NULL
                WHERE b.skill_id = s.id
            ), '[]') AS category_codes_json,
            s.enabled, s.featured, s.install_count, p.tags_json, s.version,
            s.created_at, s.updated_at, s.deleted_at
-    FROM ai_agent_skill s
-    JOIN ai_agent_skill_package p ON p.id = s.package_id AND p.deleted_at IS NULL
+    FROM skills_definition s
+    JOIN skills_package p ON p.id = s.package_id AND p.deleted_at IS NULL
 "#;
 
 const ARTIFACT_SELECT: &str = r#"
@@ -273,20 +273,20 @@ const ARTIFACT_SELECT: &str = r#"
            a.default_config_json, a.security_profile_id, a.status,
            COALESCE((
                SELECT jsonb_agg(c.capability_key ORDER BY c.capability_key)::text
-               FROM ai_skill_artifact_capability ac
-               JOIN ai_skill_capability c ON c.id = ac.capability_id AND c.deleted_at IS NULL
+               FROM skills_artifact_capability ac
+               JOIN skills_capability c ON c.id = ac.capability_id AND c.deleted_at IS NULL
                WHERE ac.artifact_id = a.id
            ), '[]') AS capability_keys_json,
            a.published_at, a.yanked_at, a.created_at
-    FROM ai_skill_artifact a
+    FROM skills_artifact a
 "#;
 
 const INSTALLATION_SELECT: &str = r#"
     SELECT i.id, i.uuid, i.tenant_id, i.organization_id, i.subject_kind, i.subject_id,
            s.id AS skill_id, i.package_id, i.artifact_id, i.installed_by_user_id,
            i.install_status, i.enabled, i.config_json, i.version, i.installed_at, i.updated_at
-    FROM ai_skill_installation i
-    JOIN ai_agent_skill s
+    FROM skills_installation i
+    JOIN skills_definition s
       ON s.tenant_id=i.tenant_id AND s.package_id=i.package_id AND s.deleted_at IS NULL
 "#;
 
@@ -480,7 +480,7 @@ pub async fn get_category(
         "SELECT id, uuid, tenant_id, organization_id, category_type, code, name, description,
                 parent_id, sort_weight, permission_code, visible, status, version,
                 created_at, updated_at
-         FROM ai_skill_category
+         FROM skills_category
          WHERE id=$1 AND tenant_id IN (0,$2) AND deleted_at IS NULL LIMIT 1",
     )
     .bind(uint64_to_int64(category_id, "category_id")?)
@@ -506,7 +506,7 @@ pub async fn list_categories_page(
                 parent_id, sort_weight, permission_code, visible, status, version,
                 created_at, updated_at,
                 COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
-         FROM ai_skill_category
+         FROM skills_category
          WHERE category_type = $1 AND tenant_id IN (0, $2) AND deleted_at IS NULL
            AND ($3 = '%' OR name ILIKE $3 OR code ILIKE $3)
          ORDER BY sort_weight ASC, code ASC LIMIT $4 OFFSET $5"
@@ -530,7 +530,7 @@ pub async fn upsert_category(
 ) -> SkillsResult<SkillCategoryRecord> {
     let row = if record.id == 0 {
         sqlx::query(
-            "INSERT INTO ai_skill_category (
+            "INSERT INTO skills_category (
                  id, uuid, tenant_id, organization_id, category_type, code, name, description,
                  parent_id, sort_weight, permission_code, visible, status, version
              ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,1)
@@ -556,7 +556,7 @@ pub async fn upsert_category(
         .map_err(map_sqlx)?
     } else {
         sqlx::query(
-            "UPDATE ai_skill_category SET name=$4, description=$5, parent_id=$6,
+            "UPDATE skills_category SET name=$4, description=$5, parent_id=$6,
                     sort_weight=$7, permission_code=$8, visible=$9, status=$10,
                     version=version+1, updated_at=CURRENT_TIMESTAMP
              WHERE id=$1 AND tenant_id IN (0,$2) AND version=$3 AND deleted_at IS NULL
@@ -592,7 +592,7 @@ pub async fn list_capabilities_page(
         "SELECT id, uuid, tenant_id, organization_id, capability_key, display_name,
                 description, risk_level, status, version, created_at, updated_at,
                 COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
-         FROM ai_skill_capability
+         FROM skills_capability
          WHERE tenant_id IN (0,$1) AND deleted_at IS NULL
            AND ($2='%' OR capability_key ILIKE $2 OR display_name ILIKE $2)
          ORDER BY capability_key ASC LIMIT $3 OFFSET $4"
@@ -616,7 +616,7 @@ pub async fn get_capability(
     let row = sqlx::query(
         "SELECT id, uuid, tenant_id, organization_id, capability_key, display_name,
                 description, risk_level, status, version, created_at, updated_at
-         FROM ai_skill_capability
+         FROM skills_capability
          WHERE id=$1 AND tenant_id IN (0,$2) AND deleted_at IS NULL LIMIT 1",
     )
     .bind(uint64_to_int64(capability_id, "capability_id")?)
@@ -637,7 +637,7 @@ pub async fn upsert_capability(
 ) -> SkillsResult<SkillCapabilityRecord> {
     let row = if record.id == 0 {
         sqlx::query(
-            "INSERT INTO ai_skill_capability (
+            "INSERT INTO skills_capability (
                  id, uuid, tenant_id, organization_id, capability_key, display_name,
                  description, risk_level, status, version
              ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,1)
@@ -658,7 +658,7 @@ pub async fn upsert_capability(
         .map_err(map_sqlx)?
     } else {
         sqlx::query(
-            "UPDATE ai_skill_capability SET display_name=$4, description=$5, risk_level=$6,
+            "UPDATE skills_capability SET display_name=$4, description=$5, risk_level=$6,
                     status=$7, version=version+1, updated_at=CURRENT_TIMESTAMP
              WHERE id=$1 AND tenant_id IN (0,$2) AND version=$3 AND deleted_at IS NULL
              RETURNING id, uuid, tenant_id, organization_id, capability_key, display_name,
@@ -712,9 +712,9 @@ pub async fn list_installable_artifacts_page(
     let sql = format!(
         "SELECT artifact_rows.*, COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
          FROM ({ARTIFACT_SELECT}
-               JOIN ai_agent_skill_package p
+               JOIN skills_package p
                  ON p.id=a.package_id AND p.tenant_id=a.tenant_id AND p.deleted_at IS NULL
-               JOIN ai_agent_skill s
+               JOIN skills_definition s
                  ON s.package_id=p.id AND s.tenant_id=p.tenant_id AND s.deleted_at IS NULL
                WHERE a.tenant_id=$1 AND a.package_id=$2 AND a.status='published'
                  AND p.status=1
@@ -774,7 +774,7 @@ pub async fn create_skill_package(
     let package_id = next_id(id_generator)?;
     let skill_id = next_id(id_generator)?;
     sqlx::query(
-        "INSERT INTO ai_agent_skill_package (
+        "INSERT INTO skills_package (
              id, uuid, tenant_id, organization_id, owner_user_id, package_key, code,
              display_name, summary, description, tags_json, status, visibility,
              featured, sort_weight, version
@@ -799,7 +799,7 @@ pub async fn create_skill_package(
     .await
     .map_err(map_sqlx)?;
     sqlx::query(
-        "INSERT INTO ai_agent_skill (
+        "INSERT INTO skills_definition (
              id, uuid, tenant_id, organization_id, skill_key, package_id, market_status,
              review_status, enabled, featured, version
          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,1)",
@@ -845,7 +845,7 @@ pub async fn update_skill_package(
     let mut tx = pool.begin().await.map_err(map_sqlx)?;
     let tags_json = string_list_to_json(&record.tags, "tags")?;
     let updated = sqlx::query(
-        "UPDATE ai_agent_skill_package SET display_name=$4, summary=$5, description=$6,
+        "UPDATE skills_package SET display_name=$4, summary=$5, description=$6,
                 tags_json=$7, status=$8, visibility=$9, featured=$10, sort_weight=$11,
                 version=version+1, updated_at=CURRENT_TIMESTAMP
          WHERE id=$1 AND tenant_id=$2 AND version=$3 AND deleted_at IS NULL",
@@ -870,7 +870,7 @@ pub async fn update_skill_package(
         ));
     }
     let skill_id = sqlx::query_scalar::<_, i64>(
-        "UPDATE ai_agent_skill SET market_status=$3, review_status=$4, enabled=$5, featured=$6,
+        "UPDATE skills_definition SET market_status=$3, review_status=$4, enabled=$5, featured=$6,
                 version=version+1, updated_at=CURRENT_TIMESTAMP
          WHERE package_id=$1 AND tenant_id=$2 AND deleted_at IS NULL RETURNING id",
     )
@@ -902,14 +902,14 @@ async fn replace_category_bindings(
     skill_id: i64,
     category_codes: &[String],
 ) -> SkillsResult<()> {
-    sqlx::query("DELETE FROM ai_skill_category_binding WHERE skill_id=$1")
+    sqlx::query("DELETE FROM skills_category_binding WHERE skill_id=$1")
         .bind(skill_id)
         .execute(&mut **tx)
         .await
         .map_err(map_sqlx)?;
     for code in category_codes {
         let category_id = sqlx::query_scalar::<_, i64>(
-            "SELECT id FROM ai_skill_category
+            "SELECT id FROM skills_category
              WHERE tenant_id IN (0,$1) AND code=$2 AND category_type='skill_market'
                AND status=1 AND deleted_at IS NULL
              ORDER BY tenant_id DESC LIMIT 1",
@@ -921,7 +921,7 @@ async fn replace_category_bindings(
         .map_err(map_sqlx)?
         .ok_or_else(|| SkillsServiceError::InvalidArgument(format!("unknown category: {code}")))?;
         sqlx::query(
-            "INSERT INTO ai_skill_category_binding (id, tenant_id, skill_id, category_id)
+            "INSERT INTO skills_category_binding (id, tenant_id, skill_id, category_id)
              VALUES ($1,$2,$3,$4)",
         )
         .bind(next_id(id_generator)?)
@@ -941,7 +941,7 @@ async fn ensure_package(
     package_id: u64,
 ) -> SkillsResult<()> {
     let exists = sqlx::query_scalar::<_, bool>(
-        "SELECT EXISTS(SELECT 1 FROM ai_agent_skill_package
+        "SELECT EXISTS(SELECT 1 FROM skills_package
          WHERE id=$1 AND tenant_id=$2 AND deleted_at IS NULL)",
     )
     .bind(uint64_to_int64(package_id, "package_id")?)
@@ -968,7 +968,7 @@ async fn insert_artifact(
     let config_schema_json = json_value_to_text(&artifact.config_schema, "config_schema")?;
     let default_config_json = json_value_to_text(&artifact.default_config, "default_config")?;
     sqlx::query(
-        "INSERT INTO ai_skill_artifact (
+        "INSERT INTO skills_artifact (
              id, uuid, tenant_id, package_id, version_label, artifact_ref, checksum_sha256,
              size_bytes, invocation_kind, entrypoint, input_schema_json, output_schema_json,
              config_schema_json, default_config_json, security_profile_id, status, published_at
@@ -996,7 +996,7 @@ async fn insert_artifact(
     .map_err(map_sqlx)?;
     for key in artifact.capability_keys {
         let capability_id = sqlx::query_scalar::<_, i64>(
-            "SELECT id FROM ai_skill_capability
+            "SELECT id FROM skills_capability
              WHERE tenant_id IN (0,$1) AND capability_key=$2 AND status=1 AND deleted_at IS NULL
              ORDER BY tenant_id DESC LIMIT 1",
         )
@@ -1007,7 +1007,7 @@ async fn insert_artifact(
         .map_err(map_sqlx)?
         .ok_or_else(|| SkillsServiceError::InvalidArgument(format!("unknown capability: {key}")))?;
         sqlx::query(
-            "INSERT INTO ai_skill_artifact_capability
+            "INSERT INTO skills_artifact_capability
              (id, tenant_id, artifact_id, capability_id, required) VALUES ($1,$2,$3,$4,1)",
         )
         .bind(next_id(id_generator)?)
@@ -1028,7 +1028,7 @@ pub async fn delete_skill_package(
 ) -> SkillsResult<()> {
     let mut tx = pool.begin().await.map_err(map_sqlx)?;
     let result = sqlx::query(
-        "UPDATE ai_agent_skill_package SET status=4, version=version+1,
+        "UPDATE skills_package SET status=4, version=version+1,
                 deleted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP
          WHERE id=$1 AND tenant_id=$2 AND deleted_at IS NULL",
     )
@@ -1043,7 +1043,7 @@ pub async fn delete_skill_package(
         )));
     }
     sqlx::query(
-        "UPDATE ai_agent_skill SET market_status='removed', enabled=0, version=version+1,
+        "UPDATE skills_definition SET market_status='removed', enabled=0, version=version+1,
                 deleted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP
          WHERE package_id=$1 AND tenant_id=$2 AND deleted_at IS NULL",
     )
@@ -1053,7 +1053,7 @@ pub async fn delete_skill_package(
     .await
     .map_err(map_sqlx)?;
     sqlx::query(
-        "UPDATE ai_skill_installation SET install_status='removed', enabled=0,
+        "UPDATE skills_installation SET install_status='removed', enabled=0,
                 version=version+1, deleted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP
          WHERE package_id=$1 AND tenant_id=$2 AND deleted_at IS NULL",
     )
@@ -1073,9 +1073,9 @@ pub async fn install_skill(
     let mut tx = pool.begin().await.map_err(map_sqlx)?;
     let config_json = json_value_to_text(&record.config, "config")?;
     let skill_id = sqlx::query_scalar::<_, i64>(
-        "SELECT s.id FROM ai_agent_skill s
-         JOIN ai_agent_skill_package p ON p.id=s.package_id AND p.deleted_at IS NULL
-         JOIN ai_skill_artifact a ON a.package_id=p.id AND a.tenant_id=p.tenant_id
+        "SELECT s.id FROM skills_definition s
+         JOIN skills_package p ON p.id=s.package_id AND p.deleted_at IS NULL
+         JOIN skills_artifact a ON a.package_id=p.id AND a.tenant_id=p.tenant_id
          WHERE p.id=$1 AND p.tenant_id=$2 AND p.status=1
            AND a.id=$3 AND a.status='published'
            AND s.enabled=1 AND s.market_status='published' AND s.review_status='approved'
@@ -1092,7 +1092,7 @@ pub async fn install_skill(
     })?;
     let candidate_id = next_id(id_generator)?;
     let insert_result = sqlx::query(
-        "INSERT INTO ai_skill_installation (
+        "INSERT INTO skills_installation (
              id, uuid, tenant_id, organization_id, subject_kind, subject_id,
              package_id, artifact_id, installed_by_user_id, install_status, enabled,
              config_json, version
@@ -1118,7 +1118,7 @@ pub async fn install_skill(
     .map_err(map_sqlx)?;
     let installation_id = if insert_result.rows_affected() == 1 {
         let count_result = sqlx::query(
-            "UPDATE ai_agent_skill SET install_count=install_count+1
+            "UPDATE skills_definition SET install_count=install_count+1
              WHERE id=$1 AND enabled=1 AND market_status='published'
                AND review_status='approved' AND deleted_at IS NULL",
         )
@@ -1134,13 +1134,13 @@ pub async fn install_skill(
         candidate_id
     } else {
         sqlx::query_scalar::<_, i64>(
-            "UPDATE ai_skill_installation SET artifact_id=$6, installed_by_user_id=$7,
+            "UPDATE skills_installation SET artifact_id=$6, installed_by_user_id=$7,
                     install_status='installed', enabled=1, config_json=$8, version=version+1,
                     updated_at=CURRENT_TIMESTAMP
              WHERE tenant_id=$1 AND organization_id=$2 AND subject_kind=$3 AND subject_id=$4
                AND package_id=$5 AND deleted_at IS NULL
                AND EXISTS (
-                   SELECT 1 FROM ai_agent_skill s
+                   SELECT 1 FROM skills_definition s
                    WHERE s.id=$9 AND s.enabled=1 AND s.market_status='published'
                      AND s.review_status='approved' AND s.deleted_at IS NULL
                )

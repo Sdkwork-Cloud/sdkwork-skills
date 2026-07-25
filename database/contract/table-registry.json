@@ -3,61 +3,61 @@
   "kind": "sdkwork.database.table-registry",
   "tables": [
     {
-      "table_name": "ai_skill_category",
+      "table_name": "skills_category",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
     },
     {
-      "table_name": "ai_agent_skill_package",
+      "table_name": "skills_package",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
     },
     {
-      "table_name": "ai_agent_skill",
+      "table_name": "skills_definition",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
     },
     {
-      "table_name": "ai_skill_category_binding",
+      "table_name": "skills_category_binding",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
     },
     {
-      "table_name": "ai_skill_capability",
+      "table_name": "skills_capability",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
     },
     {
-      "table_name": "ai_skill_artifact",
+      "table_name": "skills_artifact",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
     },
     {
-      "table_name": "ai_skill_artifact_capability",
+      "table_name": "skills_artifact_capability",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
     },
     {
-      "table_name": "ai_skill_installation",
+      "table_name": "skills_installation",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
     },
     {
-      "table_name": "ai_skill_asset",
+      "table_name": "skills_asset",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
     },
     {
-      "table_name": "ai_skill_action",
+      "table_name": "skills_action",
       "owner": "skills-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"

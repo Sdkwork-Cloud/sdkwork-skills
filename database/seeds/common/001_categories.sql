@@ -1,4 +1,4 @@
-INSERT INTO ai_skill_category (
+INSERT INTO skills_category (
     uuid,
     tenant_id,
     organization_id,

@@ -11,16 +11,16 @@ exactly the ten tables below. Skills does not own a client-local database.
 
 | Table | Purpose |
 | --- | --- |
-| `ai_skill_category` | Tenant or organization taxonomy with IAM permission binding |
-| `ai_agent_skill_package` | Package identity, ownership, lifecycle, and visibility |
-| `ai_agent_skill` | Marketplace publication and review state for one package |
-| `ai_skill_category_binding` | Normalized Skill-to-category relationship |
-| `ai_skill_capability` | Governed capability dictionary and risk level |
-| `ai_skill_artifact` | Immutable versioned release metadata and Drive artifact reference |
-| `ai_skill_artifact_capability` | Normalized artifact-to-capability relationship |
-| `ai_skill_installation` | Exact artifact installed for an IAM user/organization or Agents project/agent |
-| `ai_skill_asset` | Skill, package, or artifact media references |
-| `ai_skill_action` | User download, favorite, rating, and view events |
+| `skills_category` | Tenant or organization taxonomy with IAM permission binding |
+| `skills_package` | Package identity, ownership, lifecycle, and visibility |
+| `skills_definition` | Marketplace publication and review state for one package |
+| `skills_category_binding` | Normalized Skill-to-category relationship |
+| `skills_capability` | Governed capability dictionary and risk level |
+| `skills_artifact` | Immutable versioned release metadata and Drive artifact reference |
+| `skills_artifact_capability` | Normalized artifact-to-capability relationship |
+| `skills_installation` | Exact artifact installed for an IAM user/organization or Agents project/agent |
+| `skills_asset` | Skill, package, or artifact media references |
+| `skills_action` | User download, favorite, rating, and view events |
 
 Packages never store a latest-artifact projection. Installation commands select
 an explicit published `artifact_id`. Each installation stores the stable
@@ -50,7 +50,7 @@ asset belongs to exactly one Skill, package, or artifact.
 
 ## Category Permissions
 
-Each `ai_skill_category.permission_code` defines the IAM permission required to
+Each `skills_category.permission_code` defines the IAM permission required to
 manage packages in that category. Global permissions are declared in
 `specs/iam.module.manifest.json`:
 

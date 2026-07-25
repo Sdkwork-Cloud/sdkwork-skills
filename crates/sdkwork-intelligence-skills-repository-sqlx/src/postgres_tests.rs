@@ -515,7 +515,7 @@ async fn verify_database_integrity(service: &SkillsService<SqlxSkillsRepository>
         .0[0]
         .id;
     let first_skill_id = sqlx::query_scalar::<_, i64>(
-        "SELECT id FROM ai_agent_skill WHERE tenant_id=$1 AND package_id=$2",
+        "SELECT id FROM skills_definition WHERE tenant_id=$1 AND package_id=$2",
     )
     .bind(tenant_id as i64)
     .bind(first.id as i64)
@@ -524,7 +524,7 @@ async fn verify_database_integrity(service: &SkillsService<SqlxSkillsRepository>
     .expect("resolve first skill id");
 
     let multi_owner = sqlx::query(
-        "INSERT INTO ai_skill_asset (
+        "INSERT INTO skills_asset (
              id, uuid, tenant_id, skill_id, package_id, asset_type, purpose, media_resource_id
          ) VALUES (91, 'multi-owner', $1, $2, $3, 'image', 'icon', 'media-91')",
     )
@@ -535,7 +535,7 @@ async fn verify_database_integrity(service: &SkillsService<SqlxSkillsRepository>
     .await;
     assert!(multi_owner.is_err(), "an asset must have exactly one owner");
 
-    let invalid_lifecycle = sqlx::query("UPDATE ai_skill_artifact SET status='draft' WHERE id=$1")
+    let invalid_lifecycle = sqlx::query("UPDATE skills_artifact SET status='draft' WHERE id=$1")
         .bind(first_artifact_id as i64)
         .execute(pool)
         .await;
@@ -555,7 +555,7 @@ async fn verify_database_integrity(service: &SkillsService<SqlxSkillsRepository>
         .await
         .expect("install first package artifact");
     let cross_package_artifact =
-        sqlx::query("UPDATE ai_skill_installation SET artifact_id=$1 WHERE id=$2")
+        sqlx::query("UPDATE skills_installation SET artifact_id=$1 WHERE id=$2")
             .bind(second_artifact_id as i64)
             .bind(installed.id as i64)
             .execute(pool)
@@ -569,7 +569,7 @@ async fn verify_database_integrity(service: &SkillsService<SqlxSkillsRepository>
         "SELECT EXISTS (
             SELECT 1 FROM information_schema.columns
             WHERE table_schema=current_schema()
-              AND table_name='ai_skill_installation'
+              AND table_name='skills_installation'
               AND column_name='skill_id'
         )",
     )
@@ -625,7 +625,7 @@ async fn verify_concurrent_installation(
     assert_eq!(first_installation.id, second_installation.id);
 
     let installation_count = sqlx::query_scalar::<_, i64>(
-        "SELECT COUNT(*) FROM ai_skill_installation
+        "SELECT COUNT(*) FROM skills_installation
          WHERE tenant_id=$1 AND organization_id=17 AND subject_kind='organization'
            AND subject_id=17 AND package_id=$2 AND deleted_at IS NULL",
     )
@@ -637,7 +637,7 @@ async fn verify_concurrent_installation(
     assert_eq!(installation_count, 1);
 
     let install_count = sqlx::query_scalar::<_, i64>(
-        "SELECT install_count FROM ai_agent_skill WHERE tenant_id=$1 AND package_id=$2",
+        "SELECT install_count FROM skills_definition WHERE tenant_id=$1 AND package_id=$2",
     )
     .bind(tenant_id as i64)
     .bind(created.id as i64)

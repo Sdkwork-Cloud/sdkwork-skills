@@ -3,7 +3,7 @@
   "kind": "sdkwork.database.prefix-registry",
   "prefixes": [
     {
-      "prefix": "ai_",
+      "prefix": "skills_",
       "owner": "skills-platform",
       "domain": "skills"
     }
