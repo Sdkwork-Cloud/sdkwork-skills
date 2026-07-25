@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "kind": "sdkwork.database.module",
+  "databaseRole": "authoritative-server",
   "moduleId": "skills",
   "serviceCode": "SKILLS",
   "displayName": "SKILLS Database",
   "owner": "skills-platform",
   "engines": [
-    "postgres",
-    "sqlite"
+    "postgres"
   ],
   "defaultEngine": "postgres",
   "tablePrefix": "ai_",
@@ -15,8 +15,8 @@
   "baselineStrategy": "baseline-plus-migrations",
   "modules": [],
   "lifecycle": {
-    "autoMigrate": true,
-    "seedOnBoot": true,
+    "autoMigrate": false,
+    "seedOnBoot": false,
     "defaultSeedLocale": "zh-CN",
     "defaultSeedProfile": "standard",
     "supportedSeedLocales": [

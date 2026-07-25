@@ -1632,7 +1632,10 @@ dependencies = [
  "sdkwork-routes-skills-app-api",
  "sdkwork-routes-skills-backend-api",
  "sdkwork-skills-database-host",
- "tokio",
+ "sdkwork-web-bootstrap",
+ "sdkwork-web-contract",
+ "sdkwork-web-core",
+ "serde_json",
 ]
 
 [[package]]
@@ -1642,8 +1645,13 @@ dependencies = [
  "axum",
  "sdkwork-api-skills-assembly",
  "sdkwork-database-sqlx",
+ "sdkwork-iam-web-adapter",
+ "sdkwork-web-axum",
+ "sdkwork-web-bootstrap",
+ "sdkwork-web-core",
  "serde_json",
  "tokio",
+ "tower",
  "tracing",
  "tracing-subscriber",
 ]
@@ -1870,11 +1878,9 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "axum",
- "sdkwork-iam-web-adapter",
  "sdkwork-intelligence-skills-service",
  "sdkwork-routes-skills-common",
  "sdkwork-skills-contract",
- "sdkwork-web-axum",
  "sdkwork-web-core",
  "serde",
  "serde_json",
@@ -1885,11 +1891,9 @@ name = "sdkwork-routes-skills-backend-api"
 version = "0.1.0"
 dependencies = [
  "axum",
- "sdkwork-iam-web-adapter",
  "sdkwork-intelligence-skills-service",
  "sdkwork-routes-skills-common",
  "sdkwork-skills-contract",
- "sdkwork-web-axum",
  "sdkwork-web-core",
  "serde",
  "serde_json",
@@ -1929,6 +1933,7 @@ dependencies = [
  "sdkwork-database-lifecycle",
  "sdkwork-database-spi",
  "sdkwork-database-sqlx",
+ "sqlx",
 ]
 
 [[package]]

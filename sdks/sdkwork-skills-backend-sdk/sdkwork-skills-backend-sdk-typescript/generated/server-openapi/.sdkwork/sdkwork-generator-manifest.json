@@ -64,7 +64,7 @@
     },
     {
       "path": "src/api/skills.ts",
-      "sha256": "9a397fe01e6a187fc554490a336eb67c447ae2dd6c8f2543d1e5c35aa20fbde0"
+      "sha256": "56586d05dfc82a757cdf52efc95333abb87f93ce6ee85f39d58f00e2ed437bd1"
     },
     {
       "path": "src/auth/index.ts",
@@ -72,7 +72,7 @@
     },
     {
       "path": "src/http/client.ts",
-      "sha256": "6e389d5c14fb5845365972b6776af185d8af8eb8da7bb398e59be6c29e394ddf"
+      "sha256": "73c0a8265d7f329177ecef920c9526399d2b582bd2b8bd63364d615ed4eb1398"
     },
     {
       "path": "src/http/index.ts",

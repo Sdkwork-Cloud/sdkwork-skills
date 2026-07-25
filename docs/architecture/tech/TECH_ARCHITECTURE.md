@@ -2,7 +2,7 @@
 
 Status: active
 Owner: SDKWork maintainers
-Updated: 2026-07-22
+Updated: 2026-07-24
 Specs: `ARCHITECTURE_DECISION_SPEC.md`, `APPLICATION_GATEWAY_SPEC.md`, `API_ASSEMBLY_SPEC.md`, `API_SPEC.md`, `SDK_SPEC.md`, `DATABASE_FRAMEWORK_SPEC.md`
 
 ## 1. Architecture Overview
@@ -19,7 +19,7 @@ sdkwork-skills-pc
   -> sdkwork-routes-skills-common
   -> sdkwork-intelligence-skills-service
   -> sdkwork-intelligence-skills-repository-sqlx
-  -> process-shared PostgreSQL or SQLite pool
+  -> process-shared PostgreSQL pool
 ```
 
 The standalone gateway and platform cloud gateway are sibling hosts. Both
@@ -33,7 +33,7 @@ on one ingress, not separate business servers.
 | --- | --- |
 | HTTP | Axum with `sdkwork-web-axum` and `sdkwork-web-core` |
 | Authentication | `sdkwork-iam-web-adapter` dual-token request context |
-| Persistence | PostgreSQL and SQLite through `sdkwork-database-*` and SQLx |
+| Persistence | Authoritative PostgreSQL through `sdkwork-database-*` and SQLx |
 | Shared HTTP types | `sdkwork-utils-rust` envelopes and pagination types |
 | PC UI | React and Vite |
 | Contracts | OpenAPI 3.1.2 with the `sdkwork-v3` profile |
@@ -44,7 +44,7 @@ on one ingress, not separate business servers.
 | --- | --- |
 | `sdkwork-skills-contract` | Surface-neutral domain records, enums, operations, and permissions |
 | `sdkwork-intelligence-skills-service` | Validation, use cases, and repository port |
-| `sdkwork-intelligence-skills-repository-sqlx` | Tenant-scoped PostgreSQL and SQLite queries |
+| `sdkwork-intelligence-skills-repository-sqlx` | Tenant-scoped PostgreSQL queries |
 | `sdkwork-routes-skills-common` | Commands, list queries, envelopes, errors, and service calls |
 | `sdkwork-routes-skills-app-api` | App-api handlers and route manifest only |
 | `sdkwork-routes-skills-backend-api` | Backend-api handlers and route manifest only |
@@ -81,17 +81,18 @@ Updates return HTTP `200` with `data.item`; lists return `data.items` and
 The database module owns exactly ten `ai_*` tables. Category and capability
 relationships are normalized through binding tables. Artifacts are immutable
 releases; package rows do not carry release payloads or a latest-artifact
-projection. Installations reference one exact artifact and support `user`,
-`workspace`, `project`, and `agent` subjects. An installation persists its
+projection. Installations reference one exact artifact and support IAM `user`
+and `organization` subjects plus Agents `project` and `agent` subjects. An installation persists its
 stable package slot and selected artifact; its response `skillId` is derived by
 joining the package's one-to-one marketplace entry. Composite referential
 integrity prevents an artifact from drifting to another package.
 
 The module owns lifecycle assets but not the process pool. The gateway supplies
 one shared `DatabasePool`; the assembly constructs one `SqlxSkillsRepository`
-and one `SkillsService` for both surfaces. PostgreSQL and SQLite select
-engine-specific SQL inside the repository while preserving one logical
-contract.
+and one `SkillsService` for both surfaces. The database host requires the pool
+to be PostgreSQL before running lifecycle work, and the repository accepts only
+the resulting shared `PgPool`. A non-PostgreSQL server configuration fails
+closed; Skills has no fallback repository or second persistence authority.
 
 ## 6. Security And Performance
 
@@ -104,10 +105,14 @@ contract.
   organization, user ownership, publication, approval, and lifecycle state.
 - Installation applies subject-level authorization and requires an explicit
   published `artifactId`.
+- IAM `user` and `organization` installation targets are validated against the
+  verified request context. Agents `project` and `agent` targets require a
+  composing-owner `SkillInstallationTargetAuthorizer`; without that injected
+  port, the Skills App API fails closed.
 - Concurrent installation uses the active subject/package unique boundary and
   atomic conflict handling; only the first insertion increments `installCount`.
 - Artifact lifecycle timestamps and single-owner asset relationships are
-  database-checked on PostgreSQL and SQLite.
+  database-checked on authoritative PostgreSQL.
 - Filtering, ordering, total counting, authorization, and pagination execute in
   SQL with bounded page sizes.
 - Mutable aggregates use Snowflake IDs, optimistic versions, and soft deletion.

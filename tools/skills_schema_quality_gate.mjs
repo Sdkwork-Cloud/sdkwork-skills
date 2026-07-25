@@ -119,6 +119,13 @@ function usesSdkWorkEnvelope(schema, components) {
   return false;
 }
 
+function requireExactEnum(schema, expected, location) {
+  const actual = schema?.enum;
+  if (!Array.isArray(actual) || JSON.stringify(actual) !== JSON.stringify(expected)) {
+    fail(`${location} must declare exactly ${expected.join(", ")}`);
+  }
+}
+
 function checkDocument(filePath, authority, prefix, manifestPath) {
   const document = readJson(filePath);
   const components = document.components?.schemas ?? {};
@@ -140,6 +147,19 @@ function checkDocument(filePath, authority, prefix, manifestPath) {
   }
   if (!components.SdkWorkApiResponse) {
     fail(`${filePath} must declare components.schemas.SdkWorkApiResponse`);
+  }
+  if (authority === "sdkwork-skills-app-api") {
+    const installationSubjects = ["user", "organization", "project", "agent"];
+    requireExactEnum(
+      components.SkillInstallationRecord?.properties?.subjectKind,
+      installationSubjects,
+      `${filePath} SkillInstallationRecord.subjectKind`,
+    );
+    requireExactEnum(
+      components.SkillInstallationTargetCommand?.properties?.kind,
+      installationSubjects,
+      `${filePath} SkillInstallationTargetCommand.kind`,
+    );
   }
 
   const openapiOps = new Map();
@@ -212,6 +232,29 @@ function checkDocument(filePath, authority, prefix, manifestPath) {
   }
 }
 
+function checkInstallationSubjectAuthority() {
+  const rustContract = readText(
+    path.join(workspaceRoot, "crates/sdkwork-skills-contract/src/enums.rs"),
+  );
+  const postgresBaseline = readText(
+    path.join(workspaceRoot, "database/ddl/baseline/postgres/0001_skills_baseline.sql"),
+  );
+  for (const [location, source] of [
+    ["Rust installation subject contract", rustContract],
+    ["PostgreSQL installation subject constraint", postgresBaseline],
+  ]) {
+    if (/\bworkspace\b/iu.test(source)) {
+      fail(`${location} must not restore the retired Workspace identity`);
+    }
+  }
+  if (!/SkillInstallationSubjectKind[\s\S]*\bOrganization\b/u.test(rustContract)) {
+    fail("Rust installation subject contract must use IAM Organization");
+  }
+  if (!/subject_kind IN \('user', 'organization', 'project', 'agent'\)/u.test(postgresBaseline)) {
+    fail("PostgreSQL installation subject constraint must match the canonical subject set");
+  }
+}
+
 function parseArg(name) {
   const index = process.argv.indexOf(name);
   if (index === -1) {
@@ -232,4 +275,5 @@ const backendManifest =
 
 checkDocument(appPath, "sdkwork-skills-app-api", "/app/v3/api", appManifest);
 checkDocument(backendPath, "sdkwork-skills-backend-api", "/backend/v3/api", backendManifest);
+checkInstallationSubjectAuthority();
 process.stdout.write("[skills_schema_quality_gate] ok\n");

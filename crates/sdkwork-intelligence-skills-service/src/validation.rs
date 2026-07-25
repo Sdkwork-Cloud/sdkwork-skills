@@ -133,7 +133,7 @@ pub fn validate_capability_record(record: &SkillCapabilityRecord) -> SkillsResul
 pub fn validate_installation_subject(subject_kind: &str, subject_id: u64) -> SkillsResult<()> {
     if SkillInstallationSubjectKind::parse(subject_kind).is_none() {
         return Err(invalid(
-            "subject_kind must be user, workspace, project, or agent",
+            "subject_kind must be user, organization, project, or agent",
         ));
     }
     if subject_id == 0 {

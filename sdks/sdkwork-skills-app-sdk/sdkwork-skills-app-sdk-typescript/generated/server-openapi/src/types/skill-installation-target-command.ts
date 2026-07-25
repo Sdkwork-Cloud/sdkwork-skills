@@ -1,4 +1,4 @@
 export interface SkillInstallationTargetCommand {
-  kind: 'user' | 'workspace' | 'project' | 'agent';
+  kind: 'user' | 'organization' | 'project' | 'agent';
   id: string;
 }

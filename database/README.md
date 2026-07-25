@@ -4,8 +4,8 @@ Owner: skills-platform
 
 The Skills module is the single write authority for Skill packages, marketplace
 entries, immutable artifacts, capabilities, installations, assets, and actions.
-The pre-launch baseline is portable across PostgreSQL and SQLite and contains
-exactly the ten tables below.
+The pre-launch authoritative-server baseline targets PostgreSQL and contains
+exactly the ten tables below. Skills does not own a client-local database.
 
 ## Tables
 
@@ -18,7 +18,7 @@ exactly the ten tables below.
 | `ai_skill_capability` | Governed capability dictionary and risk level |
 | `ai_skill_artifact` | Immutable versioned release metadata and Drive artifact reference |
 | `ai_skill_artifact_capability` | Normalized artifact-to-capability relationship |
-| `ai_skill_installation` | Exact artifact installed for a user, workspace, project, or agent |
+| `ai_skill_installation` | Exact artifact installed for an IAM user/organization or Agents project/agent |
 | `ai_skill_asset` | Skill, package, or artifact media references |
 | `ai_skill_action` | User download, favorite, rating, and view events |
 
@@ -45,7 +45,8 @@ asset belongs to exactly one Skill, package, or artifact.
   subject, and package. Atomic conflict handling serializes concurrent install
   requests and increments marketplace `install_count` only for the first row.
 - Filtering, ordering, total counting, and pagination execute in SQL.
-- PostgreSQL and SQLite baselines express the same logical contract.
+- PostgreSQL is the only authoritative Skills engine; server startup fails
+  closed for any other configured engine.
 
 ## Category Permissions
 
@@ -71,9 +72,9 @@ pnpm db:plan
 
 This module is in initialization state for greenfield deployments:
 
-1. `database/ddl/baseline/{engine}/0001_skills_baseline.sql` is the full
+1. `database/ddl/baseline/postgres/0001_skills_baseline.sql` is the full
    system-of-record DDL.
-2. `database/migrations/{engine}/` is reserved for post-GA incremental schema
+2. `database/migrations/postgres/` is reserved for post-GA incremental schema
    changes only.
 3. No legacy Skills schema is bootstrapped or copied into this module.
 4. Run `pnpm db:drift:check` before release.

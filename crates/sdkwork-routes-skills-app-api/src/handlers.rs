@@ -194,6 +194,15 @@ async fn authorize_target(
             PERM_INSTALLATIONS_MANAGE
         )));
     }
+    if subject_kind == SkillInstallationSubjectKind::Organization {
+        return if context.organization_id > 0 && subject_id == context.organization_id {
+            Ok((subject_kind, subject_id))
+        } else {
+            Err(ApiProblem::forbidden(
+                "an organization installation target must be the authenticated organization",
+            ))
+        };
+    }
     if !authorizer
         .authorize(context, subject_kind, subject_id)
         .await
@@ -203,6 +212,23 @@ async fn authorize_target(
         ));
     }
     Ok((subject_kind, subject_id))
+}
+
+#[cfg(test)]
+mod target_authority_tests {
+    use super::*;
+
+    #[test]
+    fn canonical_subject_kinds_keep_iam_and_agents_authorities_distinct() {
+        assert_eq!(SkillInstallationSubjectKind::User.as_str(), "user");
+        assert_eq!(
+            SkillInstallationSubjectKind::Organization.as_str(),
+            "organization"
+        );
+        assert_eq!(SkillInstallationSubjectKind::Project.as_str(), "project");
+        assert_eq!(SkillInstallationSubjectKind::Agent.as_str(), "agent");
+        assert!(SkillInstallationSubjectKind::parse("workspace").is_none());
+    }
 }
 
 pub(crate) async fn create_installation<R>(

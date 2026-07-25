@@ -14,7 +14,7 @@ const invocationKind = ["local-workflow", "process-adapter", "mcp-tool", "kernel
 const lifecycleStatus = ["draft", "active", "disabled", "archived", "deleted"];
 const visibility = ["private", "tenant", "organization", "public"];
 const artifactStatus = ["draft", "published", "yanked"];
-const subjectKind = ["user", "workspace", "project", "agent"];
+const subjectKind = ["user", "organization", "project", "agent"];
 const capabilityRisk = ["standard", "sensitive", "privileged"];
 const categoryType = ["skill_market", "skills_collection"];
 

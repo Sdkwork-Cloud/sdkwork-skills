@@ -4,9 +4,7 @@ use axum::{
     Json,
 };
 use sdkwork_utils_rust::{SdkWorkApiResponse, SdkWorkResourceData};
-use sdkwork_web_core::{
-    problem_response, WebFrameworkError, WebFrameworkErrorKind, WebRequestContext,
-};
+use sdkwork_web_core::{problem_response, WebFrameworkError, WebRequestContext};
 use serde::Serialize;
 
 pub type ApiResult<T> = Result<T, ApiProblem>;
@@ -112,18 +110,15 @@ impl ApiProblem {
     }
 
     fn framework_error(&self) -> WebFrameworkError {
-        let kind = match self.status {
-            StatusCode::BAD_REQUEST => WebFrameworkErrorKind::BadRequest,
-            StatusCode::FORBIDDEN => WebFrameworkErrorKind::Forbidden,
-            StatusCode::NOT_FOUND => WebFrameworkErrorKind::NotFound,
-            StatusCode::CONFLICT => WebFrameworkErrorKind::Conflict,
-            StatusCode::INTERNAL_SERVER_ERROR => WebFrameworkErrorKind::InternalServerError,
-            _ => WebFrameworkErrorKind::InternalServerError,
-        };
-        WebFrameworkError {
-            kind,
-            message: self.message.clone(),
-            retry_after_seconds: None,
+        match self.status {
+            StatusCode::BAD_REQUEST => WebFrameworkError::bad_request(self.message.clone()),
+            StatusCode::FORBIDDEN => WebFrameworkError::forbidden(self.message.clone()),
+            StatusCode::NOT_FOUND => WebFrameworkError::not_found(self.message.clone()),
+            StatusCode::CONFLICT => WebFrameworkError::conflict(self.message.clone()),
+            StatusCode::INTERNAL_SERVER_ERROR => {
+                WebFrameworkError::internal_server_error(self.message.clone())
+            }
+            _ => WebFrameworkError::internal_server_error(self.message.clone()),
         }
     }
 
@@ -153,6 +148,7 @@ mod tests {
                 api_key_present: false,
                 oauth_bearer_present: false,
                 agent_token_present: false,
+                ingress_token_present: false,
             },
             locale: None,
             client_kind: None,

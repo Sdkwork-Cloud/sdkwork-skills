@@ -9,10 +9,15 @@
     "protocol": "http",
     "packageName": "sdkwork-skills-app-sdk-generated-typescript"
   },
-  "changeFingerprint": "8b60b1b8cef19a9c2654284d046d2d67ca453a2539f7935ef43610509c077b8c",
+  "changeFingerprint": "34aa39dffa74f10e5cb853bb15c106f0c44cacb12fe00e518ba3e999aae789de",
   "changes": {
     "createdGeneratedFiles": [],
-    "updatedGeneratedFiles": [],
+    "updatedGeneratedFiles": [
+      "src/api/skills.ts",
+      "src/http/client.ts",
+      "src/types/skill-installation-record.ts",
+      "src/types/skill-installation-target-command.ts"
+    ],
     "unchangedGeneratedFiles": [
       "bin/publish-core.mjs",
       "bin/publish.ps1",
@@ -27,9 +32,7 @@
       "src/api/base.ts",
       "src/api/index.ts",
       "src/api/paths.ts",
-      "src/api/skills.ts",
       "src/auth/index.ts",
-      "src/http/client.ts",
       "src/http/index.ts",
       "src/index.ts",
       "src/sdk.ts",
@@ -53,10 +56,8 @@
       "src/types/skill-categories-list-response.ts",
       "src/types/skill-categories-page-data.ts",
       "src/types/skill-category-record.ts",
-      "src/types/skill-installation-record.ts",
       "src/types/skill-installation-resource-data.ts",
       "src/types/skill-installation-response.ts",
-      "src/types/skill-installation-target-command.ts",
       "src/types/skill-installations-list-response.ts",
       "src/types/skill-installations-page-data.ts",
       "src/types/skill-package-record.ts",
@@ -81,26 +82,88 @@
   },
   "impact": {
     "schemaVersion": 1,
-    "areas": [],
-    "details": [],
-    "requiresVerification": false,
-    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped."
+    "areas": [
+      "api-surface",
+      "models",
+      "runtime"
+    ],
+    "details": [
+      {
+        "area": "api-surface",
+        "paths": [
+          "src/api/skills.ts",
+          "src/http/client.ts"
+        ]
+      },
+      {
+        "area": "models",
+        "paths": [
+          "src/types/skill-installation-record.ts",
+          "src/types/skill-installation-target-command.ts"
+        ]
+      },
+      {
+        "area": "runtime",
+        "paths": [
+          "src/http/client.ts"
+        ]
+      }
+    ],
+    "requiresVerification": true,
+    "summary": "Detected impact areas: api-surface, models, runtime. Verification is required."
   },
   "verificationPlan": {
-    "shouldRun": false,
-    "runPhase": "skip",
-    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped.",
-    "steps": []
+    "shouldRun": true,
+    "runPhase": "now",
+    "summary": "Detected impact areas: api-surface, models, runtime. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "steps": [
+      {
+        "id": "check",
+        "title": "Unified package check",
+        "required": true,
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "typescript",
+          "--project-dir",
+          ".",
+          "--action",
+          "check"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action check"
+      },
+      {
+        "id": "build",
+        "title": "Unified package build",
+        "required": true,
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "typescript",
+          "--project-dir",
+          ".",
+          "--action",
+          "build"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action build"
+      }
+    ]
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "low",
-    "nextAction": "skip",
+    "riskLevel": "medium",
+    "nextAction": "verify",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
-    "summary": "No actionable changes were detected. No apply or verification step is required.",
+    "summary": "Changes have been applied. Run the required verification plan now.",
     "reasons": [
-      "no-actionable-changes"
+      "verification-required"
     ]
   },
   "preservedLegacyFiles": false

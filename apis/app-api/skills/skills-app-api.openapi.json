@@ -1052,7 +1052,7 @@
               "type": "string",
               "enum": [
                 "user",
-                "workspace",
+                "organization",
                 "project",
                 "agent"
               ]
@@ -2061,7 +2061,7 @@
             "type": "string",
             "enum": [
               "user",
-              "workspace",
+              "organization",
               "project",
               "agent"
             ]
@@ -2146,7 +2146,7 @@
             "type": "string",
             "enum": [
               "user",
-              "workspace",
+              "organization",
               "project",
               "agent"
             ]

@@ -3,7 +3,9 @@ use sdkwork_skills_contract::{
     SkillPackageRecord, SkillVisibility,
 };
 
-use super::validation::{validate_artifact_record, validate_skill_package_record};
+use super::validation::{
+    validate_artifact_record, validate_installation_subject, validate_skill_package_record,
+};
 
 fn artifact(artifact_ref: &str, checksum: &str) -> SkillArtifactRecord {
     SkillArtifactRecord {
@@ -81,4 +83,13 @@ fn rejects_artifact_created_directly_in_yanked_state() {
     record.status = SkillArtifactStatus::Yanked;
 
     assert!(validate_artifact_record(&record).is_err());
+}
+
+#[test]
+fn installation_subjects_use_iam_and_agents_authorities() {
+    for subject_kind in ["user", "organization", "project", "agent"] {
+        validate_installation_subject(subject_kind, 1).expect("canonical installation subject");
+    }
+    assert!(validate_installation_subject("workspace", 1).is_err());
+    assert!(validate_installation_subject("project", 0).is_err());
 }

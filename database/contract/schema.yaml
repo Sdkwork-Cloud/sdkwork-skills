@@ -1,12 +1,12 @@
 schema_version: 1
 kind: sdkwork.database.schema
+database_role: authoritative-server
 module_id: skills
 contract_version: 2.1.0
 owner_team: skills-platform
 compliance_level: L2
 engines:
   - postgres
-  - sqlite
 table_prefix: ai_
 tables:
   - name: ai_skill_category

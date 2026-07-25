@@ -52,7 +52,7 @@
     {
       "file": "TEST_SPEC.md",
       "path": "../../../sdkwork-specs/TEST_SPEC.md",
-      "purpose": "Cross-engine persistence, isolation, and conflict verification."
+      "purpose": "Authoritative PostgreSQL persistence, isolation, and conflict verification."
     }
   ],
   "contracts": {
@@ -70,7 +70,7 @@
       {
         "name": "databasePool",
         "export": ".",
-        "target": "sdkwork_database_sqlx::DatabasePool"
+        "target": "sqlx::PgPool"
       },
       {
         "name": "snowflakeIdGenerator",

@@ -1,5 +1,5 @@
 import { appApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { CreateSkillInstallationCommand, SkillArtifactsPageData, SkillCategoriesPageData, SkillInstallationRecord, SkillInstallationsPageData, SkillPackageRecord, SkillPackagesPageData, SkillRecord, SkillsPageData } from '../types';
 
@@ -9,7 +9,7 @@ export interface SkillsSkillInstallationsListParams {
   pageSize?: number;
   cursor?: string;
   q?: string;
-  subjectKind?: 'user' | 'workspace' | 'project' | 'agent';
+  subjectKind?: 'user' | 'organization' | 'project' | 'agent';
   subjectId?: string;
 }
 
@@ -22,7 +22,7 @@ export class SkillsSkillInstallationsApi {
 
 
 /** skillInstallations.list */
-  async list(params?: SkillsSkillInstallationsListParams): Promise<SkillInstallationsPageData> {
+  async list(params?: SkillsSkillInstallationsListParams, requestOptions?: ApiRequestOptions): Promise<SkillInstallationsPageData> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -31,7 +31,7 @@ export class SkillsSkillInstallationsApi {
       { name: 'subject_kind', value: params?.subjectKind, style: 'form', explode: true, allowReserved: false },
       { name: 'subject_id', value: params?.subjectId, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SkillInstallationsPageData>(appendQueryString(appApiPath(`/skill_installations`), query));
+    return this.client.request<SkillInstallationsPageData>(appendQueryString(appApiPath(`/skill_installations`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
   }
 }
 
@@ -51,14 +51,14 @@ export class SkillsSkillCategoriesApi {
 
 
 /** skillCategories.list */
-  async list(params?: SkillsSkillCategoriesListParams): Promise<SkillCategoriesPageData> {
+  async list(params?: SkillsSkillCategoriesListParams, requestOptions?: ApiRequestOptions): Promise<SkillCategoriesPageData> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SkillCategoriesPageData>(appendQueryString(appApiPath(`/skill_categories`), query));
+    return this.client.request<SkillCategoriesPageData>(appendQueryString(appApiPath(`/skill_categories`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
   }
 }
 
@@ -71,8 +71,8 @@ export class SkillsSkillPackagesInstallationsApi {
 
 
 /** skillPackages.installations.create */
-  async create(packageId: string, body: CreateSkillInstallationCommand): Promise<SkillInstallationRecord> {
-    return this.client.post<SkillInstallationRecord>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}/installations`), body, undefined, undefined, 'application/json');
+  async create(packageId: string, body: CreateSkillInstallationCommand, requestOptions?: ApiRequestOptions): Promise<SkillInstallationRecord> {
+    return this.client.request<SkillInstallationRecord>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}/installations`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, contentType: 'application/json' });
   }
 }
 
@@ -92,14 +92,14 @@ export class SkillsSkillPackagesArtifactsApi {
 
 
 /** skillPackages.artifacts.list */
-  async list(packageId: string, params?: SkillsSkillPackagesArtifactsListParams): Promise<SkillArtifactsPageData> {
+  async list(packageId: string, params?: SkillsSkillPackagesArtifactsListParams, requestOptions?: ApiRequestOptions): Promise<SkillArtifactsPageData> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SkillArtifactsPageData>(appendQueryString(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}/artifacts`), query));
+    return this.client.request<SkillArtifactsPageData>(appendQueryString(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}/artifacts`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
   }
 }
 
@@ -123,19 +123,19 @@ export class SkillsSkillPackagesApi {
 
 
 /** skillPackages.list */
-  async list(params?: SkillsSkillPackagesListParams): Promise<SkillPackagesPageData> {
+  async list(params?: SkillsSkillPackagesListParams, requestOptions?: ApiRequestOptions): Promise<SkillPackagesPageData> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SkillPackagesPageData>(appendQueryString(appApiPath(`/skill_packages`), query));
+    return this.client.request<SkillPackagesPageData>(appendQueryString(appApiPath(`/skill_packages`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
   }
 
 /** skillPackages.retrieve */
-  async retrieve(packageId: string): Promise<SkillPackageRecord> {
-    return this.client.get<SkillPackageRecord>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}`));
+  async retrieve(packageId: string, requestOptions?: ApiRequestOptions): Promise<SkillPackageRecord> {
+    return this.client.request<SkillPackageRecord>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
   }
 }
 
@@ -155,31 +155,31 @@ export class SkillsMarketplaceApi {
 
 
 /** marketplace.list */
-  async list(params?: SkillsMarketplaceListParams): Promise<SkillsPageData> {
+  async list(params?: SkillsMarketplaceListParams, requestOptions?: ApiRequestOptions): Promise<SkillsPageData> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SkillsPageData>(appendQueryString(appApiPath(`/skills`), query));
+    return this.client.request<SkillsPageData>(appendQueryString(appApiPath(`/skills`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
   }
 
 /** marketplace.retrieve */
-  async retrieve(skillKey: string): Promise<SkillRecord> {
-    return this.client.get<SkillRecord>(appApiPath(`/skills/${serializePathParameter(skillKey, { name: 'skillKey', style: 'simple', explode: false })}`));
+  async retrieve(skillKey: string, requestOptions?: ApiRequestOptions): Promise<SkillRecord> {
+    return this.client.request<SkillRecord>(appApiPath(`/skills/${serializePathParameter(skillKey, { name: 'skillKey', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
   }
 }
 
 export class SkillsApi {
-
+  private client: HttpClient;
   public readonly marketplace: SkillsMarketplaceApi;
   public readonly skillPackages: SkillsSkillPackagesApi;
   public readonly skillCategories: SkillsSkillCategoriesApi;
   public readonly skillInstallations: SkillsSkillInstallationsApi;
 
   constructor(client: HttpClient) {
-
+    this.client = client;
     this.marketplace = new SkillsMarketplaceApi(client);
     this.skillPackages = new SkillsSkillPackagesApi(client);
     this.skillCategories = new SkillsSkillCategoriesApi(client);

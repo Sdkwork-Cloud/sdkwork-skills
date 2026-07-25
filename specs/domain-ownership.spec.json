@@ -3,7 +3,7 @@
   "kind": "sdkwork.application-domain-ownership",
   "application": "sdkwork-skills",
   "status": "active",
-  "updatedAt": "2026-07-22",
+  "updatedAt": "2026-07-24",
   "authority": {
     "globalSpecs": [
       "../../sdkwork-specs/DOMAIN_SPEC.md",
@@ -44,14 +44,13 @@
   },
   "persistence": {
     "systemOfRecord": "sdkwork-skills",
+    "databaseRole": "authoritative-server",
     "tableRegistry": "database/contract/table-registry.json",
     "baselines": [
-      "database/ddl/baseline/postgres/0001_skills_baseline.sql",
-      "database/ddl/baseline/sqlite/0001_skills_baseline.sql"
+      "database/ddl/baseline/postgres/0001_skills_baseline.sql"
     ],
     "engines": [
-      "postgres",
-      "sqlite"
+      "postgres"
     ],
     "tables": [
       "ai_skill_category",
@@ -79,9 +78,9 @@
         "foreignKey": false
       },
       {
-        "contract": "consumer-owned installation subject id",
-        "owner": "subject type owner",
-        "storage": "ai_skill_installation.subject_type and subject_id",
+        "contract": "IAM user/organization or Agents project/agent subject id",
+        "owner": "sdkwork-iam or sdkwork-agents according to subject_kind",
+        "storage": "ai_skill_installation.subject_kind and subject_id",
         "foreignKey": false
       }
     ]

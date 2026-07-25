@@ -48,7 +48,7 @@ const installation = await client.skills.skillPackages.installations.create(
   packageId,
   {
     artifactId: artifacts.items[0].id,
-    target: { kind: 'workspace', id: workspaceId },
+    target: { kind: 'project', id: agentProjectId },
     config: {},
   },
 );

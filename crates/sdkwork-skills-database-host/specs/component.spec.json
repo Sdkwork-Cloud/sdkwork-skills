@@ -79,10 +79,10 @@
     "dependencyApiSurfaces": [],
     "events": [],
     "configKeys": [
-      "SKILLS_DATABASE_URL",
-      "SKILLS_DATABASE_SCHEMA",
-      "SKILLS_DATABASE_MAX_CONNECTIONS",
-      "SKILLS_DATABASE_AUTO_MIGRATE"
+      "SDKWORK_SKILLS_DATABASE_URL",
+      "SDKWORK_SKILLS_DATABASE_SCHEMA",
+      "SDKWORK_SKILLS_DATABASE_MAX_CONNECTIONS",
+      "SDKWORK_SKILLS_DATABASE_AUTO_MIGRATE"
     ]
   },
   "verification": {

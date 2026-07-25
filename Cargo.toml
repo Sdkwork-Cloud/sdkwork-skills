@@ -25,7 +25,7 @@ serde_json = "1"
 thiserror = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1"
-sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "sqlite", "chrono", "json"] }
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono", "json"] }
 
 sdkwork-skills-contract = { path = "crates/sdkwork-skills-contract" }
 sdkwork-api-skills-assembly = { path = "crates/sdkwork-api-skills-assembly" }
@@ -36,6 +36,8 @@ sdkwork-routes-skills-app-api = { path = "crates/sdkwork-routes-skills-app-api" 
 sdkwork-routes-skills-backend-api = { path = "crates/sdkwork-routes-skills-backend-api" }
 sdkwork-skills-database-host = { path = "crates/sdkwork-skills-database-host" }
 sdkwork-web-axum = { path = "../sdkwork-web-framework/crates/sdkwork-web-axum" }
+sdkwork-web-bootstrap = { path = "../sdkwork-web-framework/crates/sdkwork-web-bootstrap" }
+sdkwork-web-contract = { path = "../sdkwork-web-framework/crates/sdkwork-web-contract" }
 sdkwork-web-core = { path = "../sdkwork-web-framework/crates/sdkwork-web-core" }
 sdkwork-iam-web-adapter = { path = "../sdkwork-iam/crates/sdkwork-iam-web-adapter" }
 sdkwork-database-config = { path = "../sdkwork-database/crates/sdkwork-database-config", package = "sdkwork-database-config" }

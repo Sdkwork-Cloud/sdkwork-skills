@@ -12,17 +12,24 @@ use crate::json_util::{
     timestamp_to_rfc3339,
 };
 use crate::support::{
-    artifact_status, capability_risk, invocation, lifecycle, map_sqlx, new_uuid, next_id,
-    search_pattern, subject_kind, visibility,
+    artifact_status, capability_risk, int64_to_uint64, invocation, lifecycle, map_sqlx, new_uuid,
+    next_id, optional_int64_to_uint64, optional_uint64_to_int64, search_pattern, subject_kind,
+    uint64_to_int64, visibility,
 };
 
 fn row_to_package(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillPackageRecord> {
     Ok(SkillPackageRecord {
-        id: row.try_get::<i64, _>("id").map_err(map_sqlx)? as u64,
+        id: int64_to_uint64(row.try_get("id").map_err(map_sqlx)?, "id")?,
         uuid: row.try_get("uuid").map_err(map_sqlx)?,
-        tenant_id: row.try_get::<i64, _>("tenant_id").map_err(map_sqlx)? as u64,
-        organization_id: row.try_get::<i64, _>("organization_id").map_err(map_sqlx)? as u64,
-        owner_user_id: row.try_get::<i64, _>("owner_user_id").map_err(map_sqlx)? as u64,
+        tenant_id: int64_to_uint64(row.try_get("tenant_id").map_err(map_sqlx)?, "tenant_id")?,
+        organization_id: int64_to_uint64(
+            row.try_get("organization_id").map_err(map_sqlx)?,
+            "organization_id",
+        )?,
+        owner_user_id: int64_to_uint64(
+            row.try_get("owner_user_id").map_err(map_sqlx)?,
+            "owner_user_id",
+        )?,
         skill_key: row.try_get("skill_key").map_err(map_sqlx)?,
         package_key: row.try_get("package_key").map_err(map_sqlx)?,
         code: row.try_get("code").map_err(map_sqlx)?,
@@ -42,7 +49,7 @@ fn row_to_package(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillPackageRecor
         visibility: visibility(row.try_get("visibility").map_err(map_sqlx)?)?,
         featured: row.try_get::<i16, _>("featured").map_err(map_sqlx)? != 0,
         sort_weight: row.try_get("sort_weight").map_err(map_sqlx)?,
-        version: row.try_get::<i64, _>("version").map_err(map_sqlx)? as u64,
+        version: int64_to_uint64(row.try_get("version").map_err(map_sqlx)?, "version")?,
         created_at: timestamp_to_rfc3339(row.try_get("created_at").map_err(map_sqlx)?),
         updated_at: timestamp_to_rfc3339(row.try_get("updated_at").map_err(map_sqlx)?),
         deleted_at: row
@@ -54,12 +61,15 @@ fn row_to_package(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillPackageRecor
 
 fn row_to_skill(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillRecord> {
     Ok(SkillRecord {
-        id: row.try_get::<i64, _>("id").map_err(map_sqlx)? as u64,
+        id: int64_to_uint64(row.try_get("id").map_err(map_sqlx)?, "id")?,
         uuid: row.try_get("uuid").map_err(map_sqlx)?,
-        tenant_id: row.try_get::<i64, _>("tenant_id").map_err(map_sqlx)? as u64,
-        organization_id: row.try_get::<i64, _>("organization_id").map_err(map_sqlx)? as u64,
+        tenant_id: int64_to_uint64(row.try_get("tenant_id").map_err(map_sqlx)?, "tenant_id")?,
+        organization_id: int64_to_uint64(
+            row.try_get("organization_id").map_err(map_sqlx)?,
+            "organization_id",
+        )?,
         skill_key: row.try_get("skill_key").map_err(map_sqlx)?,
-        package_id: row.try_get::<i64, _>("package_id").map_err(map_sqlx)? as u64,
+        package_id: int64_to_uint64(row.try_get("package_id").map_err(map_sqlx)?, "package_id")?,
         name: row.try_get("display_name").map_err(map_sqlx)?,
         summary: row.try_get("summary").map_err(map_sqlx)?,
         description: row.try_get("description").map_err(map_sqlx)?,
@@ -73,12 +83,15 @@ fn row_to_skill(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillRecord> {
         )?,
         enabled: row.try_get::<i16, _>("enabled").map_err(map_sqlx)? != 0,
         featured: row.try_get::<i16, _>("featured").map_err(map_sqlx)? != 0,
-        install_count: row.try_get::<i64, _>("install_count").map_err(map_sqlx)? as u64,
+        install_count: int64_to_uint64(
+            row.try_get("install_count").map_err(map_sqlx)?,
+            "install_count",
+        )?,
         tags: string_list_from_json(
             &row.try_get::<String, _>("tags_json").map_err(map_sqlx)?,
             "tags_json",
         )?,
-        version: row.try_get::<i64, _>("version").map_err(map_sqlx)? as u64,
+        version: int64_to_uint64(row.try_get("version").map_err(map_sqlx)?, "version")?,
         created_at: timestamp_to_rfc3339(row.try_get("created_at").map_err(map_sqlx)?),
         updated_at: timestamp_to_rfc3339(row.try_get("updated_at").map_err(map_sqlx)?),
         deleted_at: row
@@ -90,23 +103,26 @@ fn row_to_skill(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillRecord> {
 
 fn row_to_category(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillCategoryRecord> {
     Ok(SkillCategoryRecord {
-        id: row.try_get::<i64, _>("id").map_err(map_sqlx)? as u64,
+        id: int64_to_uint64(row.try_get("id").map_err(map_sqlx)?, "id")?,
         uuid: row.try_get("uuid").map_err(map_sqlx)?,
-        tenant_id: row.try_get::<i64, _>("tenant_id").map_err(map_sqlx)? as u64,
-        organization_id: row.try_get::<i64, _>("organization_id").map_err(map_sqlx)? as u64,
+        tenant_id: int64_to_uint64(row.try_get("tenant_id").map_err(map_sqlx)?, "tenant_id")?,
+        organization_id: int64_to_uint64(
+            row.try_get("organization_id").map_err(map_sqlx)?,
+            "organization_id",
+        )?,
         category_type: row.try_get("category_type").map_err(map_sqlx)?,
         code: row.try_get("code").map_err(map_sqlx)?,
         name: row.try_get("name").map_err(map_sqlx)?,
         description: row.try_get("description").map_err(map_sqlx)?,
-        parent_id: row
-            .try_get::<Option<i64>, _>("parent_id")
-            .map_err(map_sqlx)?
-            .map(|value| value as u64),
+        parent_id: optional_int64_to_uint64(
+            row.try_get("parent_id").map_err(map_sqlx)?,
+            "parent_id",
+        )?,
         sort_weight: row.try_get("sort_weight").map_err(map_sqlx)?,
         permission_code: row.try_get("permission_code").map_err(map_sqlx)?,
         visible: row.try_get::<i16, _>("visible").map_err(map_sqlx)? != 0,
         status: row.try_get("status").map_err(map_sqlx)?,
-        version: row.try_get::<i64, _>("version").map_err(map_sqlx)? as u64,
+        version: int64_to_uint64(row.try_get("version").map_err(map_sqlx)?, "version")?,
         created_at: timestamp_to_rfc3339(row.try_get("created_at").map_err(map_sqlx)?),
         updated_at: timestamp_to_rfc3339(row.try_get("updated_at").map_err(map_sqlx)?),
     })
@@ -114,16 +130,19 @@ fn row_to_category(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillCategoryRec
 
 fn row_to_capability(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillCapabilityRecord> {
     Ok(SkillCapabilityRecord {
-        id: row.try_get::<i64, _>("id").map_err(map_sqlx)? as u64,
+        id: int64_to_uint64(row.try_get("id").map_err(map_sqlx)?, "id")?,
         uuid: row.try_get("uuid").map_err(map_sqlx)?,
-        tenant_id: row.try_get::<i64, _>("tenant_id").map_err(map_sqlx)? as u64,
-        organization_id: row.try_get::<i64, _>("organization_id").map_err(map_sqlx)? as u64,
+        tenant_id: int64_to_uint64(row.try_get("tenant_id").map_err(map_sqlx)?, "tenant_id")?,
+        organization_id: int64_to_uint64(
+            row.try_get("organization_id").map_err(map_sqlx)?,
+            "organization_id",
+        )?,
         capability_key: row.try_get("capability_key").map_err(map_sqlx)?,
         display_name: row.try_get("display_name").map_err(map_sqlx)?,
         description: row.try_get("description").map_err(map_sqlx)?,
         risk_level: capability_risk(&row.try_get::<String, _>("risk_level").map_err(map_sqlx)?)?,
         status: row.try_get("status").map_err(map_sqlx)?,
-        version: row.try_get::<i64, _>("version").map_err(map_sqlx)? as u64,
+        version: int64_to_uint64(row.try_get("version").map_err(map_sqlx)?, "version")?,
         created_at: timestamp_to_rfc3339(row.try_get("created_at").map_err(map_sqlx)?),
         updated_at: timestamp_to_rfc3339(row.try_get("updated_at").map_err(map_sqlx)?),
     })
@@ -131,17 +150,17 @@ fn row_to_capability(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillCapabilit
 
 fn row_to_artifact(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillArtifactRecord> {
     Ok(SkillArtifactRecord {
-        id: row.try_get::<i64, _>("id").map_err(map_sqlx)? as u64,
+        id: int64_to_uint64(row.try_get("id").map_err(map_sqlx)?, "id")?,
         uuid: row.try_get("uuid").map_err(map_sqlx)?,
-        tenant_id: row.try_get::<i64, _>("tenant_id").map_err(map_sqlx)? as u64,
-        package_id: row.try_get::<i64, _>("package_id").map_err(map_sqlx)? as u64,
+        tenant_id: int64_to_uint64(row.try_get("tenant_id").map_err(map_sqlx)?, "tenant_id")?,
+        package_id: int64_to_uint64(row.try_get("package_id").map_err(map_sqlx)?, "package_id")?,
         version_label: row.try_get("version_label").map_err(map_sqlx)?,
         artifact_ref: row.try_get("artifact_ref").map_err(map_sqlx)?,
         checksum_sha256: row.try_get("checksum_sha256").map_err(map_sqlx)?,
-        size_bytes: row
-            .try_get::<Option<i64>, _>("size_bytes")
-            .map_err(map_sqlx)?
-            .map(|value| value as u64),
+        size_bytes: optional_int64_to_uint64(
+            row.try_get("size_bytes").map_err(map_sqlx)?,
+            "size_bytes",
+        )?,
         invocation_kind: invocation(
             &row.try_get::<String, _>("invocation_kind")
                 .map_err(map_sqlx)?,
@@ -188,25 +207,29 @@ fn row_to_artifact(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillArtifactRec
 
 fn row_to_installation(row: &sqlx::postgres::PgRow) -> SkillsResult<SkillInstallationRecord> {
     Ok(SkillInstallationRecord {
-        id: row.try_get::<i64, _>("id").map_err(map_sqlx)? as u64,
+        id: int64_to_uint64(row.try_get("id").map_err(map_sqlx)?, "id")?,
         uuid: row.try_get("uuid").map_err(map_sqlx)?,
-        tenant_id: row.try_get::<i64, _>("tenant_id").map_err(map_sqlx)? as u64,
-        organization_id: row.try_get::<i64, _>("organization_id").map_err(map_sqlx)? as u64,
+        tenant_id: int64_to_uint64(row.try_get("tenant_id").map_err(map_sqlx)?, "tenant_id")?,
+        organization_id: int64_to_uint64(
+            row.try_get("organization_id").map_err(map_sqlx)?,
+            "organization_id",
+        )?,
         subject_kind: subject_kind(&row.try_get::<String, _>("subject_kind").map_err(map_sqlx)?)?,
-        subject_id: row.try_get::<i64, _>("subject_id").map_err(map_sqlx)? as u64,
-        skill_id: row.try_get::<i64, _>("skill_id").map_err(map_sqlx)? as u64,
-        package_id: row.try_get::<i64, _>("package_id").map_err(map_sqlx)? as u64,
-        artifact_id: row.try_get::<i64, _>("artifact_id").map_err(map_sqlx)? as u64,
-        installed_by_user_id: row
-            .try_get::<i64, _>("installed_by_user_id")
-            .map_err(map_sqlx)? as u64,
+        subject_id: int64_to_uint64(row.try_get("subject_id").map_err(map_sqlx)?, "subject_id")?,
+        skill_id: int64_to_uint64(row.try_get("skill_id").map_err(map_sqlx)?, "skill_id")?,
+        package_id: int64_to_uint64(row.try_get("package_id").map_err(map_sqlx)?, "package_id")?,
+        artifact_id: int64_to_uint64(row.try_get("artifact_id").map_err(map_sqlx)?, "artifact_id")?,
+        installed_by_user_id: int64_to_uint64(
+            row.try_get("installed_by_user_id").map_err(map_sqlx)?,
+            "installed_by_user_id",
+        )?,
         install_status: row.try_get("install_status").map_err(map_sqlx)?,
         enabled: row.try_get::<i16, _>("enabled").map_err(map_sqlx)? != 0,
         config: json_value_from_text(
             &row.try_get::<String, _>("config_json").map_err(map_sqlx)?,
             "config_json",
         )?,
-        version: row.try_get::<i64, _>("version").map_err(map_sqlx)? as u64,
+        version: int64_to_uint64(row.try_get("version").map_err(map_sqlx)?, "version")?,
         installed_at: timestamp_to_rfc3339(row.try_get("installed_at").map_err(map_sqlx)?),
         updated_at: timestamp_to_rfc3339(row.try_get("updated_at").map_err(map_sqlx)?),
     })
@@ -282,7 +305,7 @@ pub async fn list_skill_packages_page(
          ORDER BY featured DESC, sort_weight DESC, updated_at DESC, code ASC LIMIT $3 OFFSET $4"
     );
     let rows = sqlx::query(&sql)
-        .bind(tenant_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(search_pattern(keyword))
         .bind(params.page_size)
         .bind(params.offset)
@@ -301,8 +324,8 @@ pub async fn get_skill_package(
         "{PACKAGE_SELECT} WHERE p.tenant_id = $1 AND p.id = $2 AND p.deleted_at IS NULL LIMIT 1"
     );
     let row = sqlx::query(&sql)
-        .bind(tenant_id as i64)
-        .bind(package_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(package_id, "package_id")?)
         .fetch_optional(pool)
         .await
         .map_err(map_sqlx)?;
@@ -332,9 +355,9 @@ pub async fn list_marketplace_skill_packages_page(
          ORDER BY featured DESC, sort_weight DESC, updated_at DESC, code ASC LIMIT $5 OFFSET $6"
     );
     let rows = sqlx::query(&sql)
-        .bind(tenant_id as i64)
-        .bind(organization_id as i64)
-        .bind(user_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(organization_id, "organization_id")?)
+        .bind(uint64_to_int64(user_id, "user_id")?)
         .bind(search_pattern(keyword))
         .bind(params.page_size)
         .bind(params.offset)
@@ -360,10 +383,10 @@ pub async fn get_marketplace_skill_package(
          LIMIT 1"
     );
     let row = sqlx::query(&sql)
-        .bind(tenant_id as i64)
-        .bind(package_id as i64)
-        .bind(organization_id as i64)
-        .bind(user_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(package_id, "package_id")?)
+        .bind(uint64_to_int64(organization_id, "organization_id")?)
+        .bind(uint64_to_int64(user_id, "user_id")?)
         .fetch_optional(pool)
         .await
         .map_err(map_sqlx)?;
@@ -394,9 +417,9 @@ pub async fn list_skills_page(
          ORDER BY featured DESC, updated_at DESC, skill_key ASC LIMIT $5 OFFSET $6"
     );
     let rows = sqlx::query(&sql)
-        .bind(tenant_id as i64)
-        .bind(organization_id as i64)
-        .bind(user_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(organization_id, "organization_id")?)
+        .bind(uint64_to_int64(user_id, "user_id")?)
         .bind(search_pattern(keyword))
         .bind(params.page_size)
         .bind(params.offset)
@@ -423,10 +446,10 @@ pub async fn get_skill(
          LIMIT 1"
     );
     let row = sqlx::query(&sql)
-        .bind(tenant_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(skill_key)
-        .bind(organization_id as i64)
-        .bind(user_id as i64)
+        .bind(uint64_to_int64(organization_id, "organization_id")?)
+        .bind(uint64_to_int64(user_id, "user_id")?)
         .fetch_optional(pool)
         .await
         .map_err(map_sqlx)?;
@@ -460,8 +483,8 @@ pub async fn get_category(
          FROM ai_skill_category
          WHERE id=$1 AND tenant_id IN (0,$2) AND deleted_at IS NULL LIMIT 1",
     )
-    .bind(category_id as i64)
-    .bind(tenant_id as i64)
+    .bind(uint64_to_int64(category_id, "category_id")?)
+    .bind(uint64_to_int64(tenant_id, "tenant_id")?)
     .fetch_optional(pool)
     .await
     .map_err(map_sqlx)?;
@@ -490,7 +513,7 @@ pub async fn list_categories_page(
     );
     let rows = sqlx::query(&sql)
         .bind(category_type)
-        .bind(tenant_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(search_pattern(keyword))
         .bind(params.page_size)
         .bind(params.offset)
@@ -517,13 +540,13 @@ pub async fn upsert_category(
         )
         .bind(next_id(id_generator)?)
         .bind(new_uuid())
-        .bind(record.tenant_id as i64)
-        .bind(record.organization_id as i64)
+        .bind(uint64_to_int64(record.tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(record.organization_id, "organization_id")?)
         .bind(&record.category_type)
         .bind(&record.code)
         .bind(&record.name)
         .bind(&record.description)
-        .bind(record.parent_id.map(|value| value as i64))
+        .bind(optional_uint64_to_int64(record.parent_id, "parent_id")?)
         .bind(record.sort_weight)
         .bind(&record.permission_code)
         .bind(i16::from(record.visible))
@@ -541,12 +564,12 @@ pub async fn upsert_category(
                        description, parent_id, sort_weight, permission_code, visible, status,
                        version, created_at, updated_at",
         )
-        .bind(record.id as i64)
-        .bind(record.tenant_id as i64)
-        .bind(record.version as i64)
+        .bind(uint64_to_int64(record.id, "id")?)
+        .bind(uint64_to_int64(record.tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(record.version, "version")?)
         .bind(&record.name)
         .bind(&record.description)
-        .bind(record.parent_id.map(|value| value as i64))
+        .bind(optional_uint64_to_int64(record.parent_id, "parent_id")?)
         .bind(record.sort_weight)
         .bind(&record.permission_code)
         .bind(i16::from(record.visible))
@@ -575,7 +598,7 @@ pub async fn list_capabilities_page(
          ORDER BY capability_key ASC LIMIT $3 OFFSET $4"
     );
     let rows = sqlx::query(&sql)
-        .bind(tenant_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(search_pattern(keyword))
         .bind(params.page_size)
         .bind(params.offset)
@@ -596,8 +619,8 @@ pub async fn get_capability(
          FROM ai_skill_capability
          WHERE id=$1 AND tenant_id IN (0,$2) AND deleted_at IS NULL LIMIT 1",
     )
-    .bind(capability_id as i64)
-    .bind(tenant_id as i64)
+    .bind(uint64_to_int64(capability_id, "capability_id")?)
+    .bind(uint64_to_int64(tenant_id, "tenant_id")?)
     .fetch_optional(pool)
     .await
     .map_err(map_sqlx)?;
@@ -623,8 +646,8 @@ pub async fn upsert_capability(
         )
         .bind(next_id(id_generator)?)
         .bind(new_uuid())
-        .bind(record.tenant_id as i64)
-        .bind(record.organization_id as i64)
+        .bind(uint64_to_int64(record.tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(record.organization_id, "organization_id")?)
         .bind(&record.capability_key)
         .bind(&record.display_name)
         .bind(&record.description)
@@ -641,9 +664,9 @@ pub async fn upsert_capability(
              RETURNING id, uuid, tenant_id, organization_id, capability_key, display_name,
                        description, risk_level, status, version, created_at, updated_at",
         )
-        .bind(record.id as i64)
-        .bind(record.tenant_id as i64)
-        .bind(record.version as i64)
+        .bind(uint64_to_int64(record.id, "id")?)
+        .bind(uint64_to_int64(record.tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(record.version, "version")?)
         .bind(&record.display_name)
         .bind(&record.description)
         .bind(record.risk_level.as_str())
@@ -668,8 +691,8 @@ pub async fn list_artifacts_page(
          ORDER BY created_at DESC, id DESC LIMIT $3 OFFSET $4"
     );
     let rows = sqlx::query(&sql)
-        .bind(tenant_id as i64)
-        .bind(package_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(package_id, "package_id")?)
         .bind(params.page_size)
         .bind(params.offset)
         .fetch_all(pool)
@@ -703,10 +726,10 @@ pub async fn list_installable_artifacts_page(
          ORDER BY published_at DESC, created_at DESC, id DESC LIMIT $5 OFFSET $6"
     );
     let rows = sqlx::query(&sql)
-        .bind(tenant_id as i64)
-        .bind(package_id as i64)
-        .bind(organization_id as i64)
-        .bind(user_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(package_id, "package_id")?)
+        .bind(uint64_to_int64(organization_id, "organization_id")?)
+        .bind(uint64_to_int64(user_id, "user_id")?)
         .bind(params.page_size)
         .bind(params.offset)
         .fetch_all(pool)
@@ -724,13 +747,13 @@ pub async fn create_artifact(
     ensure_package(&mut tx, artifact.tenant_id, artifact.package_id).await?;
     let artifact_id = insert_artifact(&mut tx, id_generator, artifact).await?;
     tx.commit().await.map_err(map_sqlx)?;
-    get_artifact(pool, artifact_id as u64).await
+    get_artifact(pool, int64_to_uint64(artifact_id, "artifact_id")?).await
 }
 
 async fn get_artifact(pool: &PgPool, artifact_id: u64) -> SkillsResult<SkillArtifactRecord> {
     let sql = format!("{ARTIFACT_SELECT} WHERE a.id=$1 LIMIT 1");
     let row = sqlx::query(&sql)
-        .bind(artifact_id as i64)
+        .bind(uint64_to_int64(artifact_id, "artifact_id")?)
         .fetch_optional(pool)
         .await
         .map_err(map_sqlx)?;
@@ -759,9 +782,9 @@ pub async fn create_skill_package(
     )
     .bind(package_id)
     .bind(new_uuid())
-    .bind(record.tenant_id as i64)
-    .bind(record.organization_id as i64)
-    .bind(record.owner_user_id as i64)
+    .bind(uint64_to_int64(record.tenant_id, "tenant_id")?)
+    .bind(uint64_to_int64(record.organization_id, "organization_id")?)
+    .bind(uint64_to_int64(record.owner_user_id, "owner_user_id")?)
     .bind(&record.package_key)
     .bind(&record.code)
     .bind(&record.display_name)
@@ -783,8 +806,8 @@ pub async fn create_skill_package(
     )
     .bind(skill_id)
     .bind(new_uuid())
-    .bind(record.tenant_id as i64)
-    .bind(record.organization_id as i64)
+    .bind(uint64_to_int64(record.tenant_id, "tenant_id")?)
+    .bind(uint64_to_int64(record.organization_id, "organization_id")?)
     .bind(&record.skill_key)
     .bind(package_id)
     .bind(package_market_status(record.status))
@@ -803,10 +826,15 @@ pub async fn create_skill_package(
     )
     .await?;
     initial_artifact.tenant_id = record.tenant_id;
-    initial_artifact.package_id = package_id as u64;
+    initial_artifact.package_id = int64_to_uint64(package_id, "package_id")?;
     insert_artifact(&mut tx, id_generator, initial_artifact).await?;
     tx.commit().await.map_err(map_sqlx)?;
-    get_skill_package(pool, record.tenant_id, package_id as u64).await
+    get_skill_package(
+        pool,
+        record.tenant_id,
+        int64_to_uint64(package_id, "package_id")?,
+    )
+    .await
 }
 
 pub async fn update_skill_package(
@@ -822,9 +850,9 @@ pub async fn update_skill_package(
                 version=version+1, updated_at=CURRENT_TIMESTAMP
          WHERE id=$1 AND tenant_id=$2 AND version=$3 AND deleted_at IS NULL",
     )
-    .bind(record.id as i64)
-    .bind(record.tenant_id as i64)
-    .bind(record.version as i64)
+    .bind(uint64_to_int64(record.id, "id")?)
+    .bind(uint64_to_int64(record.tenant_id, "tenant_id")?)
+    .bind(uint64_to_int64(record.version, "version")?)
     .bind(&record.display_name)
     .bind(&record.summary)
     .bind(&record.description)
@@ -846,8 +874,8 @@ pub async fn update_skill_package(
                 version=version+1, updated_at=CURRENT_TIMESTAMP
          WHERE package_id=$1 AND tenant_id=$2 AND deleted_at IS NULL RETURNING id",
     )
-    .bind(record.id as i64)
-    .bind(record.tenant_id as i64)
+    .bind(uint64_to_int64(record.id, "id")?)
+    .bind(uint64_to_int64(record.tenant_id, "tenant_id")?)
     .bind(package_market_status(record.status))
     .bind(package_review_status(record.status))
     .bind(i16::from(record.status == SkillLifecycleStatus::Active))
@@ -886,7 +914,7 @@ async fn replace_category_bindings(
                AND status=1 AND deleted_at IS NULL
              ORDER BY tenant_id DESC LIMIT 1",
         )
-        .bind(tenant_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(code)
         .fetch_optional(&mut **tx)
         .await
@@ -897,7 +925,7 @@ async fn replace_category_bindings(
              VALUES ($1,$2,$3,$4)",
         )
         .bind(next_id(id_generator)?)
-        .bind(tenant_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(skill_id)
         .bind(category_id)
         .execute(&mut **tx)
@@ -916,8 +944,8 @@ async fn ensure_package(
         "SELECT EXISTS(SELECT 1 FROM ai_agent_skill_package
          WHERE id=$1 AND tenant_id=$2 AND deleted_at IS NULL)",
     )
-    .bind(package_id as i64)
-    .bind(tenant_id as i64)
+    .bind(uint64_to_int64(package_id, "package_id")?)
+    .bind(uint64_to_int64(tenant_id, "tenant_id")?)
     .fetch_one(&mut **tx)
     .await
     .map_err(map_sqlx)?;
@@ -949,12 +977,12 @@ async fn insert_artifact(
     )
     .bind(artifact_id)
     .bind(new_uuid())
-    .bind(artifact.tenant_id as i64)
-    .bind(artifact.package_id as i64)
+    .bind(uint64_to_int64(artifact.tenant_id, "tenant_id")?)
+    .bind(uint64_to_int64(artifact.package_id, "package_id")?)
     .bind(&artifact.version_label)
     .bind(&artifact.artifact_ref)
     .bind(&artifact.checksum_sha256)
-    .bind(artifact.size_bytes.map(|value| value as i64))
+    .bind(optional_uint64_to_int64(artifact.size_bytes, "size_bytes")?)
     .bind(artifact.invocation_kind.as_str())
     .bind(&artifact.entrypoint)
     .bind(input_schema_json)
@@ -972,7 +1000,7 @@ async fn insert_artifact(
              WHERE tenant_id IN (0,$1) AND capability_key=$2 AND status=1 AND deleted_at IS NULL
              ORDER BY tenant_id DESC LIMIT 1",
         )
-        .bind(artifact.tenant_id as i64)
+        .bind(uint64_to_int64(artifact.tenant_id, "tenant_id")?)
         .bind(&key)
         .fetch_optional(&mut **tx)
         .await
@@ -983,7 +1011,7 @@ async fn insert_artifact(
              (id, tenant_id, artifact_id, capability_id, required) VALUES ($1,$2,$3,$4,1)",
         )
         .bind(next_id(id_generator)?)
-        .bind(artifact.tenant_id as i64)
+        .bind(uint64_to_int64(artifact.tenant_id, "tenant_id")?)
         .bind(artifact_id)
         .bind(capability_id)
         .execute(&mut **tx)
@@ -1004,8 +1032,8 @@ pub async fn delete_skill_package(
                 deleted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP
          WHERE id=$1 AND tenant_id=$2 AND deleted_at IS NULL",
     )
-    .bind(package_id as i64)
-    .bind(tenant_id as i64)
+    .bind(uint64_to_int64(package_id, "package_id")?)
+    .bind(uint64_to_int64(tenant_id, "tenant_id")?)
     .execute(&mut *tx)
     .await
     .map_err(map_sqlx)?;
@@ -1019,8 +1047,8 @@ pub async fn delete_skill_package(
                 deleted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP
          WHERE package_id=$1 AND tenant_id=$2 AND deleted_at IS NULL",
     )
-    .bind(package_id as i64)
-    .bind(tenant_id as i64)
+    .bind(uint64_to_int64(package_id, "package_id")?)
+    .bind(uint64_to_int64(tenant_id, "tenant_id")?)
     .execute(&mut *tx)
     .await
     .map_err(map_sqlx)?;
@@ -1029,8 +1057,8 @@ pub async fn delete_skill_package(
                 version=version+1, deleted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP
          WHERE package_id=$1 AND tenant_id=$2 AND deleted_at IS NULL",
     )
-    .bind(package_id as i64)
-    .bind(tenant_id as i64)
+    .bind(uint64_to_int64(package_id, "package_id")?)
+    .bind(uint64_to_int64(tenant_id, "tenant_id")?)
     .execute(&mut *tx)
     .await
     .map_err(map_sqlx)?;
@@ -1053,9 +1081,9 @@ pub async fn install_skill(
            AND s.enabled=1 AND s.market_status='published' AND s.review_status='approved'
            AND s.deleted_at IS NULL LIMIT 1 FOR SHARE OF p, a",
     )
-    .bind(record.package_id as i64)
-    .bind(record.tenant_id as i64)
-    .bind(record.artifact_id as i64)
+    .bind(uint64_to_int64(record.package_id, "package_id")?)
+    .bind(uint64_to_int64(record.tenant_id, "tenant_id")?)
+    .bind(uint64_to_int64(record.artifact_id, "artifact_id")?)
     .fetch_optional(&mut *tx)
     .await
     .map_err(map_sqlx)?
@@ -1074,13 +1102,16 @@ pub async fn install_skill(
     )
     .bind(candidate_id)
     .bind(new_uuid())
-    .bind(record.tenant_id as i64)
-    .bind(record.organization_id as i64)
+    .bind(uint64_to_int64(record.tenant_id, "tenant_id")?)
+    .bind(uint64_to_int64(record.organization_id, "organization_id")?)
     .bind(record.subject_kind.as_str())
-    .bind(record.subject_id as i64)
-    .bind(record.package_id as i64)
-    .bind(record.artifact_id as i64)
-    .bind(record.installed_by_user_id as i64)
+    .bind(uint64_to_int64(record.subject_id, "subject_id")?)
+    .bind(uint64_to_int64(record.package_id, "package_id")?)
+    .bind(uint64_to_int64(record.artifact_id, "artifact_id")?)
+    .bind(uint64_to_int64(
+        record.installed_by_user_id,
+        "installed_by_user_id",
+    )?)
     .bind(&config_json)
     .execute(&mut *tx)
     .await
@@ -1115,13 +1146,16 @@ pub async fn install_skill(
                )
              RETURNING id",
         )
-        .bind(record.tenant_id as i64)
-        .bind(record.organization_id as i64)
+        .bind(uint64_to_int64(record.tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(record.organization_id, "organization_id")?)
         .bind(record.subject_kind.as_str())
-        .bind(record.subject_id as i64)
-        .bind(record.package_id as i64)
-        .bind(record.artifact_id as i64)
-        .bind(record.installed_by_user_id as i64)
+        .bind(uint64_to_int64(record.subject_id, "subject_id")?)
+        .bind(uint64_to_int64(record.package_id, "package_id")?)
+        .bind(uint64_to_int64(record.artifact_id, "artifact_id")?)
+        .bind(uint64_to_int64(
+            record.installed_by_user_id,
+            "installed_by_user_id",
+        )?)
         .bind(&config_json)
         .bind(skill_id)
         .fetch_optional(&mut *tx)
@@ -1134,7 +1168,7 @@ pub async fn install_skill(
         })?
     };
     tx.commit().await.map_err(map_sqlx)?;
-    get_installation(pool, installation_id as u64).await
+    get_installation(pool, int64_to_uint64(installation_id, "installation_id")?).await
 }
 
 async fn get_installation(
@@ -1143,7 +1177,7 @@ async fn get_installation(
 ) -> SkillsResult<SkillInstallationRecord> {
     let sql = format!("{INSTALLATION_SELECT} WHERE i.id=$1 AND i.deleted_at IS NULL LIMIT 1");
     let row = sqlx::query(&sql)
-        .bind(installation_id as i64)
+        .bind(uint64_to_int64(installation_id, "installation_id")?)
         .fetch_optional(pool)
         .await
         .map_err(map_sqlx)?;
@@ -1172,10 +1206,10 @@ pub async fn list_installations_page(
          ORDER BY updated_at DESC, id DESC LIMIT $5 OFFSET $6"
     );
     let rows = sqlx::query(&sql)
-        .bind(tenant_id as i64)
-        .bind(organization_id as i64)
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(organization_id, "organization_id")?)
         .bind(subject_kind_value)
-        .bind(subject_id as i64)
+        .bind(uint64_to_int64(subject_id, "subject_id")?)
         .bind(params.page_size)
         .bind(params.offset)
         .fetch_all(pool)

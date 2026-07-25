@@ -45,6 +45,26 @@
       "purpose": "Standalone ingress and operational endpoints."
     },
     {
+      "file": "WEB_FRAMEWORK_SPEC.md",
+      "path": "../../../sdkwork-specs/WEB_FRAMEWORK_SPEC.md",
+      "purpose": "Single process-wide request pipeline."
+    },
+    {
+      "file": "HEALTH_CHECK_SPEC.md",
+      "path": "../../../sdkwork-specs/HEALTH_CHECK_SPEC.md",
+      "purpose": "Canonical liveness and readiness responses."
+    },
+    {
+      "file": "OBSERVABILITY_SPEC.md",
+      "path": "../../../sdkwork-specs/OBSERVABILITY_SPEC.md",
+      "purpose": "Prometheus endpoint and process dimensions."
+    },
+    {
+      "file": "SECURITY_SPEC.md",
+      "path": "../../../sdkwork-specs/SECURITY_SPEC.md",
+      "purpose": "Dependency-error redaction and secure ingress defaults."
+    },
+    {
       "file": "DATABASE_SPEC_PROCESS_SHARED_POOL.md",
       "path": "../../../sdkwork-specs/DATABASE_SPEC_PROCESS_SHARED_POOL.md",
       "purpose": "Process pool enablement before database bootstrap."
@@ -73,12 +93,24 @@
         "target": "sdkwork_api_skills_assembly::assemble_api_router_from_env"
       },
       {
+        "name": "webFramework",
+        "export": ".",
+        "target": "sdkwork_web_axum::WebFrameworkLayer"
+      },
+      {
+        "name": "infrastructureRoutes",
+        "export": ".",
+        "target": "sdkwork_web_bootstrap::mount_infra_routes"
+      },
+      {
         "name": "processDatabasePool",
         "export": ".",
         "target": "sdkwork_database_sqlx::enable_process_database_pool_from_env"
       }
     ],
     "runtimeEntrypoints": [
+      "sdkwork_api_skills_standalone_gateway::build_app_from_env",
+      "sdkwork_api_skills_standalone_gateway::build_app_from_assembly",
       "sdkwork_api_skills_standalone_gateway::serve_standalone_gateway",
       "sdkwork-api-skills-standalone-gateway"
     ],
@@ -89,12 +121,21 @@
     "dependencyApiSurfaces": [],
     "events": [],
     "configKeys": [
-      "SDKWORK_SKILLS_APPLICATION_PUBLIC_INGRESS_BIND"
+      "SDKWORK_SKILLS_APPLICATION_PUBLIC_INGRESS_BIND",
+      "SDKWORK_ENVIRONMENT",
+      "SDKWORK_SKILLS_ENVIRONMENT",
+      "SDKWORK_DEPLOYMENT_PROFILE",
+      "SDKWORK_SKILLS_DEPLOYMENT_PROFILE",
+      "SDKWORK_RUNTIME_TARGET",
+      "SDKWORK_SKILLS_RUNTIME_TARGET",
+      "SDKWORK_CORS_ALLOWED_ORIGINS",
+      "SDKWORK_SKILLS_CORS_ALLOWED_ORIGINS"
     ]
   },
   "verification": {
     "commands": [
       "cargo check -p sdkwork-api-skills-standalone-gateway",
+      "cargo test -p sdkwork-api-skills-standalone-gateway",
       "node ../sdkwork-specs/tools/check-process-shared-database-pool.mjs --root ."
     ]
   }

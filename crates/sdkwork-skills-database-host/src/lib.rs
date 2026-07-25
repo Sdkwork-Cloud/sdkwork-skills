@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use sdkwork_database_config::DatabaseConfig;
+use sdkwork_database_config::{DatabaseConfig, DatabaseEngine};
 use sdkwork_database_id::{
     NodeAllocatorConfig, NodeLease, SnowflakeIdGenerator, SnowflakeNodeAllocator,
 };
@@ -15,6 +15,7 @@ const PROCESS_SERVICE_NAME: &str = "sdkwork-skills";
 #[derive(Clone)]
 pub struct SkillsDatabaseHost {
     pool: DatabasePool,
+    postgres_pool: sqlx::PgPool,
     module: Arc<DefaultDatabaseModule>,
     id_generator: SnowflakeIdGenerator,
     node_lease: NodeLease,
@@ -23,6 +24,10 @@ pub struct SkillsDatabaseHost {
 impl SkillsDatabaseHost {
     pub fn pool(&self) -> &DatabasePool {
         &self.pool
+    }
+
+    pub fn postgres_pool(&self) -> &sqlx::PgPool {
+        &self.postgres_pool
     }
 
     pub fn module(&self) -> Arc<DefaultDatabaseModule> {
@@ -39,6 +44,10 @@ impl SkillsDatabaseHost {
 }
 
 pub async fn bootstrap_skills_database(pool: DatabasePool) -> Result<SkillsDatabaseHost, String> {
+    let postgres_pool = pool
+        .as_postgres()
+        .cloned()
+        .ok_or_else(|| unsupported_database_engine(pool.engine()))?;
     let app_root = resolve_app_root();
     let module = Arc::new(
         DefaultDatabaseModule::from_app_root(&app_root)
@@ -70,6 +79,7 @@ pub async fn bootstrap_skills_database(pool: DatabasePool) -> Result<SkillsDatab
 
     Ok(SkillsDatabaseHost {
         pool,
+        postgres_pool,
         module,
         id_generator,
         node_lease,
@@ -80,10 +90,25 @@ pub async fn bootstrap_skills_database_from_env() -> Result<SkillsDatabaseHost, 
     let _ = dotenvy::dotenv();
     let config = DatabaseConfig::from_env("SKILLS")
         .map_err(|error| format!("read skills database config failed: {error}"))?;
+    require_authoritative_postgres_config(&config)?;
     let pool = create_pool_from_config(config)
         .await
         .map_err(|error| format!("create skills database pool failed: {error}"))?;
     bootstrap_skills_database(pool).await
+}
+
+fn require_authoritative_postgres_config(config: &DatabaseConfig) -> Result<(), String> {
+    if config.engine == DatabaseEngine::Postgres {
+        return Ok(());
+    }
+    Err(unsupported_database_engine(config.engine))
+}
+
+fn unsupported_database_engine(engine: DatabaseEngine) -> String {
+    format!(
+        "skills authoritative-server database requires PostgreSQL; configured engine is {}",
+        engine
+    )
 }
 
 fn resolve_app_root() -> PathBuf {
@@ -95,4 +120,34 @@ fn resolve_app_root() -> PathBuf {
                 .canonicalize()
                 .unwrap_or_else(|_| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../.."))
         })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn authoritative_config_accepts_postgres() {
+        let config = DatabaseConfig {
+            engine: DatabaseEngine::Postgres,
+            ..Default::default()
+        };
+
+        assert_eq!(require_authoritative_postgres_config(&config), Ok(()));
+    }
+
+    #[test]
+    fn authoritative_config_rejects_non_postgres() {
+        let config = DatabaseConfig {
+            engine: DatabaseEngine::Sqlite,
+            ..Default::default()
+        };
+
+        let error = require_authoritative_postgres_config(&config)
+            .expect_err("non-PostgreSQL config must fail closed");
+        assert_eq!(
+            error,
+            "skills authoritative-server database requires PostgreSQL; configured engine is sqlite"
+        );
+    }
 }

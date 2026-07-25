@@ -14,8 +14,15 @@ path = "src/bin/app_main.rs"
 [dependencies]
 sdkwork-api-skills-assembly.workspace = true
 sdkwork-database-sqlx.workspace = true
+sdkwork-iam-web-adapter.workspace = true
+sdkwork-web-axum.workspace = true
+sdkwork-web-bootstrap.workspace = true
+sdkwork-web-core.workspace = true
 axum.workspace = true
-serde_json.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["net", "signal"] }
 tracing.workspace = true
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+serde_json.workspace = true
+tower = { version = "0.5", features = ["util"] }

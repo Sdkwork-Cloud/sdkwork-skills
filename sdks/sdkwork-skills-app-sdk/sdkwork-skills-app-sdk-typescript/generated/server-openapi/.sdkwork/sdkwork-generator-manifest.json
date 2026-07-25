@@ -64,7 +64,7 @@
     },
     {
       "path": "src/api/skills.ts",
-      "sha256": "30448422fc6f5221918b1acaa920110c6211a3a758bccf287a75594fd6ebe3ce"
+      "sha256": "8e314e00437ed2cbd8908a7fcf89cf1e57a0b562ffd471d38e5504e548b8565e"
     },
     {
       "path": "src/auth/index.ts",
@@ -72,7 +72,7 @@
     },
     {
       "path": "src/http/client.ts",
-      "sha256": "902ecbf9b15072c147ac9716f22209cd50b770e517b55d1ce1583671ab4d2c3e"
+      "sha256": "8839b850d906d757356241de57a3fc65beaa03287dad8e52965378164e860a57"
     },
     {
       "path": "src/http/index.ts",
@@ -168,7 +168,7 @@
     },
     {
       "path": "src/types/skill-installation-record.ts",
-      "sha256": "5f507c086c77dbcb403aebc44be6cc64421862888c8d5adadae00cd653fa08ae"
+      "sha256": "dacc35efd6932e4e1bf9c4ce6e228342f60d6daf65f441f087a393025f35bbf5"
     },
     {
       "path": "src/types/skill-installation-resource-data.ts",
@@ -180,7 +180,7 @@
     },
     {
       "path": "src/types/skill-installation-target-command.ts",
-      "sha256": "21a1b07d29d6fb69798f6f4a19db813f3fa3d2c126890319fb1277fba2dc5dfe"
+      "sha256": "9b06b44c4c6d056eadec2521f16941980002465a56888b1a42ad3872e5d5ad64"
     },
     {
       "path": "src/types/skill-installations-list-response.ts",

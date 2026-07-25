@@ -18,14 +18,15 @@ projection layers.
 1. `sdkwork-skills` is the sole write authority for Skill packages,
    marketplace entries, categories, capabilities, immutable artifacts,
    installations, assets, and actions.
-2. The persistence contract contains exactly ten normalized `ai_*` tables on
-   PostgreSQL and SQLite. Relationships with authority semantics use binding
-   tables, not JSON arrays.
+2. The authoritative-server persistence contract contains exactly ten
+   normalized `ai_*` tables on PostgreSQL. Relationships with authority
+   semantics use binding tables, not JSON arrays. Skills owns no client-local
+   database or alternate server store.
 3. An artifact is an immutable release identified by `artifact_id`, version,
    checksum, Drive reference, schemas, entrypoint, and capability bindings.
    Packages do not carry version payloads or a latest-artifact projection.
 4. Installation always selects an explicit published artifact and records an
-   authorized `user`, `workspace`, `project`, or `agent` subject. Persistence
+   authorized IAM `user`/`organization` or Agents `project`/`agent` subject. Persistence
    keeps the package installation slot and selected artifact only; `skill_id`
    is derived through the canonical one-to-one package relation. The active
    subject/package key is the atomic concurrency and idempotency boundary.

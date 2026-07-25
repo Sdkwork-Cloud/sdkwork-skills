@@ -3,7 +3,7 @@ export interface SkillInstallationRecord {
   uuid: string;
   tenantId: string;
   organizationId: string;
-  subjectKind: 'user' | 'workspace' | 'project' | 'agent';
+  subjectKind: 'user' | 'organization' | 'project' | 'agent';
   subjectId: string;
   skillId: string;
   packageId: string;

@@ -12,8 +12,8 @@ projection table, or compatibility period exists.
 
 ## Completed Cutover
 
-1. Materialized the PostgreSQL and SQLite ten-table baseline and database
-   contract.
+1. Materialized the authoritative PostgreSQL ten-table baseline and database
+   contract, with no server fallback or second Skills store.
 2. Replaced user-only installation state with subject-scoped installation of an
    explicit immutable artifact.
 3. Replaced category and capability authority arrays with normalized binding
@@ -22,8 +22,8 @@ projection table, or compatibility period exists.
    families.
 5. Removed consumer-owned Skills routes, DTOs, storage bindings, and local
    schemas; consumers now use the canonical SDK family.
-6. Verified SDK regeneration idempotence, database parity, route/OpenAPI
-   parity, pagination, response envelopes, and authorization tests.
+6. Verified SDK regeneration idempotence, PostgreSQL contract alignment,
+   route/OpenAPI parity, pagination, response envelopes, and authorization tests.
 7. Removed the redundant installation `skill_id` column, retained `skillId` as
    a canonical package join in API output, and added atomic subject/package
    installation conflict handling.

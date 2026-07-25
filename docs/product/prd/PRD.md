@@ -3,7 +3,7 @@
 Status: active
 Owner: SDKWork maintainers
 Application: sdkwork-skills
-Updated: 2026-07-22
+Updated: 2026-07-24
 Specs: REQUIREMENTS_SPEC.md, DOCUMENTATION_SPEC.md
 
 ## 1. Background And Problem
@@ -31,7 +31,7 @@ declarations, subject-scoped installations, and an auditable admin lifecycle.
   capabilities. Artifact bytes remain in Drive and are referenced by canonical
   `drive://` URIs.
 - Ten normalized `ai_*` tables as the sole Skills persistence authority on
-  PostgreSQL and SQLite.
+  PostgreSQL.
 - SDKWork-standard inputs, envelopes, ProblemDetail errors, generated SDKs,
   dual-token authentication, route permissions, and object authorization.
 - Direct consumption of `@sdkwork/skills-app-sdk` and
@@ -48,7 +48,7 @@ declarations, subject-scoped installations, and an auditable admin lifecycle.
 
 - Host-neutral Rust assembly with app-api and backend-api route surfaces.
 - PC React client and generated TypeScript App/Backend SDK families.
-- PostgreSQL and SQLite baselines, shared database pool integration, and
+- Authoritative PostgreSQL baseline, shared process pool integration, and
   store-level pagination.
 
 ## 5. User Scenarios
@@ -58,7 +58,7 @@ declarations, subject-scoped installations, and an auditable admin lifecycle.
 2. An operator publishes and approves the marketplace entry and assigns
    normalized categories and capabilities.
 3. A user browses visible packages, lists installable published artifacts, and
-   installs one exact artifact for an authorized user, workspace, project, or
+   installs one exact artifact for an authorized user, organization, project, or
    agent subject.
 4. Agent runtimes reference canonical installation and artifact identities
    without owning a second Skills database.
@@ -69,8 +69,9 @@ declarations, subject-scoped installations, and an auditable admin lifecycle.
   contract gates.
 - App SDK regeneration is idempotent with 8 owner operations; Backend SDK
   regeneration is idempotent with 16 owner operations.
-- Repository tests cover tenant, user, organization, publication, package
-  lifecycle, optimistic concurrency, and engine parity boundaries.
+- Repository verification covers tenant, user, organization, publication,
+  package lifecycle, optimistic concurrency, and PostgreSQL transaction
+  boundaries.
 
 ## 7. Delivery State
 
@@ -90,6 +91,6 @@ declarations, subject-scoped installations, and an auditable admin lifecycle.
 
 ## 9. Release Gate
 
-Production release requires the database drift check, SDK idempotence check,
-cross-engine repository tests, permission composition checks, and cloud and
-standalone readiness probes to pass from a clean checkout.
+Production release requires the PostgreSQL database drift check, SDK
+idempotence check, repository tests, permission composition checks, and cloud
+and standalone readiness probes to pass from a clean checkout.

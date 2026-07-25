@@ -4,7 +4,8 @@
 
 `sdkwork-skills` is the application root and single write authority for Skills
 marketplace persistence, HTTP APIs, generated SDKs, and the PC browser client.
-Skills data lives in the module's ten `ai_*` PostgreSQL and SQLite tables.
+Skills data lives in the module's ten authoritative PostgreSQL `ai_*` tables;
+there is no Skills-owned alternate server store.
 
 Authority:
 [ADR-20260722-skills-domain-ownership-and-artifact-model.md](../../architecture/decisions/ADR-20260722-skills-domain-ownership-and-artifact-model.md)

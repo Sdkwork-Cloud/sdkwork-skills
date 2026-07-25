@@ -131,7 +131,7 @@ impl SkillArtifactStatus {
 #[serde(rename_all = "lowercase")]
 pub enum SkillInstallationSubjectKind {
     User,
-    Workspace,
+    Organization,
     Project,
     Agent,
 }
@@ -140,7 +140,7 @@ impl SkillInstallationSubjectKind {
     pub fn as_str(self) -> &'static str {
         match self {
             Self::User => "user",
-            Self::Workspace => "workspace",
+            Self::Organization => "organization",
             Self::Project => "project",
             Self::Agent => "agent",
         }
@@ -149,7 +149,7 @@ impl SkillInstallationSubjectKind {
     pub fn parse(value: &str) -> Option<Self> {
         match value {
             "user" => Some(Self::User),
-            "workspace" => Some(Self::Workspace),
+            "organization" => Some(Self::Organization),
             "project" => Some(Self::Project),
             "agent" => Some(Self::Agent),
             _ => None,

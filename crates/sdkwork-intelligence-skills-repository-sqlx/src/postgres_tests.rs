@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use sdkwork_database_id::SnowflakeIdGenerator;
 use sdkwork_intelligence_skills_service::{SkillsService, SkillsServiceError};
 use sdkwork_skills_contract::{
@@ -6,37 +8,95 @@ use sdkwork_skills_contract::{
     SkillInvocationKind, SkillLifecycleStatus, SkillPackageRecord, SkillVisibility,
 };
 use sdkwork_utils_rust::OffsetListPageParams;
-use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::{Row, SqlitePool};
+use sqlx::postgres::PgPoolOptions;
+use sqlx::PgPool;
 
 use crate::SqlxSkillsRepository;
 
-const SQLITE_BASELINE: &str =
-    include_str!("../../../database/ddl/baseline/sqlite/0001_skills_baseline.sql");
+const POSTGRES_BASELINE: &str =
+    include_str!("../../../database/ddl/baseline/postgres/0001_skills_baseline.sql");
+const POSTGRES_TEST_URL_ENV: &str = "SDKWORK_SKILLS_POSTGRES_URL";
 
-async fn service_and_pool(
-    max_connections: u32,
-) -> (SkillsService<SqlxSkillsRepository>, SqlitePool) {
-    let pool = SqlitePoolOptions::new()
-        .max_connections(max_connections)
-        .connect("sqlite::memory:")
-        .await
-        .expect("connect in-memory SQLite");
-    sqlx::raw_sql(SQLITE_BASELINE)
-        .execute(&pool)
-        .await
-        .expect("apply Skills SQLite baseline");
-    sqlx::raw_sql(SQLITE_BASELINE)
-        .execute(&pool)
-        .await
-        .expect("reapply Skills SQLite baseline idempotently");
-    let generator = SnowflakeIdGenerator::new(731).expect("create test Snowflake generator");
-    let service = SkillsService::new(SqlxSkillsRepository::from_sqlite(pool.clone(), generator));
-    (service, pool)
+struct PostgresTestContext {
+    service: SkillsService<SqlxSkillsRepository>,
+    pool: PgPool,
+    admin_pool: PgPool,
+    schema: String,
 }
 
-async fn service() -> SkillsService<SqlxSkillsRepository> {
-    service_and_pool(1).await.0
+impl PostgresTestContext {
+    async fn from_env() -> Option<Self> {
+        let database_url = match std::env::var(POSTGRES_TEST_URL_ENV) {
+            Ok(value) if !value.trim().is_empty() => value,
+            _ => {
+                eprintln!(
+                    "skip Skills PostgreSQL repository contract: {POSTGRES_TEST_URL_ENV} is not set"
+                );
+                return None;
+            }
+        };
+        let admin_pool = PgPoolOptions::new()
+            .max_connections(1)
+            .connect(&database_url)
+            .await
+            .expect("connect Skills PostgreSQL test database");
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time after Unix epoch")
+            .as_nanos();
+        let schema = format!("skills_test_{}_{}", std::process::id(), nonce);
+        sqlx::query(&format!("CREATE SCHEMA \"{schema}\""))
+            .execute(&admin_pool)
+            .await
+            .expect("create isolated Skills PostgreSQL test schema");
+
+        let connection_schema = schema.clone();
+        let pool = PgPoolOptions::new()
+            .max_connections(4)
+            .after_connect(move |connection, _metadata| {
+                let statement = format!("SET search_path TO \"{connection_schema}\"");
+                Box::pin(async move {
+                    sqlx::query(&statement).execute(connection).await?;
+                    Ok(())
+                })
+            })
+            .connect(&database_url)
+            .await
+            .expect("connect isolated Skills PostgreSQL test pool");
+        sqlx::raw_sql(POSTGRES_BASELINE)
+            .execute(&pool)
+            .await
+            .expect("apply Skills PostgreSQL baseline");
+        sqlx::raw_sql(POSTGRES_BASELINE)
+            .execute(&pool)
+            .await
+            .expect("reapply Skills PostgreSQL baseline idempotently");
+
+        let generator = SnowflakeIdGenerator::new(731).expect("create test Snowflake generator");
+        let service = SkillsService::new(SqlxSkillsRepository::new(pool.clone(), generator));
+        Some(Self {
+            service,
+            pool,
+            admin_pool,
+            schema,
+        })
+    }
+
+    async fn cleanup(self) {
+        let Self {
+            service,
+            pool,
+            admin_pool,
+            schema,
+        } = self;
+        drop(service);
+        pool.close().await;
+        sqlx::query(&format!("DROP SCHEMA \"{schema}\" CASCADE"))
+            .execute(&admin_pool)
+            .await
+            .expect("drop isolated Skills PostgreSQL test schema");
+        admin_pool.close().await;
+    }
 }
 
 fn page(page: i64, page_size: i64) -> OffsetListPageParams {
@@ -74,9 +134,9 @@ fn capability(tenant_id: u64) -> SkillCapabilityRecord {
         uuid: String::new(),
         tenant_id,
         organization_id: 0,
-        capability_key: "workspace.read".to_string(),
-        display_name: "Workspace Read".to_string(),
-        description: Some("Read authorized workspace content".to_string()),
+        capability_key: "project.read".to_string(),
+        display_name: "Project Read".to_string(),
+        description: Some("Read authorized project content".to_string()),
         risk_level: SkillCapabilityRiskLevel::Sensitive,
         status: 1,
         version: 0,
@@ -103,7 +163,7 @@ fn artifact(tenant_id: u64, package_id: u64, version_label: &str) -> SkillArtifa
         default_config: serde_json::json!({}),
         security_profile_id: Some("skills.standard".to_string()),
         status: SkillArtifactStatus::Published,
-        capability_keys: vec!["workspace.read".to_string()],
+        capability_keys: vec!["project.read".to_string()],
         published_at: None,
         yanked_at: None,
         created_at: String::new(),
@@ -163,11 +223,10 @@ fn installation(
     }
 }
 
-#[tokio::test]
-async fn sqlite_supports_normalized_marketplace_and_subject_installations() {
+async fn verify_marketplace_and_subject_installations(
+    service: &SkillsService<SqlxSkillsRepository>,
+) {
     let tenant_id = 7;
-    let service = service().await;
-
     let category = service
         .create_category(category(tenant_id))
         .await
@@ -216,12 +275,12 @@ async fn sqlite_supports_normalized_marketplace_and_subject_installations() {
         .await
         .expect("list immutable artifacts");
     assert_eq!(artifact_total, 1);
-    assert_eq!(artifacts[0].capability_keys, vec!["workspace.read"]);
+    assert_eq!(artifacts[0].capability_keys, vec!["project.read"]);
     let artifact_id = artifacts[0].id;
 
     for (kind, subject_id) in [
         (SkillInstallationSubjectKind::User, 23),
-        (SkillInstallationSubjectKind::Workspace, 41),
+        (SkillInstallationSubjectKind::Organization, 17),
         (SkillInstallationSubjectKind::Project, 59),
         (SkillInstallationSubjectKind::Agent, 61),
     ] {
@@ -277,10 +336,8 @@ async fn sqlite_supports_normalized_marketplace_and_subject_installations() {
     assert!(matches!(wrong_tenant, SkillsServiceError::NotFound(_)));
 }
 
-#[tokio::test]
-async fn sqlite_enforces_optimistic_updates_and_soft_delete_cascade() {
+async fn verify_optimistic_updates_and_soft_delete(service: &SkillsService<SqlxSkillsRepository>) {
     let tenant_id = 11;
-    let service = service().await;
     service
         .create_category(category(tenant_id))
         .await
@@ -291,7 +348,7 @@ async fn sqlite_enforces_optimistic_updates_and_soft_delete_cascade() {
         .expect("create capability");
 
     let mut first_update = original.clone();
-    first_update.display_name = "Workspace Read Access".to_string();
+    first_update.display_name = "Project Read Access".to_string();
     let updated = service
         .update_capability(first_update)
         .await
@@ -351,10 +408,8 @@ async fn sqlite_enforces_optimistic_updates_and_soft_delete_cascade() {
     assert_eq!(total, 0);
 }
 
-#[tokio::test]
-async fn sqlite_lists_only_installable_artifacts_visible_to_the_current_subject() {
+async fn verify_installable_artifact_visibility(service: &SkillsService<SqlxSkillsRepository>) {
     let tenant_id = 13;
-    let service = service().await;
     service
         .create_category(category(tenant_id))
         .await
@@ -423,10 +478,8 @@ async fn sqlite_lists_only_installable_artifacts_visible_to_the_current_subject(
     assert_eq!(disabled_total, 0);
 }
 
-#[tokio::test]
-async fn sqlite_enforces_normalized_installation_and_asset_integrity() {
+async fn verify_database_integrity(service: &SkillsService<SqlxSkillsRepository>, pool: &PgPool) {
     let tenant_id = 19;
-    let (service, pool) = service_and_pool(1).await;
     service
         .create_category(category(tenant_id))
         .await
@@ -462,29 +515,29 @@ async fn sqlite_enforces_normalized_installation_and_asset_integrity() {
         .0[0]
         .id;
     let first_skill_id = sqlx::query_scalar::<_, i64>(
-        "SELECT id FROM ai_agent_skill WHERE tenant_id=?1 AND package_id=?2",
+        "SELECT id FROM ai_agent_skill WHERE tenant_id=$1 AND package_id=$2",
     )
     .bind(tenant_id as i64)
     .bind(first.id as i64)
-    .fetch_one(&pool)
+    .fetch_one(pool)
     .await
     .expect("resolve first skill id");
 
     let multi_owner = sqlx::query(
         "INSERT INTO ai_skill_asset (
              id, uuid, tenant_id, skill_id, package_id, asset_type, purpose, media_resource_id
-         ) VALUES (91, 'multi-owner', ?1, ?2, ?3, 'image', 'icon', 'media-91')",
+         ) VALUES (91, 'multi-owner', $1, $2, $3, 'image', 'icon', 'media-91')",
     )
     .bind(tenant_id as i64)
     .bind(first_skill_id)
     .bind(first.id as i64)
-    .execute(&pool)
+    .execute(pool)
     .await;
     assert!(multi_owner.is_err(), "an asset must have exactly one owner");
 
-    let invalid_lifecycle = sqlx::query("UPDATE ai_skill_artifact SET status='draft' WHERE id=?1")
+    let invalid_lifecycle = sqlx::query("UPDATE ai_skill_artifact SET status='draft' WHERE id=$1")
         .bind(first_artifact_id as i64)
-        .execute(&pool)
+        .execute(pool)
         .await;
     assert!(
         invalid_lifecycle.is_err(),
@@ -502,29 +555,35 @@ async fn sqlite_enforces_normalized_installation_and_asset_integrity() {
         .await
         .expect("install first package artifact");
     let cross_package_artifact =
-        sqlx::query("UPDATE ai_skill_installation SET artifact_id=?1 WHERE id=?2")
+        sqlx::query("UPDATE ai_skill_installation SET artifact_id=$1 WHERE id=$2")
             .bind(second_artifact_id as i64)
             .bind(installed.id as i64)
-            .execute(&pool)
+            .execute(pool)
             .await;
     assert!(
         cross_package_artifact.is_err(),
         "an installation artifact must belong to its package"
     );
 
-    let installation_columns = sqlx::query("PRAGMA table_info(ai_skill_installation)")
-        .fetch_all(&pool)
-        .await
-        .expect("inspect installation table");
-    assert!(installation_columns
-        .iter()
-        .all(|row| row.get::<String, _>("name") != "skill_id"));
+    let has_redundant_skill_id: bool = sqlx::query_scalar(
+        "SELECT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_schema=current_schema()
+              AND table_name='ai_skill_installation'
+              AND column_name='skill_id'
+        )",
+    )
+    .fetch_one(pool)
+    .await
+    .expect("inspect installation columns");
+    assert!(!has_redundant_skill_id);
 }
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn sqlite_serializes_concurrent_installations_without_duplicate_side_effects() {
+async fn verify_concurrent_installation(
+    service: &SkillsService<SqlxSkillsRepository>,
+    pool: &PgPool,
+) {
     let tenant_id = 23;
-    let (service, pool) = service_and_pool(4).await;
     service
         .create_category(category(tenant_id))
         .await
@@ -552,8 +611,8 @@ async fn sqlite_serializes_concurrent_installations_without_duplicate_side_effec
         tenant_id,
         created.id,
         artifact_id,
-        SkillInstallationSubjectKind::Workspace,
-        101,
+        SkillInstallationSubjectKind::Organization,
+        17,
     );
     let second_record = first_record.clone();
 
@@ -567,23 +626,38 @@ async fn sqlite_serializes_concurrent_installations_without_duplicate_side_effec
 
     let installation_count = sqlx::query_scalar::<_, i64>(
         "SELECT COUNT(*) FROM ai_skill_installation
-         WHERE tenant_id=?1 AND organization_id=17 AND subject_kind='workspace'
-           AND subject_id=101 AND package_id=?2 AND deleted_at IS NULL",
+         WHERE tenant_id=$1 AND organization_id=17 AND subject_kind='organization'
+           AND subject_id=17 AND package_id=$2 AND deleted_at IS NULL",
     )
     .bind(tenant_id as i64)
     .bind(created.id as i64)
-    .fetch_one(&pool)
+    .fetch_one(pool)
     .await
     .expect("count active installations");
     assert_eq!(installation_count, 1);
 
     let install_count = sqlx::query_scalar::<_, i64>(
-        "SELECT install_count FROM ai_agent_skill WHERE tenant_id=?1 AND package_id=?2",
+        "SELECT install_count FROM ai_agent_skill WHERE tenant_id=$1 AND package_id=$2",
     )
     .bind(tenant_id as i64)
     .bind(created.id as i64)
-    .fetch_one(&pool)
+    .fetch_one(pool)
     .await
     .expect("read aggregate install count");
     assert_eq!(install_count, 1);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn postgres_enforces_skills_repository_contracts() {
+    let Some(context) = PostgresTestContext::from_env().await else {
+        return;
+    };
+
+    verify_marketplace_and_subject_installations(&context.service).await;
+    verify_optimistic_updates_and_soft_delete(&context.service).await;
+    verify_installable_artifact_visibility(&context.service).await;
+    verify_database_integrity(&context.service, &context.pool).await;
+    verify_concurrent_installation(&context.service, &context.pool).await;
+
+    context.cleanup().await;
 }

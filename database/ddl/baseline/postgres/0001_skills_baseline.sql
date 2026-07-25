@@ -233,7 +233,7 @@ CREATE TABLE IF NOT EXISTS ai_skill_installation (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ,
     CONSTRAINT uk_ai_skill_installation_uuid UNIQUE (uuid),
-    CONSTRAINT ck_ai_skill_installation_subject CHECK (subject_kind IN ('user', 'workspace', 'project', 'agent')),
+    CONSTRAINT ck_ai_skill_installation_subject CHECK (subject_kind IN ('user', 'organization', 'project', 'agent')),
     CONSTRAINT ck_ai_skill_installation_subject_id CHECK (subject_id > 0),
     CONSTRAINT ck_ai_skill_installation_status CHECK (install_status IN ('installed', 'disabled', 'removed')),
     CONSTRAINT ck_ai_skill_installation_enabled CHECK (enabled IN (0, 1)),
