@@ -1627,6 +1627,7 @@ name = "sdkwork-api-skills-assembly"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "sdkwork-database-sqlx",
  "sdkwork-intelligence-skills-repository-sqlx",
  "sdkwork-intelligence-skills-service",
  "sdkwork-routes-skills-app-api",
@@ -1636,6 +1637,7 @@ dependencies = [
  "sdkwork-web-contract",
  "sdkwork-web-core",
  "serde_json",
+ "tokio",
 ]
 
 [[package]]
@@ -1665,6 +1667,7 @@ dependencies = [
  "thiserror 2.0.18",
  "toml",
  "tracing",
+ "url",
 ]
 
 [[package]]

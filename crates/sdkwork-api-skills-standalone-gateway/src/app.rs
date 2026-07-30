@@ -49,7 +49,8 @@ where
         })?;
 
     let metrics = HttpMetricsRegistry::with_dimensions(config.metrics_dimensions);
-    let authorization_policy = Arc::new(IamAuthorizationPolicy::new(assembly.route_manifest.clone()));
+    let authorization_policy =
+        Arc::new(IamAuthorizationPolicy::new(assembly.route_manifest.clone()));
     let layer = WebFrameworkLayer::new(resolver)
         .with_profile(WebRequestContextProfile {
             public_path_prefixes,

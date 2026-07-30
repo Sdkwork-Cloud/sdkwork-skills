@@ -16,13 +16,13 @@
   },
   "profiles": {
     "minimal": {
-      "common": [],
+      "common": ["common/001_bootstrap.sql", "common/001_categories.sql"],
       "locales": {
         "zh-CN": []
       }
     },
     "standard": {
-      "common": [],
+      "common": ["common/001_bootstrap.sql", "common/001_categories.sql", "common/002_marketplace.sql"],
       "locales": {
         "zh-CN": []
       }

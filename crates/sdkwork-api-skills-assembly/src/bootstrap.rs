@@ -1,40 +1,20 @@
 //! Host-neutral API composition for sdkwork-skills.
 
-use std::collections::BTreeSet;
 use std::sync::Arc;
 
+use crate::{skills_api_route_manifest, SkillsDomainContextInjector};
 use axum::Router;
+use sdkwork_database_sqlx::DatabasePool;
 use sdkwork_intelligence_skills_repository_sqlx::SqlxSkillsRepository;
 use sdkwork_intelligence_skills_service::SkillsService;
 use sdkwork_routes_skills_app_api::{
     DenyExternalInstallationTargets, SkillInstallationTargetAuthorizer,
 };
 use sdkwork_skills_database_host::SkillsDatabaseHost;
+pub use sdkwork_web_bootstrap::ApiAssemblyContribution;
 use sdkwork_web_bootstrap::{ReadinessCheck, ReadinessFuture};
-use sdkwork_web_core::{DomainContextInjector, HttpRoute, HttpRouteManifest};
 
-use crate::{skills_api_route_manifest, SkillsDomainContextInjector};
-
-pub struct ApiAssembly {
-    pub router: Router,
-    pub route_manifest: HttpRouteManifest,
-    pub openapi: serde_json::Value,
-    pub permission_catalog: Vec<&'static str>,
-    pub readiness_check: Arc<dyn ReadinessCheck>,
-    pub domain_context_injectors: Vec<Arc<dyn DomainContextInjector>>,
-}
-
-/// Skills-owned App API contribution for a gateway-selected runtime profile.
-///
-/// The router is raw and contains no Web Framework or infrastructure routes.
-pub struct ApiAssemblyContribution {
-    pub router: Router,
-    pub route_manifest: HttpRouteManifest,
-    pub openapi: serde_json::Value,
-    pub permission_catalog: Vec<&'static str>,
-    pub domain_context_injectors: Vec<Arc<dyn DomainContextInjector>>,
-    pub readiness_check: Arc<dyn ReadinessCheck>,
-}
+pub type ApiAssembly = ApiAssemblyContribution;
 
 #[derive(Clone)]
 struct SkillsReadiness {
@@ -92,34 +72,54 @@ pub async fn assemble_backend_surface_router(
 pub async fn assemble_api_router(
     service: Arc<SkillsService<SqlxSkillsRepository>>,
     database_host: Arc<SkillsDatabaseHost>,
-) -> ApiAssembly {
+) -> Result<ApiAssembly, String> {
     let app_router = assemble_app_surface_router(service.clone()).await;
     let backend_router = assemble_backend_surface_router(service).await;
     let route_manifest = skills_api_route_manifest();
-    ApiAssembly {
-        router: Router::new().merge(app_router).merge(backend_router),
-        openapi: sdkwork_web_contract::build_openapi_document(
-            "SDKWork Skills API",
-            route_manifest.routes(),
-        ),
-        permission_catalog: permission_catalog(route_manifest.routes()),
+    ApiAssemblyContribution::from_manifest(
+        "sdkwork-skills",
+        "SDKWork Skills API",
+        Router::new().merge(app_router).merge(backend_router),
         route_manifest,
-        readiness_check: Arc::new(SkillsReadiness::new(database_host)),
-        domain_context_injectors: vec![Arc::new(SkillsDomainContextInjector)],
-    }
+        vec![Arc::new(SkillsDomainContextInjector)],
+        Arc::new(SkillsReadiness::new(database_host)),
+    )
 }
 
 pub async fn assemble_api_router_from_env() -> Result<ApiAssembly, String> {
     let (service, database_host) = bootstrap_owner_runtime_from_env().await?;
-    Ok(assemble_api_router(service, database_host).await)
+    assemble_api_router(service, database_host).await
+}
+
+pub async fn assemble_api_router_with_pool(pool: DatabasePool) -> Result<ApiAssembly, String> {
+    let (service, database_host) = bootstrap_owner_runtime_with_pool(pool).await?;
+    assemble_api_router(service, database_host).await
 }
 
 /// Builds the Skills App API from the canonical owner repository and database lifecycle.
 pub async fn assemble_app_api_contribution() -> Result<ApiAssemblyContribution, String> {
-    assemble_app_api_contribution_with_target_authorizer(Arc::new(
-        DenyExternalInstallationTargets,
-    ))
-    .await
+    assemble_app_api_contribution_with_target_authorizer(Arc::new(DenyExternalInstallationTargets))
+        .await
+}
+
+pub async fn assemble_app_api_contribution_with_pool(
+    pool: DatabasePool,
+) -> Result<ApiAssemblyContribution, String> {
+    let (service, database_host) = bootstrap_owner_runtime_with_pool(pool).await?;
+    let route_manifest = sdkwork_routes_skills_app_api::app_route_manifest();
+    let router = assemble_app_surface_router_with_target_authorizer(
+        service,
+        Arc::new(DenyExternalInstallationTargets),
+    )
+    .await;
+    ApiAssemblyContribution::from_manifest(
+        "sdkwork-skills",
+        "SDKWork Skills App API",
+        router,
+        route_manifest,
+        vec![Arc::new(SkillsDomainContextInjector)],
+        Arc::new(SkillsReadiness::new(database_host)),
+    )
 }
 
 /// Builds the Skills App API with a composing owner's Project/Agent scope authorizer.
@@ -133,17 +133,14 @@ pub async fn assemble_app_api_contribution_with_target_authorizer(
     let route_manifest = sdkwork_routes_skills_app_api::app_route_manifest();
     let router =
         assemble_app_surface_router_with_target_authorizer(service, target_authorizer).await;
-    Ok(ApiAssemblyContribution {
+    ApiAssemblyContribution::from_manifest(
+        "sdkwork-skills",
+        "SDKWork Skills App API",
         router,
-        openapi: sdkwork_web_contract::build_openapi_document(
-            "SDKWork Skills App API",
-            route_manifest.routes(),
-        ),
-        permission_catalog: permission_catalog(route_manifest.routes()),
         route_manifest,
-        domain_context_injectors: vec![Arc::new(SkillsDomainContextInjector)],
-        readiness_check: Arc::new(SkillsReadiness::new(database_host)),
-    })
+        vec![Arc::new(SkillsDomainContextInjector)],
+        Arc::new(SkillsReadiness::new(database_host)),
+    )
 }
 
 async fn bootstrap_owner_runtime_from_env() -> Result<
@@ -163,23 +160,29 @@ async fn bootstrap_owner_runtime_from_env() -> Result<
     Ok((service, database_host))
 }
 
-fn permission_catalog(routes: &[HttpRoute]) -> Vec<&'static str> {
-    let mut permissions = BTreeSet::new();
-    for route in routes {
-        if let Some(permission) = route.required_permission {
-            permissions.insert(permission);
-        }
-        if let Some(alternate_permissions) = route.alternate_permissions {
-            permissions.extend(alternate_permissions.iter().copied());
-        }
-    }
-    permissions.into_iter().collect()
+async fn bootstrap_owner_runtime_with_pool(
+    pool: DatabasePool,
+) -> Result<
+    (
+        Arc<SkillsService<SqlxSkillsRepository>>,
+        Arc<SkillsDatabaseHost>,
+    ),
+    String,
+> {
+    let database_host =
+        Arc::new(sdkwork_skills_database_host::bootstrap_skills_database(pool).await?);
+    let repository = SqlxSkillsRepository::new(
+        database_host.postgres_pool().clone(),
+        database_host.id_generator().clone(),
+    );
+    Ok((Arc::new(SkillsService::new(repository)), database_host))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use sdkwork_web_contract::{route_inventory_from_openapi, route_inventory_from_routes};
+    use sdkwork_web_core::HttpRouteManifest;
 
     #[test]
     fn app_api_manifest_openapi_and_auth_inventories_match() {
@@ -221,6 +224,9 @@ mod tests {
             .collect::<Vec<_>>();
         expected.sort_unstable();
         expected.dedup();
-        assert_eq!(expected, permission_catalog(manifest.routes()));
+        assert_eq!(
+            expected,
+            sdkwork_web_bootstrap::permission_catalog(manifest.routes())
+        );
     }
 }

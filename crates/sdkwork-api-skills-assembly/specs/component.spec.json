@@ -74,7 +74,13 @@
     "providedPorts": [
       {
         "name": "skillsApiAssembly",
-        "export": "."
+        "export": ".",
+        "target": "sdkwork_api_skills_assembly::assemble_api_router"
+      },
+      {
+        "name": "skillsApiAssemblyWithPool",
+        "export": ".",
+        "target": "sdkwork_api_skills_assembly::assemble_api_router_with_pool"
       },
       {
         "name": "combinedRouteManifest",
@@ -122,7 +128,9 @@
     "runtimeEntrypoints": [
       "sdkwork_api_skills_assembly::assemble_api_router",
       "sdkwork_api_skills_assembly::assemble_api_router_from_env",
+      "sdkwork_api_skills_assembly::assemble_api_router_with_pool",
       "sdkwork_api_skills_assembly::assemble_app_api_contribution",
+      "sdkwork_api_skills_assembly::assemble_app_api_contribution_with_pool",
       "sdkwork_api_skills_assembly::assemble_app_api_contribution_with_target_authorizer",
       "sdkwork_api_skills_assembly::assemble_app_surface_router",
       "sdkwork_api_skills_assembly::assemble_app_surface_router_with_target_authorizer",
