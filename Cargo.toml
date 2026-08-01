@@ -25,7 +25,9 @@ serde_json = "1"
 thiserror = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1"
-sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono", "json"] }
+# 0.9 aligns with the kernel Codex graph (rusqlite 0.39 -> libsqlite3-sys 0.37);
+# sqlx-sqlite 0.9 accepts libsqlite3-sys >=0.30.1,<0.38, so the graph unifies at 0.37.0.
+sqlx = { version = "0.9", features = ["runtime-tokio", "tls-rustls", "postgres", "chrono", "json"] }
 
 sdkwork-skills-contract = { path = "crates/sdkwork-skills-contract" }
 sdkwork-api-skills-assembly = { path = "crates/sdkwork-api-skills-assembly" }

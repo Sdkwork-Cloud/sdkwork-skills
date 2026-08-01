@@ -304,7 +304,7 @@ pub async fn list_skill_packages_page(
          ) package_rows
          ORDER BY featured DESC, sort_weight DESC, updated_at DESC, code ASC LIMIT $3 OFFSET $4"
     );
-    let rows = sqlx::query(&sql)
+    let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(search_pattern(keyword))
         .bind(params.page_size)
@@ -323,7 +323,7 @@ pub async fn get_skill_package(
     let sql = format!(
         "{PACKAGE_SELECT} WHERE p.tenant_id = $1 AND p.id = $2 AND p.deleted_at IS NULL LIMIT 1"
     );
-    let row = sqlx::query(&sql)
+    let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(uint64_to_int64(package_id, "package_id")?)
         .fetch_optional(pool)
@@ -354,7 +354,7 @@ pub async fn list_marketplace_skill_packages_page(
          ) package_rows
          ORDER BY featured DESC, sort_weight DESC, updated_at DESC, code ASC LIMIT $5 OFFSET $6"
     );
-    let rows = sqlx::query(&sql)
+    let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(uint64_to_int64(organization_id, "organization_id")?)
         .bind(uint64_to_int64(user_id, "user_id")?)
@@ -382,7 +382,7 @@ pub async fn get_marketplace_skill_package(
                 OR (p.visibility = 0 AND p.owner_user_id = $4))
          LIMIT 1"
     );
-    let row = sqlx::query(&sql)
+    let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(uint64_to_int64(package_id, "package_id")?)
         .bind(uint64_to_int64(organization_id, "organization_id")?)
@@ -416,7 +416,7 @@ pub async fn list_skills_page(
          ) skill_rows
          ORDER BY featured DESC, updated_at DESC, skill_key ASC LIMIT $5 OFFSET $6"
     );
-    let rows = sqlx::query(&sql)
+    let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(uint64_to_int64(organization_id, "organization_id")?)
         .bind(uint64_to_int64(user_id, "user_id")?)
@@ -445,7 +445,7 @@ pub async fn get_skill(
                 OR (p.visibility = 0 AND p.owner_user_id = $4))
          LIMIT 1"
     );
-    let row = sqlx::query(&sql)
+    let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(skill_key)
         .bind(uint64_to_int64(organization_id, "organization_id")?)
@@ -511,7 +511,7 @@ pub async fn list_categories_page(
            AND ($3 = '%' OR name ILIKE $3 OR code ILIKE $3)
          ORDER BY sort_weight ASC, code ASC LIMIT $4 OFFSET $5"
     );
-    let rows = sqlx::query(&sql)
+    let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(category_type)
         .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(search_pattern(keyword))
@@ -597,7 +597,7 @@ pub async fn list_capabilities_page(
            AND ($2='%' OR capability_key ILIKE $2 OR display_name ILIKE $2)
          ORDER BY capability_key ASC LIMIT $3 OFFSET $4"
     );
-    let rows = sqlx::query(&sql)
+    let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(search_pattern(keyword))
         .bind(params.page_size)
@@ -690,7 +690,7 @@ pub async fn list_artifacts_page(
          FROM ({ARTIFACT_SELECT} WHERE a.tenant_id=$1 AND a.package_id=$2) artifact_rows
          ORDER BY created_at DESC, id DESC LIMIT $3 OFFSET $4"
     );
-    let rows = sqlx::query(&sql)
+    let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(uint64_to_int64(package_id, "package_id")?)
         .bind(params.page_size)
@@ -725,7 +725,7 @@ pub async fn list_installable_artifacts_page(
          ) artifact_rows
          ORDER BY published_at DESC, created_at DESC, id DESC LIMIT $5 OFFSET $6"
     );
-    let rows = sqlx::query(&sql)
+    let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(uint64_to_int64(package_id, "package_id")?)
         .bind(uint64_to_int64(organization_id, "organization_id")?)
@@ -752,7 +752,7 @@ pub async fn create_artifact(
 
 async fn get_artifact(pool: &PgPool, artifact_id: u64) -> SkillsResult<SkillArtifactRecord> {
     let sql = format!("{ARTIFACT_SELECT} WHERE a.id=$1 LIMIT 1");
-    let row = sqlx::query(&sql)
+    let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(uint64_to_int64(artifact_id, "artifact_id")?)
         .fetch_optional(pool)
         .await
@@ -1176,7 +1176,7 @@ async fn get_installation(
     installation_id: u64,
 ) -> SkillsResult<SkillInstallationRecord> {
     let sql = format!("{INSTALLATION_SELECT} WHERE i.id=$1 AND i.deleted_at IS NULL LIMIT 1");
-    let row = sqlx::query(&sql)
+    let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(uint64_to_int64(installation_id, "installation_id")?)
         .fetch_optional(pool)
         .await
@@ -1205,7 +1205,7 @@ pub async fn list_installations_page(
          ) installation_rows
          ORDER BY updated_at DESC, id DESC LIMIT $5 OFFSET $6"
     );
-    let rows = sqlx::query(&sql)
+    let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
         .bind(uint64_to_int64(tenant_id, "tenant_id")?)
         .bind(uint64_to_int64(organization_id, "organization_id")?)
         .bind(subject_kind_value)
