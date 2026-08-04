@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "kind": "sdkwork.process-database-pool",
   "profile": {
-    "exampleFile": ".env.example",
-    "database": "sdkwork_skills",
-    "schema": "sdkwork_skills"
+    "exampleFile": ".env.postgres.example",
+    "database": "sdkwork_ai_dev",
+    "schema": "sdkwork_ai_dev"
   },
   "processes": [
     {
