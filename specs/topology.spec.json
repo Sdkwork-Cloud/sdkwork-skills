@@ -4,7 +4,7 @@
   "appId": "sdkwork-skills",
   "applicationCode": "skills",
   "archetype": "application-http-gateway",
-  "profileRoot": "configs/topology",
+  "profileRoot": "etc/topology",
   "profilePattern": "{deploymentProfile}.{environment}.env",
   "vocabulary": {
     "deploymentProfile": {

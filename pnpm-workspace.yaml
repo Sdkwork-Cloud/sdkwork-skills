@@ -30,6 +30,10 @@ packages:
   - "../sdkwork-iam/sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript/src/index.ts"
   - "../sdkwork-appbase/packages/pc-react/foundation/sdkwork-shell-pc-react"
 
+  - "../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-user-center-core-pc-react"
+  - "../sdkwork-appbase/packages/pc-react/foundation/sdkwork-command-pc-react"
+  - "../sdkwork-search/apps/sdkwork-search-pc/packages/sdkwork-search-pc-react"
+  - "../sdkwork-search/apps/sdkwork-search-common/packages/sdkwork-search-contracts"
 catalog:
   "@tailwindcss/vite": ^4.1.14
   react: "^19.1.0"
@@ -138,4 +142,5 @@ catalog:
   tailwindcss-animate: ^1.0.7
   tsup: ^8.5.0
   zustand: ^5.0.12
-  - "../../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-user-center-core-pc-react"
+
+
