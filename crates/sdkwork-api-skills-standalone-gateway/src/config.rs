@@ -41,10 +41,7 @@ impl GatewayRuntimeConfig {
 
         let (environment, security_policy) = application_security_policy_from_env(
             &["SDKWORK_ENVIRONMENT", "SDKWORK_SKILLS_ENVIRONMENT"],
-            &[
-                "SDKWORK_CORS_ALLOWED_ORIGINS",
-                "SDKWORK_SKILLS_CORS_ALLOWED_ORIGINS",
-            ],
+            &["SDKWORK_CORS_ALLOWED_ORIGINS"],
         );
         let metrics_dimensions =
             HttpMetricsDimensions::from_profile_environment(environment.clone())
