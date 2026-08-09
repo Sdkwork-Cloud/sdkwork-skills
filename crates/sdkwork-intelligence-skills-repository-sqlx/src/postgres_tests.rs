@@ -45,7 +45,7 @@ impl PostgresTestContext {
             .expect("system time after Unix epoch")
             .as_nanos();
         let schema = format!("skills_test_{}_{}", std::process::id(), nonce);
-        sqlx::query(&format!("CREATE SCHEMA \"{schema}\""))
+        sqlx::query(sqlx::AssertSqlSafe(format!("CREATE SCHEMA \"{schema}\"")))
             .execute(&admin_pool)
             .await
             .expect("create isolated Skills PostgreSQL test schema");
@@ -56,7 +56,9 @@ impl PostgresTestContext {
             .after_connect(move |connection, _metadata| {
                 let statement = format!("SET search_path TO \"{connection_schema}\"");
                 Box::pin(async move {
-                    sqlx::query(&statement).execute(connection).await?;
+                    sqlx::query(sqlx::AssertSqlSafe(statement))
+                        .execute(connection)
+                        .await?;
                     Ok(())
                 })
             })
@@ -91,7 +93,7 @@ impl PostgresTestContext {
         } = self;
         drop(service);
         pool.close().await;
-        sqlx::query(&format!("DROP SCHEMA \"{schema}\" CASCADE"))
+        sqlx::query(sqlx::AssertSqlSafe(format!("DROP SCHEMA \"{schema}\" CASCADE")))
             .execute(&admin_pool)
             .await
             .expect("drop isolated Skills PostgreSQL test schema");

@@ -6,6 +6,7 @@ type CategoryPermissionView = Pick<SkillCategoryRecord, 'code' | 'permissionCode
 export const SKILLS_ADMIN_PERMISSIONS = {
   packageManage: 'skills.packages.manage',
   categoryManage: 'skills.categories.manage',
+  capabilityManage: 'skills.capabilities.manage',
   marketplaceRead: 'skills.marketplace.read',
   packagesInstall: 'skills.packages.install',
 } as const;

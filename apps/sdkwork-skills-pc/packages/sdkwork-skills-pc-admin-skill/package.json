@@ -1,0 +1,31 @@
+{
+  "name": "@sdkwork/skills-pc-admin-skill",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@sdkwork/skills-pc-admin": "workspace:*",
+    "@sdkwork/skills-pc-admin-core": "workspace:*",
+    "@sdkwork/skills-pc-core": "workspace:*",
+    "@sdkwork/skills-pc-commons": "workspace:*",
+    "@sdkwork/utils": "workspace:*",
+    "react": "^19.1.0",
+    "react-router-dom": "^7.6.0"
+  },
+  "sdkwork": {
+    "applicationCode": "skills",
+    "architecture": "pc-react",
+    "capability": "skill",
+    "surface": "backend-admin",
+    "managedBy": "manual"
+  }
+}

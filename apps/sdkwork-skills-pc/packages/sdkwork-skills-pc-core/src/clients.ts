@@ -1,7 +1,7 @@
 import { createClient as createDriveSdkClient, type SdkworkDriveAppClient } from '@sdkwork/drive-app-sdk';
 import type { AuthTokenManager } from '@sdkwork/sdk-common';
 import { createClient as createAppSdkClient, type SdkworkAppClient } from '@sdkwork/skills-app-sdk';
-import type { SdkworkBackendClient } from '@sdkwork/skills-backend-sdk';
+import { createClient as createBackendSdkClient, type SdkworkBackendClient } from '@sdkwork/skills-backend-sdk';
 import { normalizeApiBaseUrl, readRuntimeEnv } from '@sdkwork/skills-pc-commons/runtime';
 
 import { createSkillsTokenManager } from './session';
@@ -67,4 +67,32 @@ export function createSkillsAppClients(config: SkillsAppClientConfig = {}): Skil
   drive.setTokenManager(tokenManager);
 
   return { app, drive };
+}
+
+function resolveBackendApiBaseUrl(config: SkillsBackendClientConfig): string {
+  return normalizeApiBaseUrl(
+    config.backendApiBaseUrl ?? readRuntimeEnv('VITE_SDKWORK_SKILLS_BACKEND_API_BASE_URL') ?? '',
+  );
+}
+
+export type SkillsBackendClientConfig = {
+  backendApiBaseUrl?: string;
+  tokenManager: AuthTokenManager;
+};
+
+export type SkillsBackendClients = {
+  backend: SdkworkBackendClient;
+};
+
+export function createSkillsBackendClients(
+  config: SkillsBackendClientConfig,
+): SkillsBackendClients {
+  const backend = createBackendSdkClient({
+    baseUrl: resolveBackendApiBaseUrl(config),
+    authMode: 'dual-token',
+    platform: 'pc',
+    tokenManager: config.tokenManager,
+  });
+  backend.setTokenManager(config.tokenManager);
+  return { backend };
 }

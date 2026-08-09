@@ -7,6 +7,8 @@ export {
   type SkillsAdminPermission,
 } from './permissions';
 
+export type { SkillCapabilityRecord } from '@sdkwork/skills-backend-sdk';
+
 export {
   createSkillsBackendClients,
   type SkillsBackendClients,
@@ -14,9 +16,15 @@ export {
 } from './clients';
 
 export {
+  createSkillArtifact,
+  createSkillCapability,
   createSkillCategory,
   createSkillPackage,
   deleteSkillPackage,
   listManagedSkillCategories,
   listManagedSkillPackages,
+  listPackageArtifacts,
+  listSkillCapabilities,
+  updateSkillCapability,
+  updateSkillPackage,
 } from './services';

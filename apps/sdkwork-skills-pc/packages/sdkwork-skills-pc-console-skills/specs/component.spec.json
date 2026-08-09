@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "@sdkwork/skills-pc-console-skills",
+    "displayName": "Skills PC Console Skills",
+    "version": "0.1.0",
+    "type": "react-package",
+    "root": ".",
+    "domain": "intelligence",
+    "capability": "skills",
+    "surface": "app-console",
+    "languages": [
+      "typescript",
+      "react"
+    ],
+    "generated": false,
+    "manifests": [
+      "package.json"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "COMPONENT_SPEC.md",
+      "path": "../../../../../sdkwork-specs/COMPONENT_SPEC.md",
+      "purpose": "Component contract and composable port rules."
+    },
+    {
+      "file": "APP_PC_ARCHITECTURE_SPEC.md",
+      "path": "../../../../../sdkwork-specs/APP_PC_ARCHITECTURE_SPEC.md",
+      "purpose": "PC console capability package composition."
+    },
+    {
+      "file": "APP_PC_REACT_UI_SPEC.md",
+      "path": "../../../../../sdkwork-specs/APP_PC_REACT_UI_SPEC.md",
+      "purpose": "PC user console React UI rules."
+    },
+    {
+      "file": "CODE_STYLE_SPEC.md",
+      "path": "../../../../../sdkwork-specs/CODE_STYLE_SPEC.md",
+      "purpose": "Authored source rules."
+    },
+    {
+      "file": "NAMING_SPEC.md",
+      "path": "../../../../../sdkwork-specs/NAMING_SPEC.md",
+      "purpose": "Canonical domain and package naming."
+    },
+    {
+      "file": "TYPESCRIPT_CODE_SPEC.md",
+      "path": "../../../../../sdkwork-specs/TYPESCRIPT_CODE_SPEC.md",
+      "purpose": "TypeScript package rules."
+    }
+  ],
+  "contracts": {
+    "layerRole": "frontend-capability",
+    "providedPorts": [
+      "pages/MySkillsPage",
+      "pages/CreateSkillPage"
+    ],
+    "requiredPorts": [
+      "skills-pc-core:SkillsClientsProvider"
+    ],
+    "publicExports": [
+      "."
+    ],
+    "runtimeEntrypoints": [],
+    "routeManifest": null,
+    "sdkClients": [],
+    "events": [],
+    "configKeys": [
+      "VITE_SDKWORK_SKILLS_DRIVE_SPACE_ID",
+      "VITE_SDKWORK_SKILLS_DRIVE_PARENT_NODE_ID"
+    ],
+    "sdkDependencies": [
+      {
+        "workspace": "sdkwork-skills-app-sdk",
+        "role": "skills-app-capability",
+        "required": true,
+        "dependencyMode": "consumer-sdk",
+        "apiPrefix": "/app/v3/api",
+        "apiAuthority": "sdkwork-skills-app-api",
+        "generatedTransportImportPolicy": "forbidden",
+        "packageByLanguage": {
+          "typescript": "@sdkwork/skills-app-sdk"
+        },
+        "surface": "app-api",
+        "credentialMode": "authenticated-app-api"
+      }
+    ],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "permissionComposition": {
+      "inheritanceMode": "module-catalog-with-overrides",
+      "applicationModule": {
+        "manifestRef": "../../../../../specs/iam.module.manifest.json"
+      },
+      "moduleCatalogRefs": [
+        {
+          "moduleId": "skills",
+          "manifestRef": "../../../../../specs/iam.module.manifest.json",
+          "inheritPermissions": true,
+          "inheritRoles": true
+        }
+      ],
+      "bootstrapAccessTokenScope": {
+        "inheritFrom": "sdkwork.app.config.json#backend.accessTokenPermissionScope",
+        "supplement": [],
+        "overrideReplace": false
+      },
+      "routePermissionHints": {
+        "inheritFromOpenApi": true,
+        "inheritFromModuleManifests": true,
+        "overrides": []
+      },
+      "consumerPolicy": {
+        "forbidLocalPermissionCatalogForDependencyDomains": true,
+        "allowExplicitOverridesOnly": true,
+        "allowFrontendHintsWithoutServerDuplication": true
+      }
+    }
+  },
+  "verification": {
+    "commands": [
+      "pnpm typecheck"
+    ]
+  }
+}

@@ -1,10 +1,13 @@
 import type {
+  CreateSkillPackageCommand,
   SkillArtifactsPageData,
   SkillCategoriesPageData,
   SkillInstallationRecord,
+  SkillPackageRecord,
   SkillPackagesPageData,
   SkillRecord,
   SkillsPageData,
+  UpdateOwnSkillPackageCommand,
 } from '@sdkwork/skills-app-sdk';
 
 import type { SkillsAppClients } from '../clients';
@@ -47,4 +50,32 @@ export async function installUserSkill(
     artifactId,
     ...(config ? { config } : {}),
   });
+}
+
+export async function listOwnedSkillPackages(
+  clients: SkillsAppClients,
+): Promise<SkillPackagesPageData> {
+  return clients.app.skills.skillPackages.owned.list();
+}
+
+export async function createOwnSkillPackage(
+  clients: SkillsAppClients,
+  input: CreateSkillPackageCommand,
+): Promise<SkillPackageRecord> {
+  return clients.app.skills.skillPackages.create(input);
+}
+
+export async function updateOwnSkillPackage(
+  clients: SkillsAppClients,
+  packageId: string,
+  input: UpdateOwnSkillPackageCommand,
+): Promise<SkillPackageRecord> {
+  return clients.app.skills.skillPackages.update(packageId, input);
+}
+
+export async function deleteOwnSkillPackage(
+  clients: SkillsAppClients,
+  packageId: string,
+): Promise<void> {
+  return clients.app.skills.skillPackages.delete(packageId);
 }

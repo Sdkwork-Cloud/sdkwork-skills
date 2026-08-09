@@ -23,7 +23,9 @@ mod tests {
     #[test]
     fn combined_manifest_contains_each_owned_route_once() {
         let manifest = skills_api_route_manifest();
-        assert_eq!(manifest.routes().len(), 24);
+        // 13 app-api routes (8 read/install + 5 self-service writes) +
+        // 16 backend-api routes.
+        assert_eq!(manifest.routes().len(), 29);
 
         let mut identities = std::collections::HashSet::new();
         for route in manifest.routes() {

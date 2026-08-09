@@ -119,6 +119,7 @@ mod tests {
 
     fn assembly(readiness_check: Arc<dyn ReadinessCheck>) -> ApiAssembly {
         ApiAssembly {
+            owner: "sdkwork-skills",
             router: Router::new(),
             route_manifest: HttpRouteManifest::new(&[]),
             openapi: serde_json::json!({

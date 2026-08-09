@@ -38,7 +38,9 @@
     "@sdkwork/skills-app-sdk": "workspace:*",
     "@sdkwork/skills-backend-sdk": "workspace:*",
     "tailwind-merge": "^3.5.0",
-    "tailwindcss": "^4.1.14"
+    "tailwindcss": "^4.1.14",
+    "@sdkwork/skills-pc-console-skills": "workspace:*",
+    "@sdkwork/skills-pc-admin-skill": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.1.0",

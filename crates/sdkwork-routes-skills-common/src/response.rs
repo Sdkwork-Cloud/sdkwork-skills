@@ -149,7 +149,6 @@ mod tests {
                 ingress_token_present: false,
                 oauth_bearer_present: false,
                 agent_token_present: false,
-                ingress_token_present: false,
             },
             locale: None,
             client_kind: None,
