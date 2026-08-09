@@ -187,6 +187,26 @@ pub struct UpdateSkillPackageCommand {
     pub sort_weight: Option<i32>,
 }
 
+/// App-api self-service package update. Marketplace publication fields
+/// (status, visibility, featured, sort_weight) are admin-managed through the
+/// backend surface and intentionally absent from the user self-service path.
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct UpdateOwnSkillPackageCommand {
+    #[serde(with = "sdkwork_utils_rust::serde_uint64")]
+    pub version: u64,
+    #[serde(default)]
+    pub display_name: Option<String>,
+    #[serde(default)]
+    pub summary: NullablePatch<String>,
+    #[serde(default)]
+    pub description: NullablePatch<String>,
+    #[serde(default)]
+    pub categories: Option<Vec<String>>,
+    #[serde(default)]
+    pub tags: Option<Vec<String>>,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CreateSkillCategoryCommand {

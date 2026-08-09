@@ -6,14 +6,18 @@ use axum::{
     Json,
 };
 use sdkwork_intelligence_skills_service::{SkillsRepository, SkillsService};
+use sdkwork_routes_skills_common::mapper::{artifact_record, self_service_package_aggregate};
 use sdkwork_routes_skills_common::{
-    finish_api_json, finish_created_api_json, get_marketplace_skill_package, get_skill,
+    create_artifact, create_skill_package, delete_skill_package, finish_api_json,
+    finish_created_api_json, finish_no_content, get_marketplace_skill_package, get_skill,
     install_skill, list_categories, list_hub_skills, list_installable_artifacts,
-    list_installations, list_marketplace_skill_packages, ok_json, parse_resource_id, ApiProblem,
-    CreateSkillInstallationCommand, SdkWorkListQuery, SkillInstallationListQuery,
+    list_installations, list_marketplace_skill_packages, list_owned_skill_packages, ok_json,
+    parse_resource_id, update_skill_package, ApiProblem, CreateSkillArtifactCommand,
+    CreateSkillInstallationCommand, CreateSkillPackageCommand, SdkWorkListQuery,
+    SkillInstallationListQuery, UpdateOwnSkillPackageCommand,
 };
 use sdkwork_skills_contract::{
-    SkillCategoryType, SkillInstallationSubjectKind, PERM_INSTALLATIONS_MANAGE,
+    SkillCategoryType, SkillInstallationSubjectKind, SkillPackageRecord, PERM_INSTALLATIONS_MANAGE,
 };
 use sdkwork_web_core::WebRequestContext;
 
@@ -139,6 +143,156 @@ where
                 context.organization_id,
                 context.actor_id,
                 package_id,
+            )
+            .await
+        }
+        .await,
+    )
+}
+
+/// Self-service package ownership guard: only the authenticated creator may
+/// mutate a package within the active tenant.
+fn ensure_owned_package(
+    context: &SkillsAppRequestContext,
+    package: &SkillPackageRecord,
+) -> Result<(), ApiProblem> {
+    if package.tenant_id == context.tenant_id && package.owner_user_id == context.actor_id {
+        Ok(())
+    } else {
+        Err(ApiProblem::forbidden(
+            "skill package is outside the authenticated user's ownership scope",
+        ))
+    }
+}
+
+pub(crate) async fn list_owned_packages<R>(
+    ctx: WebRequestContext,
+    State(state): State<AppState<R>>,
+    Extension(context): Extension<SkillsAppRequestContext>,
+    Query(query): Query<SdkWorkListQuery>,
+) -> Response
+where
+    R: SkillsRepository + Send + Sync,
+{
+    finish_api_json(
+        &ctx,
+        list_owned_skill_packages(
+            state.service.as_ref(),
+            context.tenant_id,
+            context.actor_id,
+            &query,
+        )
+        .await,
+    )
+}
+
+pub(crate) async fn create_package<R>(
+    ctx: WebRequestContext,
+    State(state): State<AppState<R>>,
+    Extension(context): Extension<SkillsAppRequestContext>,
+    Json(body): Json<CreateSkillPackageCommand>,
+) -> Response
+where
+    R: SkillsRepository + Send + Sync,
+{
+    let (package, initial_artifact) = self_service_package_aggregate(
+        context.tenant_id,
+        context.organization_id,
+        context.actor_id,
+        body,
+    );
+    finish_created_api_json(
+        &ctx,
+        create_skill_package(state.service.as_ref(), package, initial_artifact).await,
+    )
+}
+
+pub(crate) async fn update_package<R>(
+    ctx: WebRequestContext,
+    State(state): State<AppState<R>>,
+    Extension(context): Extension<SkillsAppRequestContext>,
+    Path(package_id): Path<String>,
+    Json(body): Json<UpdateOwnSkillPackageCommand>,
+) -> Response
+where
+    R: SkillsRepository + Send + Sync,
+{
+    finish_api_json(
+        &ctx,
+        async {
+            let package_id = parse_resource_id(&package_id, "packageId")?;
+            let mut record = state
+                .service
+                .get_skill_package(context.tenant_id, package_id)
+                .await
+                .map_err(ApiProblem::from)?;
+            ensure_owned_package(&context, &record)?;
+            record.version = body.version;
+            if let Some(value) = body.display_name {
+                record.display_name = value;
+            }
+            body.summary.apply_to(&mut record.summary);
+            body.description.apply_to(&mut record.description);
+            if let Some(value) = body.categories {
+                record.categories = value;
+            }
+            if let Some(value) = body.tags {
+                record.tags = value;
+            }
+            update_skill_package(state.service.as_ref(), record).await
+        }
+        .await,
+    )
+}
+
+pub(crate) async fn delete_package<R>(
+    ctx: WebRequestContext,
+    State(state): State<AppState<R>>,
+    Extension(context): Extension<SkillsAppRequestContext>,
+    Path(package_id): Path<String>,
+) -> Response
+where
+    R: SkillsRepository + Send + Sync,
+{
+    finish_no_content(
+        &ctx,
+        async {
+            let package_id = parse_resource_id(&package_id, "packageId")?;
+            let package = state
+                .service
+                .get_skill_package(context.tenant_id, package_id)
+                .await
+                .map_err(ApiProblem::from)?;
+            ensure_owned_package(&context, &package)?;
+            delete_skill_package(state.service.as_ref(), context.tenant_id, package_id).await
+        }
+        .await,
+    )
+}
+
+pub(crate) async fn create_package_artifact<R>(
+    ctx: WebRequestContext,
+    State(state): State<AppState<R>>,
+    Extension(context): Extension<SkillsAppRequestContext>,
+    Path(package_id): Path<String>,
+    Json(body): Json<CreateSkillArtifactCommand>,
+) -> Response
+where
+    R: SkillsRepository + Send + Sync,
+{
+    finish_created_api_json(
+        &ctx,
+        async {
+            let package_id = parse_resource_id(&package_id, "packageId")?;
+            let package = state
+                .service
+                .get_skill_package(context.tenant_id, package_id)
+                .await
+                .map_err(ApiProblem::from)?;
+            ensure_owned_package(&context, &package)?;
+            create_artifact(
+                state.service.as_ref(),
+                artifact_record(context.tenant_id, package_id, body),
             )
             .await
         }

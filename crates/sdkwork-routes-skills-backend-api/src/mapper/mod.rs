@@ -1,3 +1,4 @@
 mod request;
 
-pub(crate) use request::{artifact_record, capability_record, category_record, package_aggregate};
+pub(crate) use request::{capability_record, category_record};
+pub(crate) use sdkwork_routes_skills_common::mapper::{artifact_record, package_aggregate};

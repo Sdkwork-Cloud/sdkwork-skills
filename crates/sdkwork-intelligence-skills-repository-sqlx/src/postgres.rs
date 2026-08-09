@@ -315,6 +315,34 @@ pub async fn list_skill_packages_page(
     page(rows, row_to_package)
 }
 
+pub async fn list_owned_skill_packages_page(
+    pool: &PgPool,
+    tenant_id: u64,
+    owner_user_id: u64,
+    params: OffsetListPageParams,
+    keyword: Option<&str>,
+) -> SkillsResult<(Vec<SkillPackageRecord>, i64)> {
+    let sql = format!(
+        "SELECT package_rows.*, COUNT(*) OVER() AS {LIST_TOTAL_SQL_COLUMN}
+         FROM ({PACKAGE_SELECT}
+               WHERE p.tenant_id = $1 AND p.owner_user_id = $2 AND p.deleted_at IS NULL
+                 AND p.status <> 4
+                 AND ($3 = '%' OR p.display_name ILIKE $3 OR p.package_key ILIKE $3 OR p.code ILIKE $3)
+         ) package_rows
+         ORDER BY updated_at DESC, code ASC LIMIT $4 OFFSET $5"
+    );
+    let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
+        .bind(uint64_to_int64(tenant_id, "tenant_id")?)
+        .bind(uint64_to_int64(owner_user_id, "owner_user_id")?)
+        .bind(search_pattern(keyword))
+        .bind(params.page_size)
+        .bind(params.offset)
+        .fetch_all(pool)
+        .await
+        .map_err(map_sqlx)?;
+    page(rows, row_to_package)
+}
+
 pub async fn get_skill_package(
     pool: &PgPool,
     tenant_id: u64,

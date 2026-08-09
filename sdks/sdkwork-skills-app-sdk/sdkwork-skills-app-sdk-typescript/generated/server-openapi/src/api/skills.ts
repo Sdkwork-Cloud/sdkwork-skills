@@ -1,7 +1,7 @@
 import { appApiPath } from './paths';
 import type { ApiRequestOptions, HttpClient } from '../http/client';
 
-import type { CreateSkillInstallationCommand, SkillArtifactsPageData, SkillCategoriesPageData, SkillInstallationRecord, SkillInstallationsPageData, SkillPackageRecord, SkillPackagesPageData, SkillRecord, SkillsPageData } from '../types';
+import type { CreateSkillArtifactCommand, CreateSkillInstallationCommand, CreateSkillPackageCommand, SkillArtifactRecord, SkillArtifactsPageData, SkillCategoriesPageData, SkillInstallationRecord, SkillInstallationsPageData, SkillPackageRecord, SkillPackagesPageData, SkillRecord, SkillsPageData, UpdateOwnSkillPackageCommand } from '../types';
 
 
 export interface SkillsSkillInstallationsListParams {
@@ -31,7 +31,7 @@ export class SkillsSkillInstallationsApi {
       { name: 'subject_kind', value: params?.subjectKind, style: 'form', explode: true, allowReserved: false },
       { name: 'subject_id', value: params?.subjectId, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<SkillInstallationsPageData>(appendQueryString(appApiPath(`/skill_installations`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
+    return this.client.request<SkillInstallationsPageData>(appendQueryString(appApiPath(`/skill_installations`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -58,7 +58,7 @@ export class SkillsSkillCategoriesApi {
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<SkillCategoriesPageData>(appendQueryString(appApiPath(`/skill_categories`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
+    return this.client.request<SkillCategoriesPageData>(appendQueryString(appApiPath(`/skill_categories`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -72,7 +72,7 @@ export class SkillsSkillPackagesInstallationsApi {
 
 /** skillPackages.installations.create */
   async create(packageId: string, body: CreateSkillInstallationCommand, requestOptions?: ApiRequestOptions): Promise<SkillInstallationRecord> {
-    return this.client.request<SkillInstallationRecord>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}/installations`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, contentType: 'application/json' });
+    return this.client.request<SkillInstallationRecord>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}/installations`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -99,7 +99,39 @@ export class SkillsSkillPackagesArtifactsApi {
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<SkillArtifactsPageData>(appendQueryString(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}/artifacts`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
+    return this.client.request<SkillArtifactsPageData>(appendQueryString(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}/artifacts`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+  }
+
+/** skillPackages.artifacts.create */
+  async create(packageId: string, body: CreateSkillArtifactCommand, requestOptions?: ApiRequestOptions): Promise<SkillArtifactRecord> {
+    return this.client.request<SkillArtifactRecord>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}/artifacts`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+  }
+}
+
+export interface SkillsSkillPackagesOwnedListParams {
+  page?: number;
+  pageSize?: number;
+  cursor?: string;
+  q?: string;
+}
+
+export class SkillsSkillPackagesOwnedApi {
+  private client: HttpClient;
+
+  constructor(client: HttpClient) {
+    this.client = client;
+  }
+
+
+/** skillPackages.owned.list */
+  async list(params?: SkillsSkillPackagesOwnedListParams, requestOptions?: ApiRequestOptions): Promise<SkillPackagesPageData> {
+    const query = buildQueryString([
+      { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+      { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
+      { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
+      { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
+    ]);
+    return this.client.request<SkillPackagesPageData>(appendQueryString(appApiPath(`/skill_packages/owned`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -112,11 +144,13 @@ export interface SkillsSkillPackagesListParams {
 
 export class SkillsSkillPackagesApi {
   private client: HttpClient;
+  public readonly owned: SkillsSkillPackagesOwnedApi;
   public readonly artifacts: SkillsSkillPackagesArtifactsApi;
   public readonly installations: SkillsSkillPackagesInstallationsApi;
 
   constructor(client: HttpClient) {
     this.client = client;
+    this.owned = new SkillsSkillPackagesOwnedApi(client);
     this.artifacts = new SkillsSkillPackagesArtifactsApi(client);
     this.installations = new SkillsSkillPackagesInstallationsApi(client);
   }
@@ -130,12 +164,27 @@ export class SkillsSkillPackagesApi {
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<SkillPackagesPageData>(appendQueryString(appApiPath(`/skill_packages`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
+    return this.client.request<SkillPackagesPageData>(appendQueryString(appApiPath(`/skill_packages`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+  }
+
+/** skillPackages.create */
+  async create(body: CreateSkillPackageCommand, requestOptions?: ApiRequestOptions): Promise<SkillPackageRecord> {
+    return this.client.request<SkillPackageRecord>(appApiPath(`/skill_packages`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** skillPackages.retrieve */
   async retrieve(packageId: string, requestOptions?: ApiRequestOptions): Promise<SkillPackageRecord> {
-    return this.client.request<SkillPackageRecord>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
+    return this.client.request<SkillPackageRecord>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
+  }
+
+/** skillPackages.update */
+  async update(packageId: string, body: UpdateOwnSkillPackageCommand, requestOptions?: ApiRequestOptions): Promise<SkillPackageRecord> {
+    return this.client.request<SkillPackageRecord>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'PATCH' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+  }
+
+/** skillPackages.delete */
+  async delete(packageId: string, requestOptions?: ApiRequestOptions): Promise<void> {
+    return this.client.request<void>(appApiPath(`/skill_packages/${serializePathParameter(packageId, { name: 'packageId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'DELETE' as any });
   }
 }
 
@@ -162,12 +211,12 @@ export class SkillsMarketplaceApi {
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<SkillsPageData>(appendQueryString(appApiPath(`/skills`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
+    return this.client.request<SkillsPageData>(appendQueryString(appApiPath(`/skills`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** marketplace.retrieve */
   async retrieve(skillKey: string, requestOptions?: ApiRequestOptions): Promise<SkillRecord> {
-    return this.client.request<SkillRecord>(appApiPath(`/skills/${serializePathParameter(skillKey, { name: 'skillKey', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any });
+    return this.client.request<SkillRecord>(appApiPath(`/skills/${serializePathParameter(skillKey, { name: 'skillKey', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 

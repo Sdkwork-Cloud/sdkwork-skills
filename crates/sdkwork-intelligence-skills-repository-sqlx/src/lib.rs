@@ -40,6 +40,23 @@ impl SkillsRepository for SqlxSkillsRepository {
         postgres::list_skill_packages_page(&self.pool, tenant_id, params, keyword).await
     }
 
+    async fn list_owned_skill_packages_page(
+        &self,
+        tenant_id: u64,
+        owner_user_id: u64,
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillPackageRecord>, i64)> {
+        postgres::list_owned_skill_packages_page(
+            &self.pool,
+            tenant_id,
+            owner_user_id,
+            params,
+            keyword,
+        )
+        .await
+    }
+
     async fn get_skill_package(
         &self,
         tenant_id: u64,

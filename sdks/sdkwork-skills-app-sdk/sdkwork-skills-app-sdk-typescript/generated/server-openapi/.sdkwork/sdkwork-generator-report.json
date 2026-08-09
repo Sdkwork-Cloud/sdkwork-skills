@@ -12,13 +12,14 @@
   "mode": "apply",
   "hasChanges": true,
   "hasDestructiveChanges": false,
-  "changeFingerprint": "34aa39dffa74f10e5cb853bb15c106f0c44cacb12fe00e518ba3e999aae789de",
+  "changeFingerprint": "96e6ae388a754aca83d2c29a09e2cafd04cff774bd26a12a7d4d4370eca6a6d1",
   "changeImpact": {
     "schemaVersion": 1,
     "areas": [
       "api-surface",
       "models",
-      "runtime"
+      "runtime",
+      "build-metadata"
     ],
     "details": [
       {
@@ -31,8 +32,15 @@
       {
         "area": "models",
         "paths": [
-          "src/types/skill-installation-record.ts",
-          "src/types/skill-installation-target-command.ts"
+          "src/types/create-skill-artifact-command.ts",
+          "src/types/create-skill-package-command.ts",
+          "src/types/index.ts",
+          "src/types/skill-artifact-record.ts",
+          "src/types/skill-artifact-resource-data.ts",
+          "src/types/skill-artifact-response.ts",
+          "src/types/skill-package-record.ts",
+          "src/types/skill-record.ts",
+          "src/types/update-own-skill-package-command.ts"
         ]
       },
       {
@@ -40,10 +48,16 @@
         "paths": [
           "src/http/client.ts"
         ]
+      },
+      {
+        "area": "build-metadata",
+        "paths": [
+          "package.json"
+        ]
       }
     ],
     "requiresVerification": true,
-    "summary": "Detected impact areas: api-surface, models, runtime. Verification is required."
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata. Verification is required."
   },
   "executionDecision": {
     "schemaVersion": 1,
@@ -64,7 +78,7 @@
         "id": "verify-check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -82,7 +96,7 @@
         "id": "verify-build",
         "title": "Unified package build",
         "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime.",
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -101,13 +115,13 @@
   "verificationPlan": {
     "shouldRun": true,
     "runPhase": "now",
-    "summary": "Detected impact areas: api-surface, models, runtime. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata. Verification is required. Run the required verification commands now against the generated SDK output.",
     "steps": [
       {
         "id": "check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -125,7 +139,7 @@
         "id": "build",
         "title": "Unified package build",
         "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime.",
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -155,28 +169,37 @@
     "localVersions": []
   },
   "stats": {
-    "totalFiles": 58,
-    "models": 34,
+    "totalFiles": 63,
+    "models": 39,
     "apis": 1,
-    "types": 36
+    "types": 41
   },
   "warnings": [],
   "syncSummary": {
     "dryRun": false,
     "controlPlaneEnabled": true,
-    "writtenFiles": 4,
+    "writtenFiles": 12,
     "skippedScaffoldFiles": 2,
-    "skippedUnchangedGeneratedFiles": 52,
+    "skippedUnchangedGeneratedFiles": 49,
     "deletedGeneratedFiles": 0,
     "changeSummaryPath": ".sdkwork/sdkwork-generator-changes.json",
-    "changeFingerprint": "34aa39dffa74f10e5cb853bb15c106f0c44cacb12fe00e518ba3e999aae789de",
+    "changeFingerprint": "96e6ae388a754aca83d2c29a09e2cafd04cff774bd26a12a7d4d4370eca6a6d1",
     "changes": {
-      "createdGeneratedFiles": [],
+      "createdGeneratedFiles": [
+        "src/types/create-skill-artifact-command.ts",
+        "src/types/create-skill-package-command.ts",
+        "src/types/skill-artifact-resource-data.ts",
+        "src/types/skill-artifact-response.ts",
+        "src/types/update-own-skill-package-command.ts"
+      ],
       "updatedGeneratedFiles": [
+        "package.json",
         "src/api/skills.ts",
         "src/http/client.ts",
-        "src/types/skill-installation-record.ts",
-        "src/types/skill-installation-target-command.ts"
+        "src/types/index.ts",
+        "src/types/skill-artifact-record.ts",
+        "src/types/skill-package-record.ts",
+        "src/types/skill-record.ts"
       ],
       "unchangedGeneratedFiles": [
         "bin/publish-core.mjs",
@@ -186,7 +209,6 @@
         "bin/sdk-gen.sh",
         "CHANGELOG.md",
         "LICENSE",
-        "package.json",
         "README.md",
         "sdkwork-sdk.json",
         "src/api/base.ts",
@@ -199,7 +221,6 @@
         "src/types/common.ts",
         "src/types/create-skill-installation-command.ts",
         "src/types/field-error.ts",
-        "src/types/index.ts",
         "src/types/page-info.ts",
         "src/types/problem-detail.ts",
         "src/types/sdk-work-api-response.ts",
@@ -210,22 +231,21 @@
         "src/types/sdk-work-platform-error-code.ts",
         "src/types/sdk-work-resource-data.ts",
         "src/types/sdk-work-resource-response.ts",
-        "src/types/skill-artifact-record.ts",
         "src/types/skill-artifacts-list-response.ts",
         "src/types/skill-artifacts-page-data.ts",
         "src/types/skill-categories-list-response.ts",
         "src/types/skill-categories-page-data.ts",
         "src/types/skill-category-record.ts",
+        "src/types/skill-installation-record.ts",
         "src/types/skill-installation-resource-data.ts",
         "src/types/skill-installation-response.ts",
+        "src/types/skill-installation-target-command.ts",
         "src/types/skill-installations-list-response.ts",
         "src/types/skill-installations-page-data.ts",
-        "src/types/skill-package-record.ts",
         "src/types/skill-package-resource-data.ts",
         "src/types/skill-package-response.ts",
         "src/types/skill-packages-list-response.ts",
         "src/types/skill-packages-page-data.ts",
-        "src/types/skill-record.ts",
         "src/types/skill-resource-data.ts",
         "src/types/skill-response.ts",
         "src/types/skills-list-response.ts",
@@ -245,7 +265,8 @@
       "areas": [
         "api-surface",
         "models",
-        "runtime"
+        "runtime",
+        "build-metadata"
       ],
       "details": [
         {
@@ -258,8 +279,15 @@
         {
           "area": "models",
           "paths": [
-            "src/types/skill-installation-record.ts",
-            "src/types/skill-installation-target-command.ts"
+            "src/types/create-skill-artifact-command.ts",
+            "src/types/create-skill-package-command.ts",
+            "src/types/index.ts",
+            "src/types/skill-artifact-record.ts",
+            "src/types/skill-artifact-resource-data.ts",
+            "src/types/skill-artifact-response.ts",
+            "src/types/skill-package-record.ts",
+            "src/types/skill-record.ts",
+            "src/types/update-own-skill-package-command.ts"
           ]
         },
         {
@@ -267,21 +295,27 @@
           "paths": [
             "src/http/client.ts"
           ]
+        },
+        {
+          "area": "build-metadata",
+          "paths": [
+            "package.json"
+          ]
         }
       ],
       "requiresVerification": true,
-      "summary": "Detected impact areas: api-surface, models, runtime. Verification is required."
+      "summary": "Detected impact areas: api-surface, models, runtime, build-metadata. Verification is required."
     },
     "verificationPlan": {
       "shouldRun": true,
       "runPhase": "now",
-      "summary": "Detected impact areas: api-surface, models, runtime. Verification is required. Run the required verification commands now against the generated SDK output.",
+      "summary": "Detected impact areas: api-surface, models, runtime, build-metadata. Verification is required. Run the required verification commands now against the generated SDK output.",
       "steps": [
         {
           "id": "check",
           "title": "Unified package check",
           "required": true,
-          "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime.",
+          "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata.",
           "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
           "command": "node",
           "args": [
@@ -299,7 +333,7 @@
           "id": "build",
           "title": "Unified package build",
           "required": true,
-          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime.",
+          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata.",
           "workingDirectory": "E:\\sdkwork-space\\sdkwork-skills\\sdks\\sdkwork-skills-app-sdk\\sdkwork-skills-app-sdk-typescript\\generated\\server-openapi",
           "command": "node",
           "args": [

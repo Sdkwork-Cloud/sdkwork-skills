@@ -27,6 +27,42 @@
         "replacementCode": null
       },
       {
+        "code": "skills.packages.create",
+        "name": "Create skill packages owned by the authenticated user",
+        "resource": "packages",
+        "action": "create",
+        "status": "active",
+        "since": "1.0.0",
+        "replacementCode": null
+      },
+      {
+        "code": "skills.packages.update",
+        "name": "Update skill packages owned by the authenticated user",
+        "resource": "packages",
+        "action": "update",
+        "status": "active",
+        "since": "1.0.0",
+        "replacementCode": null
+      },
+      {
+        "code": "skills.packages.delete",
+        "name": "Delete skill packages owned by the authenticated user",
+        "resource": "packages",
+        "action": "delete",
+        "status": "active",
+        "since": "1.0.0",
+        "replacementCode": null
+      },
+      {
+        "code": "skills.artifacts.create",
+        "name": "Attach artifacts to skill packages owned by the authenticated user",
+        "resource": "artifacts",
+        "action": "create",
+        "status": "active",
+        "since": "1.0.0",
+        "replacementCode": null
+      },
+      {
         "code": "skills.packages.manage",
         "name": "Manage skill packages",
         "resource": "packages",
@@ -117,6 +153,10 @@
         "permissionPatterns": [
           "skills.marketplace.read",
           "skills.packages.install",
+          "skills.packages.create",
+          "skills.packages.update",
+          "skills.packages.delete",
+          "skills.artifacts.create",
           "skills.installations.read"
         ]
       }
@@ -127,6 +167,10 @@
         "patterns": [
           "skills.marketplace.read",
           "skills.packages.install",
+          "skills.packages.create",
+          "skills.packages.update",
+          "skills.packages.delete",
+          "skills.artifacts.create",
           "skills.installations.read"
         ]
       },

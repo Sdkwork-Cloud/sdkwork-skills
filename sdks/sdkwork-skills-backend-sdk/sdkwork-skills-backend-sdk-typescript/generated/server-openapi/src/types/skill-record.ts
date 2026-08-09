@@ -19,5 +19,5 @@ export interface SkillRecord {
   version: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt?: string;
+  deletedAt?: string | null;
 }

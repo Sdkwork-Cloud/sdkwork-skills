@@ -77,6 +77,20 @@ pub async fn list_skill_packages<R: SkillsRepository>(
     Ok(offset_list_page_data(items, total, params))
 }
 
+pub async fn list_owned_skill_packages<R: SkillsRepository>(
+    service: &SkillsService<R>,
+    tenant_id: u64,
+    owner_user_id: u64,
+    query: &SdkWorkListQuery,
+) -> ApiResult<SdkWorkPageData<SkillPackageRecord>> {
+    query.validate()?;
+    let params = query.offset_params()?;
+    let (items, total) = service
+        .list_owned_skill_packages_page(tenant_id, owner_user_id, params, query.search_keyword())
+        .await?;
+    Ok(offset_list_page_data(items, total, params))
+}
+
 pub async fn get_skill_package<R: SkillsRepository>(
     service: &SkillsService<R>,
     tenant_id: u64,

@@ -1,5 +1,13 @@
 pub const PERM_MARKETPLACE_READ: &str = "skills.marketplace.read";
 pub const PERM_PACKAGES_INSTALL: &str = "skills.packages.install";
+/// Self-service create of skill packages owned by the authenticated user.
+pub const PERM_PACKAGES_CREATE: &str = "skills.packages.create";
+/// Self-service update of skill packages owned by the authenticated user.
+pub const PERM_PACKAGES_UPDATE: &str = "skills.packages.update";
+/// Self-service delete of skill packages owned by the authenticated user.
+pub const PERM_PACKAGES_DELETE: &str = "skills.packages.delete";
+/// Self-service artifact attachment to skill packages owned by the authenticated user.
+pub const PERM_ARTIFACTS_CREATE: &str = "skills.artifacts.create";
 pub const PERM_PACKAGES_MANAGE: &str = "skills.packages.manage";
 pub const PERM_CATEGORIES_MANAGE: &str = "skills.categories.manage";
 pub const PERM_CAPABILITIES_MANAGE: &str = "skills.capabilities.manage";

@@ -16,7 +16,7 @@ export interface SkillArtifactRecord {
   securityProfileId?: string | null;
   status: 'draft' | 'published' | 'yanked';
   capabilityKeys: string[];
-  publishedAt?: string;
-  yankedAt?: string;
+  publishedAt?: string | null;
+  yankedAt?: string | null;
   createdAt: string;
 }

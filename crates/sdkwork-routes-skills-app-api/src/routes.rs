@@ -7,8 +7,10 @@ use axum::{
 use sdkwork_intelligence_skills_service::{SkillsRepository, SkillsService};
 
 use crate::handlers::{
-    create_installation, list_package_artifacts, list_packages, list_skill_categories,
-    list_skill_installations, list_skills, retrieve_package, retrieve_skill, AppState,
+    create_installation, create_package, create_package_artifact, delete_package,
+    list_owned_packages, list_package_artifacts, list_packages, list_skill_categories,
+    list_skill_installations, list_skills, retrieve_package, retrieve_skill, update_package,
+    AppState,
 };
 use crate::paths;
 use crate::{DenyExternalInstallationTargets, SkillInstallationTargetAuthorizer};
@@ -20,9 +22,21 @@ where
     Router::new()
         .route(paths::SKILLS, get(list_skills::<R>))
         .route(paths::SKILL, get(retrieve_skill::<R>))
-        .route(paths::SKILL_PACKAGES, get(list_packages::<R>))
-        .route(paths::SKILL_PACKAGE, get(retrieve_package::<R>))
-        .route(paths::PACKAGE_ARTIFACTS, get(list_package_artifacts::<R>))
+        .route(
+            paths::SKILL_PACKAGES,
+            get(list_packages::<R>).post(create_package::<R>),
+        )
+        .route(paths::SKILL_PACKAGES_OWNED, get(list_owned_packages::<R>))
+        .route(
+            paths::SKILL_PACKAGE,
+            get(retrieve_package::<R>)
+                .patch(update_package::<R>)
+                .delete(delete_package::<R>),
+        )
+        .route(
+            paths::PACKAGE_ARTIFACTS,
+            get(list_package_artifacts::<R>).post(create_package_artifact::<R>),
+        )
         .route(paths::SKILL_CATEGORIES, get(list_skill_categories::<R>))
         .route(paths::PACKAGE_INSTALLATIONS, post(create_installation::<R>))
         .route(

@@ -40,7 +40,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "ddd1aa0587b059fa959154d07c6ba8b114425bea19e21f49d516b0d263d6e7c3"
+      "sha256": "502a8fb5e7932ac2958a28939355babe8d61e16a27e169e416c1f8f065ce18df"
     },
     {
       "path": "README.md",
@@ -64,7 +64,7 @@
     },
     {
       "path": "src/api/skills.ts",
-      "sha256": "56586d05dfc82a757cdf52efc95333abb87f93ce6ee85f39d58f00e2ed437bd1"
+      "sha256": "cc4f3237071eec6d48ea193d45c5685ebc38dc28bbcb152482c99c19edb46bc3"
     },
     {
       "path": "src/auth/index.ts",
@@ -72,7 +72,7 @@
     },
     {
       "path": "src/http/client.ts",
-      "sha256": "73c0a8265d7f329177ecef920c9526399d2b582bd2b8bd63364d615ed4eb1398"
+      "sha256": "8232d087b029fcd6897617116ca4f8609a728915cc0ca2f1796c66c00c8d89d9"
     },
     {
       "path": "src/http/index.ts",
@@ -156,7 +156,7 @@
     },
     {
       "path": "src/types/skill-artifact-record.ts",
-      "sha256": "7f4c16b20761d82688635c0d652494abfae267c9f9cc2c5ff87be1ddc4f08c2e"
+      "sha256": "c79840795c1216dd3a9ca1f272dcf2bd730c0f2dba478068ddb9b0f38e6c1d53"
     },
     {
       "path": "src/types/skill-artifact-resource-data.ts",
@@ -216,7 +216,7 @@
     },
     {
       "path": "src/types/skill-package-record.ts",
-      "sha256": "b4255a4554cd1a299b43382fcda137ece07f7402e13bd6f46336cead477ee429"
+      "sha256": "f5d2f7717f519e01a7c4c73161f546bf9bfa027150ecaf4e4506f23723328612"
     },
     {
       "path": "src/types/skill-package-resource-data.ts",
@@ -236,7 +236,7 @@
     },
     {
       "path": "src/types/skill-record.ts",
-      "sha256": "6b93c6654228646cd3969232c6f18d9026fd6a64a5cbbd49f32f124df54f783f"
+      "sha256": "ddeb7b8aef3213c3ebd75b86a8176601744d6eeff597cf0715a94c5860c7c68f"
     },
     {
       "path": "src/types/skill-resource-data.ts",

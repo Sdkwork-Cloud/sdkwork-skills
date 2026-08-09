@@ -2,6 +2,7 @@ pub const OP_LIST_SKILLS: &str = "marketplace.list";
 pub const OP_GET_SKILL: &str = "marketplace.retrieve";
 pub const OP_LIST_SKILL_PACKAGES: &str = "skillPackages.list";
 pub const OP_GET_SKILL_PACKAGE: &str = "skillPackages.retrieve";
+pub const OP_LIST_OWNED_SKILL_PACKAGES: &str = "skillPackages.owned.list";
 pub const OP_CREATE_SKILL_PACKAGE: &str = "skillPackages.create";
 pub const OP_UPDATE_SKILL_PACKAGE: &str = "skillPackages.update";
 pub const OP_DELETE_SKILL_PACKAGE: &str = "skillPackages.delete";

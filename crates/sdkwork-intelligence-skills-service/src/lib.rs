@@ -33,6 +33,13 @@ pub trait SkillsRepository: Send + Sync {
         params: OffsetListPageParams,
         keyword: Option<&str>,
     ) -> SkillsResult<(Vec<SkillPackageRecord>, i64)>;
+    async fn list_owned_skill_packages_page(
+        &self,
+        tenant_id: u64,
+        owner_user_id: u64,
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillPackageRecord>, i64)>;
     async fn get_skill_package(
         &self,
         tenant_id: u64,
@@ -190,6 +197,18 @@ impl<R: SkillsRepository> SkillsService<R> {
     ) -> SkillsResult<(Vec<SkillPackageRecord>, i64)> {
         self.repository
             .list_skill_packages_page(tenant_id, params, keyword)
+            .await
+    }
+
+    pub async fn list_owned_skill_packages_page(
+        &self,
+        tenant_id: u64,
+        owner_user_id: u64,
+        params: OffsetListPageParams,
+        keyword: Option<&str>,
+    ) -> SkillsResult<(Vec<SkillPackageRecord>, i64)> {
+        self.repository
+            .list_owned_skill_packages_page(tenant_id, owner_user_id, params, keyword)
             .await
     }
 

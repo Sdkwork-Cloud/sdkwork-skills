@@ -431,6 +431,269 @@
         "x-sdkwork-api-surface": "app-api",
         "x-sdkwork-request-context": "WebRequestContext",
         "x-sdkwork-permission": "skills.marketplace.read"
+      },
+      "post": {
+        "tags": [
+          "skills"
+        ],
+        "summary": "skillPackages.create",
+        "operationId": "skillPackages.create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSkillPackageCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillPackageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-skills",
+        "x-sdkwork-api-authority": "sdkwork-skills-app-api",
+        "x-sdkwork-domain": "skills",
+        "x-sdkwork-resource": "skillPackages",
+        "x-sdkwork-public": false,
+        "x-sdkwork-api-surface": "app-api",
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.packages.create"
+      }
+    },
+    "/app/v3/api/skill_packages/owned": {
+      "get": {
+        "tags": [
+          "skills"
+        ],
+        "summary": "skillPackages.owned.list",
+        "operationId": "skillPackages.owned.list",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillPackagesListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-skills",
+        "x-sdkwork-api-authority": "sdkwork-skills-app-api",
+        "x-sdkwork-domain": "skills",
+        "x-sdkwork-resource": "skillPackages",
+        "x-sdkwork-public": false,
+        "x-sdkwork-api-surface": "app-api",
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.marketplace.read"
       }
     },
     "/app/v3/api/skill_packages/{packageId}": {
@@ -551,6 +814,245 @@
         "x-sdkwork-api-surface": "app-api",
         "x-sdkwork-request-context": "WebRequestContext",
         "x-sdkwork-permission": "skills.marketplace.read"
+      },
+      "patch": {
+        "tags": [
+          "skills"
+        ],
+        "summary": "skillPackages.update",
+        "operationId": "skillPackages.update",
+        "parameters": [
+          {
+            "name": "packageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "int64",
+              "pattern": "^[0-9]+$",
+              "minLength": 1,
+              "x-sdkwork-int64-string": true,
+              "x-sdkwork-rust-type": "u64"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOwnSkillPackageCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillPackageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-skills",
+        "x-sdkwork-api-authority": "sdkwork-skills-app-api",
+        "x-sdkwork-domain": "skills",
+        "x-sdkwork-resource": "skillPackages",
+        "x-sdkwork-public": false,
+        "x-sdkwork-api-surface": "app-api",
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.packages.update"
+      },
+      "delete": {
+        "tags": [
+          "skills"
+        ],
+        "summary": "skillPackages.delete",
+        "operationId": "skillPackages.delete",
+        "parameters": [
+          {
+            "name": "packageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "int64",
+              "pattern": "^[0-9]+$",
+              "minLength": 1,
+              "x-sdkwork-int64-string": true,
+              "x-sdkwork-rust-type": "u64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-skills",
+        "x-sdkwork-api-authority": "sdkwork-skills-app-api",
+        "x-sdkwork-domain": "skills",
+        "x-sdkwork-resource": "skillPackages",
+        "x-sdkwork-public": false,
+        "x-sdkwork-api-surface": "app-api",
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.packages.delete"
       }
     },
     "/app/v3/api/skill_packages/{packageId}/artifacts": {
@@ -713,6 +1215,134 @@
         "x-sdkwork-api-surface": "app-api",
         "x-sdkwork-request-context": "WebRequestContext",
         "x-sdkwork-permission": "skills.marketplace.read"
+      },
+      "post": {
+        "tags": [
+          "skills"
+        ],
+        "summary": "skillPackages.artifacts.create",
+        "operationId": "skillPackages.artifacts.create",
+        "parameters": [
+          {
+            "name": "packageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "int64",
+              "pattern": "^[0-9]+$",
+              "minLength": 1,
+              "x-sdkwork-int64-string": true,
+              "x-sdkwork-rust-type": "u64"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSkillArtifactCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillArtifactResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resource state conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-skills",
+        "x-sdkwork-api-authority": "sdkwork-skills-app-api",
+        "x-sdkwork-domain": "skills",
+        "x-sdkwork-resource": "skillPackages",
+        "x-sdkwork-public": false,
+        "x-sdkwork-api-surface": "app-api",
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-permission": "skills.artifacts.create"
       }
     },
     "/app/v3/api/skill_categories": {
@@ -2186,6 +2816,227 @@
           }
         }
       },
+      "CreateSkillArtifactCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "versionLabel",
+          "artifactRef",
+          "checksumSha256",
+          "invocationKind",
+          "entrypoint"
+        ],
+        "properties": {
+          "versionLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "artifactRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "pattern": "^drive://spaces/[^/]+/nodes/[^/]+$"
+          },
+          "checksumSha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "sizeBytes": {
+            "type": "string",
+            "format": "int64",
+            "pattern": "^[0-9]+$",
+            "minLength": 1,
+            "x-sdkwork-int64-string": true,
+            "x-sdkwork-rust-type": "u64",
+            "nullable": true
+          },
+          "invocationKind": {
+            "type": "string",
+            "enum": [
+              "local-workflow",
+              "process-adapter",
+              "mcp-tool",
+              "kernel-provider"
+            ]
+          },
+          "entrypoint": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": true,
+            "default": {}
+          },
+          "outputSchema": {
+            "type": "object",
+            "additionalProperties": true,
+            "default": {}
+          },
+          "configSchema": {
+            "type": "object",
+            "additionalProperties": true,
+            "default": {}
+          },
+          "defaultConfig": {
+            "type": "object",
+            "additionalProperties": true,
+            "default": {}
+          },
+          "securityProfileId": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "yanked"
+            ],
+            "default": "draft"
+          },
+          "capabilityKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        }
+      },
+      "CreateSkillPackageCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "skillKey",
+          "code",
+          "displayName",
+          "initialArtifact"
+        ],
+        "properties": {
+          "skillKey": {
+            "type": "string",
+            "pattern": "^skill\\.[a-z0-9_-]+(?:\\.[a-z0-9_-]+)*$"
+          },
+          "packageKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "active",
+              "disabled",
+              "archived",
+              "deleted"
+            ],
+            "default": "draft"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "tenant",
+              "organization",
+              "public"
+            ],
+            "default": "tenant"
+          },
+          "featured": {
+            "type": "boolean",
+            "default": false
+          },
+          "sortWeight": {
+            "type": "integer",
+            "format": "int32",
+            "default": 0
+          },
+          "initialArtifact": {
+            "$ref": "#/components/schemas/CreateSkillArtifactCommand"
+          }
+        }
+      },
+      "UpdateOwnSkillPackageCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "version"
+        ],
+        "properties": {
+          "version": {
+            "type": "string",
+            "format": "int64",
+            "pattern": "^[0-9]+$",
+            "minLength": 1,
+            "x-sdkwork-int64-string": true,
+            "x-sdkwork-rust-type": "u64"
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        }
+      },
       "SkillsPageData": {
         "type": "object",
         "additionalProperties": false,
@@ -2352,6 +3203,36 @@
             "properties": {
               "data": {
                 "$ref": "#/components/schemas/SkillArtifactsPageData"
+              }
+            }
+          }
+        ]
+      },
+      "SkillArtifactResourceData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/SkillArtifactRecord"
+          }
+        }
+      },
+      "SkillArtifactResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SkillArtifactResourceData"
               }
             }
           }

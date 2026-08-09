@@ -123,7 +123,12 @@ pub(crate) async fn create_package<R>(
 where
     R: SkillsRepository + Send + Sync,
 {
-    let (package, initial_artifact) = package_aggregate(&context, body);
+    let (package, initial_artifact) = package_aggregate(
+        context.tenant_id,
+        context.organization_id,
+        context.operator_id,
+        body,
+    );
     finish_created_api_json(
         &ctx,
         create_skill_package(state.service.as_ref(), package, initial_artifact).await,

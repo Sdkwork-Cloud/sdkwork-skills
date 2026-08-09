@@ -40,7 +40,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "ba0d238f1af931af510c0225c551a94c77667f823c9ef709fdf5d1b0b3180294"
+      "sha256": "b8110608f982e1a3d57e4b7693895f20c43d4d22d3354ec1103505262398d570"
     },
     {
       "path": "README.md",
@@ -64,7 +64,7 @@
     },
     {
       "path": "src/api/skills.ts",
-      "sha256": "8e314e00437ed2cbd8908a7fcf89cf1e57a0b562ffd471d38e5504e548b8565e"
+      "sha256": "f5e9194555615671568bdc3eb591600305db8f87a7838f71ae4e788e2a006e2d"
     },
     {
       "path": "src/auth/index.ts",
@@ -72,7 +72,7 @@
     },
     {
       "path": "src/http/client.ts",
-      "sha256": "8839b850d906d757356241de57a3fc65beaa03287dad8e52965378164e860a57"
+      "sha256": "9349831b44a1a7336bdb8963379ad2ee616c48a4ae7c6d2540737780810ee8bc"
     },
     {
       "path": "src/http/index.ts",
@@ -91,8 +91,16 @@
       "sha256": "d2506be8c4bdbe8e7059393467e6e71d75ef1d8c018dbf997bb0ab2a77b6c7b6"
     },
     {
+      "path": "src/types/create-skill-artifact-command.ts",
+      "sha256": "cd232a2492f4c12352a5f4e93e90b966a1af5fc8301d8f7d69f57b60d0ccf544"
+    },
+    {
       "path": "src/types/create-skill-installation-command.ts",
       "sha256": "71fc2c70368143d98c3a4485b947271e234c896a2a10534b1adf6b3c734265cf"
+    },
+    {
+      "path": "src/types/create-skill-package-command.ts",
+      "sha256": "fac06a64017ef9736ae658f9a76c7655d011a6a63a8d4907c30110b2d2a537b0"
     },
     {
       "path": "src/types/field-error.ts",
@@ -100,7 +108,7 @@
     },
     {
       "path": "src/types/index.ts",
-      "sha256": "1e6cc420d5a2138222b1867d7e2b6a4bca5328f3f69aef7f9d21f0f57bd3e2e8"
+      "sha256": "6133347a148af9281dbd96de1cbdbcaf4408f8ba5c7206771638304c984872f8"
     },
     {
       "path": "src/types/page-info.ts",
@@ -144,7 +152,15 @@
     },
     {
       "path": "src/types/skill-artifact-record.ts",
-      "sha256": "7f4c16b20761d82688635c0d652494abfae267c9f9cc2c5ff87be1ddc4f08c2e"
+      "sha256": "c79840795c1216dd3a9ca1f272dcf2bd730c0f2dba478068ddb9b0f38e6c1d53"
+    },
+    {
+      "path": "src/types/skill-artifact-resource-data.ts",
+      "sha256": "3acc62d320235314be80afc4ccd4f53e8add441aa3be9f8a76a619c03b513c9a"
+    },
+    {
+      "path": "src/types/skill-artifact-response.ts",
+      "sha256": "ca1ba1f0f45c788a4c20d9633725a535d699cc0ec1dbff8a5764b3947c8dcf39"
     },
     {
       "path": "src/types/skill-artifacts-list-response.ts",
@@ -192,7 +208,7 @@
     },
     {
       "path": "src/types/skill-package-record.ts",
-      "sha256": "b4255a4554cd1a299b43382fcda137ece07f7402e13bd6f46336cead477ee429"
+      "sha256": "f5d2f7717f519e01a7c4c73161f546bf9bfa027150ecaf4e4506f23723328612"
     },
     {
       "path": "src/types/skill-package-resource-data.ts",
@@ -212,7 +228,7 @@
     },
     {
       "path": "src/types/skill-record.ts",
-      "sha256": "6b93c6654228646cd3969232c6f18d9026fd6a64a5cbbd49f32f124df54f783f"
+      "sha256": "ddeb7b8aef3213c3ebd75b86a8176601744d6eeff597cf0715a94c5860c7c68f"
     },
     {
       "path": "src/types/skill-resource-data.ts",
@@ -229,6 +245,10 @@
     {
       "path": "src/types/skills-page-data.ts",
       "sha256": "286c7078a2a5c2a1ba4566b79168655e510daf4ca991a5fbfab3892ffb2b54dd"
+    },
+    {
+      "path": "src/types/update-own-skill-package-command.ts",
+      "sha256": "9006483cd7a5498ff06e2eda39fcaad1b5ad8fac4e67fb19207a64ae2693ae03"
     },
     {
       "path": "tsconfig.json",
