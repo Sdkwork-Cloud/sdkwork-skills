@@ -18,22 +18,27 @@
 
 BEGIN;
 
+ALTER TABLE skills_category ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE skills_category SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE skills_category ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE skills_category ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE skills_package ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE skills_package SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE skills_package ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE skills_package ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE skills_definition ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE skills_definition SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE skills_definition ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE skills_definition ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE skills_capability ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE skills_capability SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE skills_capability ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE skills_capability ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE skills_installation ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE skills_installation SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE skills_installation ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE skills_installation ALTER COLUMN organization_id SET NOT NULL;
