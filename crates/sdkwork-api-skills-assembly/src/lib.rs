@@ -12,7 +12,7 @@ pub use bootstrap::{
     assemble_app_api_contribution, assemble_app_api_contribution_with_pool,
     assemble_app_api_contribution_with_target_authorizer, assemble_app_surface_router,
     assemble_app_surface_router_with_target_authorizer, assemble_backend_surface_router,
-    ApiAssembly, ApiAssemblyContribution,
+    bootstrap_database_from_env, ApiAssembly, ApiAssemblyContribution,
 };
 pub use context::SkillsDomainContextInjector;
 pub use route_manifest::skills_api_route_manifest;

@@ -1,14 +1,11 @@
 use std::sync::Arc;
 
 use axum::Router;
-use sdkwork_api_skills_assembly::{assemble_api_router_from_env, ApiAssembly};
+use sdkwork_api_skills_assembly::ApiAssembly;
 use sdkwork_iam_web_adapter::{
     iam_web_request_context_resolver_from_env, IamAppContextInjector, IamAuthorizationPolicy,
 };
-use sdkwork_web_axum::{with_web_request_context, WebFrameworkLayer};
-use sdkwork_web_bootstrap::{
-    mount_infra_routes, mount_openapi_json, OpenApiMount, ServiceRouterConfig,
-};
+use sdkwork_web_bootstrap::{ComposedApiAssembly, WebFramework};
 use sdkwork_web_core::{
     DefaultRateLimitPolicyResolver, HttpMetricsRegistry, WebRequestContextProfile,
     WebRequestContextResolver,
@@ -27,7 +24,7 @@ pub async fn build_app_from_assembly(assembly: ApiAssembly) -> Result<Router, St
 }
 
 pub(crate) async fn build_app_with_config(config: GatewayRuntimeConfig) -> Result<Router, String> {
-    let assembly = assemble_api_router_from_env().await?;
+    let assembly = sdkwork_api_skills_assembly::assemble_api_router_from_env().await?;
     let resolver = iam_web_request_context_resolver_from_env().await;
     build_app_with_resolver(assembly, resolver, config)
 }
@@ -48,42 +45,30 @@ where
             format!("Skills route manifest public prefix validation failed: {error}")
         })?;
 
+    let title = assembly
+        .openapi
+        .pointer("/info/title")
+        .and_then(|value| value.as_str())
+        .unwrap_or("SDKWork Skills API")
+        .to_owned();
     let metrics = HttpMetricsRegistry::with_dimensions(config.metrics_dimensions);
     let authorization_policy =
         Arc::new(IamAuthorizationPolicy::new(assembly.route_manifest.clone()));
-    let layer = WebFrameworkLayer::new(resolver)
-        .with_profile(WebRequestContextProfile {
+    let framework = WebFramework::builder(resolver)
+        .profile(WebRequestContextProfile {
             public_path_prefixes,
             environment: config.environment,
             ..WebRequestContextProfile::default()
         })
-        .with_security_policy(config.security_policy)
-        .with_route_manifest(assembly.route_manifest)
-        .with_authorization_policy(authorization_policy)
-        .with_domain_injector(Arc::new(IamAppContextInjector))
-        .with_rate_limit_resolver(Arc::new(DefaultRateLimitPolicyResolver))
-        .with_metrics(metrics.clone());
-    let layer = assembly
-        .domain_context_injectors
-        .into_iter()
-        .fold(layer, |layer, injector| {
-            layer.with_domain_injector(injector)
-        });
-    let business = with_web_request_context(assembly.router, layer);
-    let business = mount_openapi_json(
-        business,
-        &[OpenApiMount {
-            path: "/openapi.json",
-            document: Arc::new(assembly.openapi),
-        }],
-    );
-
-    Ok(mount_infra_routes(
-        business,
-        ServiceRouterConfig::default()
-            .with_readiness_check(assembly.readiness_check)
-            .with_metrics(metrics),
-    ))
+        .security_policy(config.security_policy)
+        .route_manifest(assembly.route_manifest.clone())
+        .authorization_policy(authorization_policy)
+        .domain_injector(Arc::new(IamAppContextInjector))
+        .rate_limit_resolver(Arc::new(DefaultRateLimitPolicyResolver))
+        .metrics_registry(metrics);
+    Ok(ComposedApiAssembly::try_compose(&title, vec![assembly])?
+        .into_hosted(framework)
+        .router)
 }
 
 #[cfg(test)]

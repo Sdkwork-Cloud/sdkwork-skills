@@ -88,9 +88,9 @@
     ],
     "requiredPorts": [
       {
-        "name": "skillsApiAssembly",
-        "export": ".",
-        "target": "sdkwork_api_skills_assembly::assemble_api_router_from_env"
+        "name": "applicationApiAssembly",
+        "export": "sdkwork_api_skills_assembly::assemble_api_router_from_env",
+        "provider": "sdkwork-api-skills-assembly"
       },
       {
         "name": "webFramework",

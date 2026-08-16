@@ -83,6 +83,11 @@
         "target": "sdkwork_api_skills_assembly::assemble_api_router_with_pool"
       },
       {
+        "name": "skillsDatabaseLifecycleFromEnv",
+        "export": ".",
+        "target": "sdkwork_api_skills_assembly::bootstrap_database_from_env"
+      },
+      {
         "name": "combinedRouteManifest",
         "export": ".",
         "target": "sdkwork_api_skills_assembly::skills_api_route_manifest"
@@ -129,6 +134,7 @@
       "sdkwork_api_skills_assembly::assemble_api_router",
       "sdkwork_api_skills_assembly::assemble_api_router_from_env",
       "sdkwork_api_skills_assembly::assemble_api_router_with_pool",
+      "sdkwork_api_skills_assembly::bootstrap_database_from_env",
       "sdkwork_api_skills_assembly::assemble_app_api_contribution",
       "sdkwork_api_skills_assembly::assemble_app_api_contribution_with_pool",
       "sdkwork_api_skills_assembly::assemble_app_api_contribution_with_target_authorizer",

@@ -96,6 +96,13 @@ pub async fn assemble_api_router_with_pool(pool: DatabasePool) -> Result<ApiAsse
     assemble_api_router(service, database_host).await
 }
 
+/// Runs the Skills-owned database lifecycle without constructing HTTP routes.
+pub async fn bootstrap_database_from_env() -> Result<(), String> {
+    sdkwork_skills_database_host::bootstrap_skills_database_from_env()
+        .await
+        .map(|_| ())
+}
+
 /// Builds the Skills App API from the canonical owner repository and database lifecycle.
 pub async fn assemble_app_api_contribution() -> Result<ApiAssemblyContribution, String> {
     assemble_app_api_contribution_with_target_authorizer(Arc::new(DenyExternalInstallationTargets))

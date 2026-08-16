@@ -15,7 +15,6 @@ path = "src/bin/app_main.rs"
 sdkwork-api-skills-assembly.workspace = true
 sdkwork-database-sqlx.workspace = true
 sdkwork-iam-web-adapter.workspace = true
-sdkwork-web-axum.workspace = true
 sdkwork-web-bootstrap.workspace = true
 sdkwork-web-core.workspace = true
 axum.workspace = true
