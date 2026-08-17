@@ -30,11 +30,11 @@ packages:
   - "../sdkwork-iam/sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/src/index.ts"
   - "../sdkwork-iam/sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript/src/index.ts"
   - "../sdkwork-appbase/packages/pc-react/foundation/sdkwork-shell-pc-react"
-
   - "../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-user-center-core-pc-react"
   - "../sdkwork-appbase/packages/pc-react/foundation/sdkwork-command-pc-react"
   - "../sdkwork-search/apps/sdkwork-search-pc/packages/sdkwork-search-pc-react"
   - "../sdkwork-search/apps/sdkwork-search-common/packages/sdkwork-search-contracts"
+
 catalog:
   "@monaco-editor/react": ^4.7.0
   "@playwright/test": ^1.52.0
