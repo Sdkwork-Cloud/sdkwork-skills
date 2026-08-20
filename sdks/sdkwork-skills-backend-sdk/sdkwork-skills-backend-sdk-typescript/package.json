@@ -1,6 +1,6 @@
 {
   "name": "@sdkwork/skills-backend-sdk",
-  "version": "0.1.2",
+  "version": "0.1.1",
   "description": "SDKWork composed consumer facade for @sdkwork/skills-backend-sdk.",
   "type": "module",
   "private": false,
