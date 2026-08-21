@@ -1,28 +1,34 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { isBlank, trim } from '@sdkwork/utils';
-import { isDriveArtifactRef } from '@sdkwork/skills-pc-commons/driveUri';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
-  createOwnSkillPackage,
   deleteOwnSkillPackage,
   listOwnedSkillPackages,
-  uploadSkillPackageArchive,
   useSkillsClients,
   type SkillPackageRecord,
 } from '@sdkwork/skills-pc-core';
-import { Link } from 'react-router-dom';
 
 export function MySkillsPage() {
   const clients = useSkillsClients();
   const [packages, setPackages] = useState<SkillPackageRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   async function reload() {
-    const page = await listOwnedSkillPackages(clients);
-    setPackages(page.items);
+    setLoading(true);
+    try {
+      const page = await listOwnedSkillPackages(clients);
+      setPackages(page.items);
+      setError(null);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    reload().catch((cause: Error) => setError(cause.message));
+    reload().catch((cause: Error) => {
+      setError(cause.message);
+      setLoading(false);
+    });
   }, [clients]);
 
   async function onDelete(packageId: string) {
@@ -35,30 +41,51 @@ export function MySkillsPage() {
     }
   }
 
+  if (loading) {
+    return <p className="skills-console-status">Loading your skill packages…</p>;
+  }
+
   return (
-    <section>
-      <h2>My Skills</h2>
-      <p>
-        Skill packages you created are active in your workspace. Marketplace publication is
-        managed by administrators.
-      </p>
-      <p>
-        <Link to="/console/skills/create">Create and upload a skill package</Link>
-      </p>
-      {error ? <p role="alert">{error}</p> : null}
+    <section className="skills-console-page">
+      <header className="skills-console-header">
+        <div>
+          <h2>My Skills</h2>
+          <p>
+            Skill packages you create stay active in your workspace. Marketplace publication is
+            managed by administrators.
+          </p>
+        </div>
+        <Link className="skills-console-primary" to="/console/skills/create">
+          Create skill package
+        </Link>
+      </header>
+      {error ? (
+        <p className="skills-console-error" role="alert">
+          {error}
+        </p>
+      ) : null}
       {packages.length === 0 ? (
-        <p>You have not created any skill packages yet.</p>
+        <div className="skills-console-empty">
+          <h3>No skill packages yet</h3>
+          <p>Create and upload a skill archive to manage it here.</p>
+          <Link to="/console/skills/create">Create and upload a skill package</Link>
+        </div>
       ) : (
-        <ul>
+        <ul className="skills-console-list">
           {packages.map((item) => (
             <li key={item.id}>
-              {item.displayName} ({item.skillKey}) - {item.status} [{item.visibility}]
-              <Link to={`/console/skills/edit/${encodeURIComponent(item.id)}`} style={{ marginLeft: 8 }}>
-                Edit
-              </Link>
-              <button type="button" onClick={() => onDelete(item.id)} style={{ marginLeft: 8 }}>
-                Delete
-              </button>
+              <div>
+                <strong>{item.displayName}</strong>
+                <span>
+                  {item.skillKey} · {item.status} · {item.visibility}
+                </span>
+              </div>
+              <div className="skills-console-actions">
+                <Link to={`/console/skills/edit/${encodeURIComponent(item.id)}`}>Edit</Link>
+                <button type="button" onClick={() => onDelete(item.id)}>
+                  Delete
+                </button>
+              </div>
             </li>
           ))}
         </ul>
