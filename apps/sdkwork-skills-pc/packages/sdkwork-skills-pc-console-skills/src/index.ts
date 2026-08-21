@@ -1,1 +1,1 @@
-export { CreateSkillPage, MySkillsPage } from './pages';
+export { CreateSkillPage, EditSkillPage, MySkillsPage } from './pages';

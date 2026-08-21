@@ -53,6 +53,9 @@ export function MySkillsPage() {
           {packages.map((item) => (
             <li key={item.id}>
               {item.displayName} ({item.skillKey}) - {item.status} [{item.visibility}]
+              <Link to={`/console/skills/edit/${encodeURIComponent(item.id)}`} style={{ marginLeft: 8 }}>
+                Edit
+              </Link>
               <button type="button" onClick={() => onDelete(item.id)} style={{ marginLeft: 8 }}>
                 Delete
               </button>
