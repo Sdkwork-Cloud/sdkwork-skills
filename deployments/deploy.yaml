@@ -1,6 +1,5 @@
 version: 2
 defaultProfile: cloud.production
-
 profiles:
   cloud.test:
     deployment:
@@ -21,6 +20,26 @@ profiles:
         tls: sdkwork.com
         mode: web+api
         web: adaptive
+      - domain: skills-test.birdcoder.com
+        tls: birdcoder.com
+        mode: web+api
+        web: adaptive
+      - domain: skills-test.dtupay.com
+        tls: dtupay.com
+        mode: web+api
+        web: adaptive
+      - domain: skills-test.sdkwork.cn
+        tls: sdkwork.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills-test.birdcoder.cn
+        tls: birdcoder.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills-test.dtupay.cn
+        tls: dtupay.cn
+        mode: web+api
+        web: adaptive
     packages:
       - web-universal-cloud-browser-zip
       - linux-x64-standalone-server-tar-gz
@@ -31,7 +50,6 @@ profiles:
         env: etc/topology/cloud.test.env
       kubernetes:
         reference: deployments/kubernetes/
-
   cloud.staging:
     deployment:
       deploymentProfile: cloud
@@ -51,6 +69,26 @@ profiles:
         tls: sdkwork.com
         mode: web+api
         web: adaptive
+      - domain: skills-staging.birdcoder.com
+        tls: birdcoder.com
+        mode: web+api
+        web: adaptive
+      - domain: skills-staging.dtupay.com
+        tls: dtupay.com
+        mode: web+api
+        web: adaptive
+      - domain: skills-staging.sdkwork.cn
+        tls: sdkwork.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills-staging.birdcoder.cn
+        tls: birdcoder.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills-staging.dtupay.cn
+        tls: dtupay.cn
+        mode: web+api
+        web: adaptive
     packages:
       - web-universal-cloud-browser-zip
       - linux-x64-standalone-server-tar-gz
@@ -61,7 +99,6 @@ profiles:
         env: etc/topology/cloud.staging.env
       kubernetes:
         reference: deployments/kubernetes/
-
   cloud.production:
     deployment:
       deploymentProfile: cloud
@@ -81,6 +118,26 @@ profiles:
         tls: sdkwork.com
         mode: web+api
         web: adaptive
+      - domain: skills.birdcoder.com
+        tls: birdcoder.com
+        mode: web+api
+        web: adaptive
+      - domain: skills.dtupay.com
+        tls: dtupay.com
+        mode: web+api
+        web: adaptive
+      - domain: skills.sdkwork.cn
+        tls: sdkwork.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills.birdcoder.cn
+        tls: birdcoder.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills.dtupay.cn
+        tls: dtupay.cn
+        mode: web+api
+        web: adaptive
     packages:
       - web-universal-cloud-browser-zip
       - linux-x64-standalone-server-tar-gz
@@ -91,7 +148,6 @@ profiles:
         env: etc/topology/cloud.production.env
       kubernetes:
         reference: deployments/kubernetes/
-
   standalone.production:
     deployment:
       deploymentProfile: standalone
@@ -107,8 +163,33 @@ profiles:
     install:
       layout: binary-package
     expose:
-      - domain: skills.internal.example
-        tls: managed
+      - domain: skills.sdkwork.com
+        tls: sdkwork.com
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.birdcoder.com
+        tls: birdcoder.com
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.dtupay.com
+        tls: dtupay.com
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.sdkwork.cn
+        tls: sdkwork.cn
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.birdcoder.cn
+        tls: birdcoder.cn
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.dtupay.cn
+        tls: dtupay.cn
         mode: web+api
         web: adaptive
         apiPathStyle: full-prefix
