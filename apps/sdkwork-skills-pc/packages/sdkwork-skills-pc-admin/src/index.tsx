@@ -16,16 +16,20 @@ import {
   listManagedSkillCategories,
   listManagedSkillPackages,
   packageManagePermissionForCategory,
+  updateSkillPackage,
 } from '@sdkwork/skills-pc-admin-core';
 
 import { uploadSkillPackageArchive } from './services/skillPackageUploadService';
+import { ConfirmModal, SurfaceDrawer } from './components/SurfaceOverlay.tsx';
 
 export function AdminSkillsPage({
   grantedPermissions = [],
   roleCodes = [],
+  initialEditPackageId = null,
 }: {
   grantedPermissions?: readonly string[];
   roleCodes?: readonly string[];
+  initialEditPackageId?: string | null;
 }) {
   const clients = useSkillsClients();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,6 +38,10 @@ export function AdminSkillsPage({
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<SkillPackageRecord | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<SkillPackageRecord | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState<CreatePackageInput>({
     skillKey: 'skill.demo.sample',
     packageKey: 'demo-sample',
@@ -72,6 +80,12 @@ export function AdminSkillsPage({
   useEffect(() => {
     reload().catch((cause: Error) => setError(cause.message));
   }, [clients]);
+
+  useEffect(() => {
+    if (!initialEditPackageId || packages.length === 0) return;
+    const found = packages.find((item) => item.id === initialEditPackageId);
+    if (found) setEditTarget(found);
+  }, [initialEditPackageId, packages]);
 
   async function onUploadSelectedFile() {
     const file = fileInputRef.current?.files?.[0];
@@ -125,27 +139,85 @@ export function AdminSkillsPage({
     }
     try {
       await createSkillPackage(clients, form);
+      setCreateOpen(false);
       await reload();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
     }
   }
 
-  async function onDelete(packageId: string) {
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
     setError(null);
     try {
-      await deleteSkillPackage(clients, packageId);
+      await deleteSkillPackage(clients, deleteTarget.id);
+      setDeleteTarget(null);
       await reload();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
+    } finally {
+      setDeleting(false);
     }
   }
 
   return (
-    <section>
-      <h2>Admin Skills</h2>
+    <section className="skills-console-page">
+      <header className="skills-console-header" style={{ marginBottom: 0 }}>
+        <h2>Admin Skills</h2>
+        <button type="button" className="skills-console-primary" onClick={() => setCreateOpen(true)}>
+          Create package
+        </button>
+      </header>
       {error ? <p role="alert">{error}</p> : null}
-      <form onSubmit={onSubmit} style={{ display: 'grid', gap: 8, maxWidth: 640, marginBottom: 24 }}>
+      <div className="data-surface">
+        <div className="table-frame">
+          {packages.length === 0 ? (
+            <div className="empty-state">
+              <span>No skill packages yet.</span>
+              <button type="button" className="skills-console-primary" onClick={() => setCreateOpen(true)}>
+                Create package
+              </button>
+            </div>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Skill key</th>
+                  <th>Categories</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {packages.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.displayName}</td>
+                    <td>{item.skillKey}</td>
+                    <td>{item.categories.length > 0 ? item.categories.join(', ') : '—'}</td>
+                    <td>
+                      <div className="skills-console-actions">
+                        <button type="button" onClick={() => setEditTarget(item)}>
+                          Edit
+                        </button>
+                        <button type="button" onClick={() => setDeleteTarget(item)}>
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+      <SurfaceDrawer
+        open={createOpen}
+        title="Create package and artifact"
+        onClose={() => setCreateOpen(false)}
+      >
+      <form onSubmit={onSubmit} style={{ display: 'grid', gap: 8 }}>
         <input
           value={form.skillKey}
           onChange={(event) => setForm({ ...form, skillKey: event.target.value })}
@@ -215,17 +287,72 @@ export function AdminSkillsPage({
           Create Package And Artifact
         </button>
       </form>
-      <ul>
-        {packages.map((item) => (
-          <li key={item.id}>
-            {item.displayName} ({item.skillKey})
-            {item.categories.length > 0 ? ` [${item.categories.join(', ')}]` : ''}
-            <button type="button" onClick={() => onDelete(item.id)} style={{ marginLeft: 8 }}>
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
+      </SurfaceDrawer>
+      <SurfaceDrawer
+        open={editTarget != null}
+        title={editTarget ? `Update ${editTarget.skillKey}` : 'Update package'}
+        onClose={() => setEditTarget(null)}
+      >
+        {editTarget ? (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              const current = editTarget;
+              setError(null);
+              void updateSkillPackage(clients, current.id, {
+                version: current.version,
+                ...(current.displayName ? { displayName: current.displayName } : {}),
+                ...(current.summary ? { summary: current.summary } : {}),
+                ...(current.description ? { description: current.description } : {}),
+                ...(current.categories.length > 0 ? { categories: current.categories } : {}),
+                ...(current.tags.length > 0 ? { tags: current.tags } : {}),
+              })
+                .then(async () => {
+                  setEditTarget(null);
+                  await reload();
+                })
+                .catch((cause: unknown) => {
+                  setError(cause instanceof Error ? cause.message : String(cause));
+                });
+            }}
+            style={{ display: 'grid', gap: 8 }}
+          >
+            <input
+              value={editTarget.displayName}
+              onChange={(event) => setEditTarget({ ...editTarget, displayName: event.target.value })}
+              placeholder="display name"
+              required
+            />
+            <input
+              value={editTarget.summary ?? ''}
+              onChange={(event) => setEditTarget({ ...editTarget, summary: event.target.value || null })}
+              placeholder="summary"
+            />
+            <textarea
+              value={editTarget.description ?? ''}
+              onChange={(event) => setEditTarget({ ...editTarget, description: event.target.value || null })}
+              placeholder="description"
+              rows={4}
+            />
+            <div className="sdkwork-surface-drawer-form-actions">
+              <button type="button" onClick={() => setEditTarget(null)}>Cancel</button>
+              <button type="submit">Save Changes</button>
+            </div>
+          </form>
+        ) : null}
+      </SurfaceDrawer>
+      <ConfirmModal
+        open={deleteTarget != null}
+        title="Delete skill package?"
+        description={`Delete “${deleteTarget?.displayName ?? ''}”. This cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        busy={deleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          void confirmDelete();
+        }}
+      />
     </section>
   );
 }
@@ -234,6 +361,7 @@ export function AdminCategoriesPage() {
   const clients = useSkillsClients();
   const [categories, setCategories] = useState<SkillCategoryRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState<CreateCategoryInput>({
     code: 'general',
     name: 'General',
@@ -256,6 +384,7 @@ export function AdminCategoriesPage() {
     setError(null);
     try {
       await createSkillCategory(clients, form);
+      setCreateOpen(false);
       await reload();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -263,44 +392,78 @@ export function AdminCategoriesPage() {
   }
 
   return (
-    <section>
-      <h2>Admin Categories</h2>
+    <section className="skills-console-page">
+      <header className="skills-console-header" style={{ marginBottom: 0 }}>
+        <h2>Admin Categories</h2>
+        <button type="button" className="skills-console-primary" onClick={() => setCreateOpen(true)}>
+          Create category
+        </button>
+      </header>
       {error ? <p role="alert">{error}</p> : null}
-      <form onSubmit={onSubmit} style={{ display: 'grid', gap: 8, maxWidth: 480, marginBottom: 24 }}>
-        <input
-          value={form.code}
-          onChange={(event) => {
-            const code = event.target.value;
-            setForm({
-              ...form,
-              code,
-              permissionCode: packageManagePermissionForCategory(code),
-            });
-          }}
-          placeholder="code"
-          required
-        />
-        <input
-          value={form.name}
-          onChange={(event) => setForm({ ...form, name: event.target.value })}
-          placeholder="name"
-          required
-        />
-        <input
-          value={form.permissionCode ?? ''}
-          onChange={(event) => setForm({ ...form, permissionCode: event.target.value })}
-          placeholder="permission code"
-          required
-        />
-        <button type="submit">Create Category</button>
-      </form>
-      <ul>
-        {categories.map((item) => (
-          <li key={item.id}>
-            {item.name} ({item.code}) - {item.permissionCode}
-          </li>
-        ))}
-      </ul>
+      <div className="data-surface">
+        <div className="table-frame">
+          {categories.length === 0 ? (
+            <div className="empty-state">
+              <span>No categories yet.</span>
+              <button type="button" className="skills-console-primary" onClick={() => setCreateOpen(true)}>
+                Create category
+              </button>
+            </div>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Code</th>
+                  <th>Permission</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.name}</td>
+                    <td>{item.code}</td>
+                    <td>{item.permissionCode}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+      <SurfaceDrawer open={createOpen} title="Create category" onClose={() => setCreateOpen(false)}>
+        <form onSubmit={onSubmit} style={{ display: 'grid', gap: 8 }}>
+          <input
+            value={form.code}
+            onChange={(event) => {
+              const code = event.target.value;
+              setForm({
+                ...form,
+                code,
+                permissionCode: packageManagePermissionForCategory(code),
+              });
+            }}
+            placeholder="code"
+            required
+          />
+          <input
+            value={form.name}
+            onChange={(event) => setForm({ ...form, name: event.target.value })}
+            placeholder="name"
+            required
+          />
+          <input
+            value={form.permissionCode ?? ''}
+            onChange={(event) => setForm({ ...form, permissionCode: event.target.value })}
+            placeholder="permission code"
+            required
+          />
+          <div className="sdkwork-surface-drawer-form-actions">
+            <button type="button" onClick={() => setCreateOpen(false)}>Cancel</button>
+            <button type="submit">Create Category</button>
+          </div>
+        </form>
+      </SurfaceDrawer>
     </section>
   );
 }

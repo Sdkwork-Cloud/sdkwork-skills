@@ -1,2 +1,2 @@
 export { AdminCategoriesPage, AdminSkillsPage } from '@sdkwork/skills-pc-admin';
-export { PackageArtifactsPage, SkillCapabilitiesPage, UpdateSkillPackagePage } from './pages';
+export { PackageArtifactsPage, SkillCapabilitiesPage, UpdateSkillPackageForm, UpdateSkillPackagePage } from './pages';

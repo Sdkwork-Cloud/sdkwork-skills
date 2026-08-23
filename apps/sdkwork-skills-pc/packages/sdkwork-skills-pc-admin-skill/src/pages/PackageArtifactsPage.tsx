@@ -7,6 +7,7 @@ import {
   useSkillsClients,
   type SkillArtifactRecord,
 } from '@sdkwork/skills-pc-core';
+import { SurfaceDrawer } from '../components/SurfaceOverlay.tsx';
 
 export function PackageArtifactsPage() {
   const clients = useSkillsClients();
@@ -16,6 +17,7 @@ export function PackageArtifactsPage() {
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState({
     versionLabel: '1.1.0',
     artifactRef: '',
@@ -81,6 +83,7 @@ export function PackageArtifactsPage() {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      setCreateOpen(false);
       await reload();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -88,43 +91,79 @@ export function PackageArtifactsPage() {
   }
 
   return (
-    <section>
-      <h2>Artifacts for Package {packageId}</h2>
-      {error ? <p role="alert">{error}</p> : null}
-      <form onSubmit={onSubmit} style={{ display: 'grid', gap: 8, maxWidth: 640, marginBottom: 24 }}>
-        <input
-          value={form.versionLabel}
-          onChange={(event) => setForm({ ...form, versionLabel: event.target.value })}
-          placeholder="version label"
-          required
-        />
-        <div style={{ display: 'grid', gap: 8 }}>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".zip,.tar,.gz,.tgz,.skillpkg,application/zip"
-          />
-          <button type="button" onClick={onUploadSelectedFile} disabled={uploading}>
-            {uploading ? 'Uploading...' : 'Upload Artifact via sdkwork-drive'}
-          </button>
-          {selectedFileName ? <p>Uploaded file: {selectedFileName}</p> : null}
-          <input value={form.artifactRef} readOnly placeholder="artifactRef (drive://...)" />
-        </div>
-        <button type="submit" disabled={uploading}>
-          Attach Artifact
+    <section className="skills-console-page">
+      <header className="skills-console-header" style={{ marginBottom: 0 }}>
+        <h2>Artifacts for Package {packageId}</h2>
+        <button type="button" className="skills-console-primary" onClick={() => setCreateOpen(true)}>
+          Attach artifact
         </button>
-      </form>
-      {artifacts.length === 0 ? (
-        <p>No artifacts attached to this package.</p>
-      ) : (
-        <ul>
-          {artifacts.map((item) => (
-            <li key={item.id}>
-              {item.versionLabel} - {item.status} ({item.invocationKind})
-            </li>
-          ))}
-        </ul>
-      )}
+      </header>
+      {error ? <p role="alert">{error}</p> : null}
+      <div className="data-surface">
+        <div className="table-frame">
+          {artifacts.length === 0 ? (
+            <div className="empty-state">
+              <span>No artifacts attached to this package.</span>
+              <button type="button" className="skills-console-primary" onClick={() => setCreateOpen(true)}>
+                Attach artifact
+              </button>
+            </div>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Version</th>
+                  <th>Status</th>
+                  <th>Invocation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {artifacts.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.versionLabel}</td>
+                    <td>{item.status}</td>
+                    <td>{item.invocationKind}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+      <SurfaceDrawer
+        open={createOpen}
+        title="Attach artifact"
+        onClose={() => setCreateOpen(false)}
+      >
+        <form onSubmit={onSubmit} style={{ display: 'grid', gap: 8 }}>
+          <input
+            value={form.versionLabel}
+            onChange={(event) => setForm({ ...form, versionLabel: event.target.value })}
+            placeholder="version label"
+            required
+          />
+          <div style={{ display: 'grid', gap: 8 }}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".zip,.tar,.gz,.tgz,.skillpkg,application/zip"
+            />
+            <button type="button" onClick={onUploadSelectedFile} disabled={uploading}>
+              {uploading ? 'Uploading...' : 'Upload Artifact via sdkwork-drive'}
+            </button>
+            {selectedFileName ? <p>Uploaded file: {selectedFileName}</p> : null}
+            <input value={form.artifactRef} readOnly placeholder="artifactRef (drive://...)" />
+          </div>
+          <div className="sdkwork-surface-drawer-form-actions">
+            <button type="button" onClick={() => setCreateOpen(false)}>
+              Cancel
+            </button>
+            <button type="submit" disabled={uploading}>
+              Attach Artifact
+            </button>
+          </div>
+        </form>
+      </SurfaceDrawer>
     </section>
   );
 }
