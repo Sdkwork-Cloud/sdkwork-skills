@@ -77,7 +77,15 @@
             "skills-dev.dtupay.com",
             "skills-dev.sdkwork.cn",
             "skills-dev.birdcoder.cn",
-            "skills-dev.dtupay.cn"
+            "skills-dev.dtupay.cn",
+            "skills-dev.skubc.com",
+            "skills-dev.skubc.cn",
+            "skills-dev.zowalk.com",
+            "skills-dev.zowalk.cn",
+            "skills-dev.offer86.com",
+            "skills-dev.offer86.cn",
+            "skills-dev.86offer.com",
+            "skills-dev.86offer.cn"
           ]
         },
         "test": {
@@ -87,7 +95,15 @@
             "skills-test.dtupay.com",
             "skills-test.sdkwork.cn",
             "skills-test.birdcoder.cn",
-            "skills-test.dtupay.cn"
+            "skills-test.dtupay.cn",
+            "skills-test.skubc.com",
+            "skills-test.skubc.cn",
+            "skills-test.zowalk.com",
+            "skills-test.zowalk.cn",
+            "skills-test.offer86.com",
+            "skills-test.offer86.cn",
+            "skills-test.86offer.com",
+            "skills-test.86offer.cn"
           ]
         },
         "staging": {
@@ -97,7 +113,15 @@
             "skills-staging.dtupay.com",
             "skills-staging.sdkwork.cn",
             "skills-staging.birdcoder.cn",
-            "skills-staging.dtupay.cn"
+            "skills-staging.dtupay.cn",
+            "skills-staging.skubc.com",
+            "skills-staging.skubc.cn",
+            "skills-staging.zowalk.com",
+            "skills-staging.zowalk.cn",
+            "skills-staging.offer86.com",
+            "skills-staging.offer86.cn",
+            "skills-staging.86offer.com",
+            "skills-staging.86offer.cn"
           ]
         }
       },
@@ -107,7 +131,15 @@
         "skills.dtupay.com",
         "skills.sdkwork.cn",
         "skills.birdcoder.cn",
-        "skills.dtupay.cn"
+        "skills.dtupay.cn",
+        "skills.skubc.com",
+        "skills.skubc.cn",
+        "skills.zowalk.com",
+        "skills.zowalk.cn",
+        "skills.offer86.com",
+        "skills.offer86.cn",
+        "skills.86offer.com",
+        "skills.86offer.cn"
       ]
     },
     "platform.api-gateway": {
@@ -120,7 +152,15 @@
             "api-dev.dtupay.com",
             "api-dev.sdkwork.cn",
             "api-dev.birdcoder.cn",
-            "api-dev.dtupay.cn"
+            "api-dev.dtupay.cn",
+            "api-dev.skubc.com",
+            "api-dev.skubc.cn",
+            "api-dev.zowalk.com",
+            "api-dev.zowalk.cn",
+            "api-dev.offer86.com",
+            "api-dev.offer86.cn",
+            "api-dev.86offer.com",
+            "api-dev.86offer.cn"
           ]
         },
         "test": {
@@ -130,7 +170,15 @@
             "api-test.dtupay.com",
             "api-test.sdkwork.cn",
             "api-test.birdcoder.cn",
-            "api-test.dtupay.cn"
+            "api-test.dtupay.cn",
+            "api-test.skubc.com",
+            "api-test.skubc.cn",
+            "api-test.zowalk.com",
+            "api-test.zowalk.cn",
+            "api-test.offer86.com",
+            "api-test.offer86.cn",
+            "api-test.86offer.com",
+            "api-test.86offer.cn"
           ]
         },
         "staging": {
@@ -140,7 +188,15 @@
             "api-staging.dtupay.com",
             "api-staging.sdkwork.cn",
             "api-staging.birdcoder.cn",
-            "api-staging.dtupay.cn"
+            "api-staging.dtupay.cn",
+            "api-staging.skubc.com",
+            "api-staging.skubc.cn",
+            "api-staging.zowalk.com",
+            "api-staging.zowalk.cn",
+            "api-staging.offer86.com",
+            "api-staging.offer86.cn",
+            "api-staging.86offer.com",
+            "api-staging.86offer.cn"
           ]
         }
       },
@@ -150,7 +206,15 @@
         "api.dtupay.com",
         "api.sdkwork.cn",
         "api.birdcoder.cn",
-        "api.dtupay.cn"
+        "api.dtupay.cn",
+        "api.skubc.com",
+        "api.skubc.cn",
+        "api.zowalk.com",
+        "api.zowalk.cn",
+        "api.offer86.com",
+        "api.offer86.cn",
+        "api.86offer.com",
+        "api.86offer.cn"
       ]
     }
   },

@@ -40,6 +40,38 @@ profiles:
         tls: dtupay.cn
         mode: web+api
         web: adaptive
+      - domain: skills-test.skubc.com
+        tls: skubc.com
+        mode: web+api
+        web: adaptive
+      - domain: skills-test.skubc.cn
+        tls: skubc.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills-test.zowalk.com
+        tls: zowalk.com
+        mode: web+api
+        web: adaptive
+      - domain: skills-test.zowalk.cn
+        tls: zowalk.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills-test.offer86.com
+        tls: offer86.com
+        mode: web+api
+        web: adaptive
+      - domain: skills-test.offer86.cn
+        tls: offer86.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills-test.86offer.com
+        tls: 86offer.com
+        mode: web+api
+        web: adaptive
+      - domain: skills-test.86offer.cn
+        tls: 86offer.cn
+        mode: web+api
+        web: adaptive
     packages:
       - web-universal-cloud-browser-zip
       - linux-x64-standalone-server-tar-gz
@@ -89,6 +121,38 @@ profiles:
         tls: dtupay.cn
         mode: web+api
         web: adaptive
+      - domain: skills-staging.skubc.com
+        tls: skubc.com
+        mode: web+api
+        web: adaptive
+      - domain: skills-staging.skubc.cn
+        tls: skubc.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills-staging.zowalk.com
+        tls: zowalk.com
+        mode: web+api
+        web: adaptive
+      - domain: skills-staging.zowalk.cn
+        tls: zowalk.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills-staging.offer86.com
+        tls: offer86.com
+        mode: web+api
+        web: adaptive
+      - domain: skills-staging.offer86.cn
+        tls: offer86.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills-staging.86offer.com
+        tls: 86offer.com
+        mode: web+api
+        web: adaptive
+      - domain: skills-staging.86offer.cn
+        tls: 86offer.cn
+        mode: web+api
+        web: adaptive
     packages:
       - web-universal-cloud-browser-zip
       - linux-x64-standalone-server-tar-gz
@@ -136,6 +200,38 @@ profiles:
         web: adaptive
       - domain: skills.dtupay.cn
         tls: dtupay.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills.skubc.com
+        tls: skubc.com
+        mode: web+api
+        web: adaptive
+      - domain: skills.skubc.cn
+        tls: skubc.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills.zowalk.com
+        tls: zowalk.com
+        mode: web+api
+        web: adaptive
+      - domain: skills.zowalk.cn
+        tls: zowalk.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills.offer86.com
+        tls: offer86.com
+        mode: web+api
+        web: adaptive
+      - domain: skills.offer86.cn
+        tls: offer86.cn
+        mode: web+api
+        web: adaptive
+      - domain: skills.86offer.com
+        tls: 86offer.com
+        mode: web+api
+        web: adaptive
+      - domain: skills.86offer.cn
+        tls: 86offer.cn
         mode: web+api
         web: adaptive
     packages:
@@ -190,6 +286,46 @@ profiles:
         apiPathStyle: full-prefix
       - domain: skills.dtupay.cn
         tls: dtupay.cn
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.skubc.com
+        tls: skubc.com
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.skubc.cn
+        tls: skubc.cn
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.zowalk.com
+        tls: zowalk.com
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.zowalk.cn
+        tls: zowalk.cn
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.offer86.com
+        tls: offer86.com
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.offer86.cn
+        tls: offer86.cn
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.86offer.com
+        tls: 86offer.com
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: skills.86offer.cn
+        tls: 86offer.cn
         mode: web+api
         web: adaptive
         apiPathStyle: full-prefix

@@ -46,7 +46,12 @@
     "_sdkwork:verify": "pnpm check && pnpm test",
     "_sdkwork:clean": "cargo clean",
     "dev:standalone": "pnpm exec sdkwork-app dev --deployment-profile standalone",
-    "dev:cloud": "pnpm exec sdkwork-app dev --deployment-profile cloud"
+    "dev:cloud": "pnpm exec sdkwork-app dev --deployment-profile cloud",
+    "build:pc:dev": "node ../sdkwork-specs/tools/build-browser-client.mjs --root . --architecture pc --environment dev",
+    "build:pc:test": "node ../sdkwork-specs/tools/build-browser-client.mjs --root . --architecture pc --environment test",
+    "build:pc:staging": "node ../sdkwork-specs/tools/build-browser-client.mjs --root . --architecture pc --environment staging",
+    "build:pc:prod": "node ../sdkwork-specs/tools/build-browser-client.mjs --root . --architecture pc --environment prod",
+    "check:browser-build-scripts": "node ../sdkwork-specs/tools/check-browser-build-scripts.mjs --root ."
   },
   "exports": {
     ".": {

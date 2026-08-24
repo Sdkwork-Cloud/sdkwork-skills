@@ -150,6 +150,21 @@ pub async fn assemble_app_api_contribution_with_target_authorizer(
     )
 }
 
+/// Builds the Skills Backend API as a composing-owner contribution.
+pub async fn assemble_backend_api_contribution() -> Result<ApiAssemblyContribution, String> {
+    let (service, database_host) = bootstrap_owner_runtime_from_env().await?;
+    let route_manifest = sdkwork_routes_skills_backend_api::backend_route_manifest();
+    let router = assemble_backend_surface_router(service).await;
+    ApiAssemblyContribution::from_manifest(
+        "sdkwork-skills",
+        "SDKWork Skills Backend API",
+        router,
+        route_manifest,
+        vec![Arc::new(SkillsDomainContextInjector)],
+        Arc::new(SkillsReadiness::new(database_host)),
+    )
+}
+
 async fn bootstrap_owner_runtime_from_env() -> Result<
     (
         Arc<SkillsService<SqlxSkillsRepository>>,
