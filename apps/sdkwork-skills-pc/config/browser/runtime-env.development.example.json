@@ -1,7 +1,0 @@
-{
-  "environment": "development",
-  "deploymentProfile": "standalone",
-  "runtimeTarget": "browser",
-  "appApiBaseUrl": "",
-  "backendApiBaseUrl": ""
-}
