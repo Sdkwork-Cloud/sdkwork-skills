@@ -104,6 +104,11 @@ pub async fn bootstrap_database_from_env() -> Result<(), String> {
 }
 
 /// Builds the Skills App API from the canonical owner repository and database lifecycle.
+/// App-api surface route manifest owned by the Skills dependency assembly.
+pub fn app_api_route_manifest() -> sdkwork_web_core::HttpRouteManifest {
+    sdkwork_routes_skills_app_api::app_route_manifest()
+}
+
 pub async fn assemble_app_api_contribution() -> Result<ApiAssemblyContribution, String> {
     assemble_app_api_contribution_with_target_authorizer(Arc::new(DenyExternalInstallationTargets))
         .await

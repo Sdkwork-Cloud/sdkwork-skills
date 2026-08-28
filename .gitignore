@@ -52,3 +52,17 @@ Thumbs.db
 *.log
 .DS_Store
 Thumbs.db
+
+# SDKWork baseline ignore patterns (auto-appended)
+.pnpm-store/
+.turbo/
+**/.turbo/
+*.sqlite-shm
+*.sqlite-wal
+**/test-results/
+*.tsbuildinfo
+**/.cache/
+**/*.bootstrap.local.json
+etc/**/*.local.*
+/etc/secrets/
+
