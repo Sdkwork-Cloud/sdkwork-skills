@@ -10,15 +10,15 @@ name = "sdkwork_api_skills_assembly"
 path = "src/lib.rs"
 
 [dependencies]
-sdkwork-database-sqlx.workspace = true
 axum.workspace = true
 tokio.workspace = true
 sdkwork-web-bootstrap.workspace = true
+sdkwork-web-core.workspace = true
+sdkwork-database-sqlx.workspace = true
 sdkwork-intelligence-skills-repository-sqlx.workspace = true
 sdkwork-intelligence-skills-service.workspace = true
 sdkwork-skills-database-host.workspace = true
 sdkwork-web-contract.workspace = true
-sdkwork-web-core.workspace = true
 serde_json.workspace = true
 sdkwork-routes-skills-app-api.workspace = true
 sdkwork-routes-skills-backend-api.workspace = true

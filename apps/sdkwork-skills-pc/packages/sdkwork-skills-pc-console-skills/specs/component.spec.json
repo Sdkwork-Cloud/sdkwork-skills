@@ -52,7 +52,7 @@
     }
   ],
   "contracts": {
-    "layerRole": "frontend-capability",
+    "layerRole": "frontend-feature",
     "providedPorts": [
       "pages/MySkillsPage",
       "pages/CreateSkillPage"

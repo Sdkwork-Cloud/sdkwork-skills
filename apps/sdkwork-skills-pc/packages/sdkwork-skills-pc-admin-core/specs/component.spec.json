@@ -99,12 +99,12 @@
     "permissionComposition": {
       "inheritanceMode": "module-catalog-with-overrides",
       "applicationModule": {
-        "manifestRef": "../../../../../specs/iam.module.manifest.json"
+        "manifestRef": "../../../../../sdkwork-iam/iam/modules/skills/iam.module.manifest.json"
       },
       "moduleCatalogRefs": [
         {
           "moduleId": "skills",
-          "manifestRef": "../../../../../specs/iam.module.manifest.json",
+          "manifestRef": "../../../../../sdkwork-iam/iam/modules/skills/iam.module.manifest.json",
           "inheritPermissions": true,
           "inheritRoles": true
         }
