@@ -38,6 +38,7 @@
   "dependencies": {
     "@sdkwork/sdk-common": "workspace:*",
     "@sdkwork/skills-pc-commons": "workspace:*",
+    "@sdkwork/skills-pc-core": "workspace:*",
     "@sdkwork/utils": "workspace:*",
     "@sdkwork/skills-backend-sdk": "workspace:*"
   }
