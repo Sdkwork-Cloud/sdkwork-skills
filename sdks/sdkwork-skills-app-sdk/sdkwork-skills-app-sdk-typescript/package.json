@@ -1,6 +1,6 @@
 {
   "name": "@sdkwork/skills-app-sdk",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "SDKWork Skills App SDK composed consumer facade.",
   "type": "module",
   "private": false,
