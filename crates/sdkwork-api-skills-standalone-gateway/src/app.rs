@@ -5,7 +5,8 @@ use sdkwork_api_skills_assembly::ApiAssembly;
 use sdkwork_iam_web_adapter::{
     iam_web_request_context_resolver_from_env, IamAppContextInjector, IamAuthorizationPolicy,
 };
-use sdkwork_web_bootstrap::{ComposedApiAssembly, WebFramework};
+use sdkwork_web_bootstrap::{ApiModuleRegistry, WebFramework};
+
 use sdkwork_web_core::{
     DefaultRateLimitPolicyResolver, HttpMetricsRegistry, WebRequestContextProfile,
     WebRequestContextResolver,
@@ -66,7 +67,10 @@ where
         .domain_injector(Arc::new(IamAppContextInjector))
         .rate_limit_resolver(Arc::new(DefaultRateLimitPolicyResolver))
         .metrics_registry(metrics);
-    Ok(ComposedApiAssembly::try_compose(&title, vec![assembly])?
+    let mut module_registry = ApiModuleRegistry::new();
+    module_registry.add_modules(vec![assembly]);
+    Ok(module_registry
+        .try_compose(&title)?
         .into_hosted(framework)
         .router)
 }
@@ -76,9 +80,7 @@ mod tests {
     use axum::body::{to_bytes, Body};
     use axum::http::{Request, StatusCode};
     use sdkwork_iam_web_adapter::IamWebRequestContextResolver;
-    use sdkwork_web_bootstrap::{
-        AlwaysReady, ReadinessCheck, ReadinessFuture, READINESS_DEPENDENCY_UNAVAILABLE,
-    };
+    use sdkwork_web_bootstrap::{AlwaysReady, ApiModuleRegistry, READINESS_DEPENDENCY_UNAVAILABLE, ReadinessCheck, ReadinessFuture};
     use sdkwork_web_core::{DomainContextInjector, HttpRouteManifest, WebRequestContext};
     use tower::ServiceExt;
 
