@@ -164,8 +164,7 @@
         "x-sdkwork-resource": "marketplace",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.marketplace.read"
+        "x-sdkwork-request-context": "WebRequestContext"
       }
     },
     "/app/v3/api/skills/{skillKey}": {
@@ -280,8 +279,7 @@
         "x-sdkwork-resource": "marketplace",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.marketplace.read"
+        "x-sdkwork-request-context": "WebRequestContext"
       }
     },
     "/app/v3/api/skill_packages": {
@@ -429,8 +427,7 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.marketplace.read"
+        "x-sdkwork-request-context": "WebRequestContext"
       },
       "post": {
         "tags": [
@@ -543,8 +540,7 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.packages.create"
+        "x-sdkwork-request-context": "WebRequestContext"
       }
     },
     "/app/v3/api/skill_packages/owned": {
@@ -692,8 +688,7 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.marketplace.read"
+        "x-sdkwork-request-context": "WebRequestContext"
       }
     },
     "/app/v3/api/skill_packages/{packageId}": {
@@ -812,8 +807,7 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.marketplace.read"
+        "x-sdkwork-request-context": "WebRequestContext"
       },
       "patch": {
         "tags": [
@@ -940,8 +934,7 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.packages.update"
+        "x-sdkwork-request-context": "WebRequestContext"
       },
       "delete": {
         "tags": [
@@ -1051,8 +1044,7 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.packages.delete"
+        "x-sdkwork-request-context": "WebRequestContext"
       }
     },
     "/app/v3/api/skill_packages/{packageId}/artifacts": {
@@ -1213,8 +1205,7 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.marketplace.read"
+        "x-sdkwork-request-context": "WebRequestContext"
       },
       "post": {
         "tags": [
@@ -1341,8 +1332,7 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.artifacts.create"
+        "x-sdkwork-request-context": "WebRequestContext"
       }
     },
     "/app/v3/api/skill_categories": {
@@ -1490,8 +1480,7 @@
         "x-sdkwork-resource": "skillCategories",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.marketplace.read"
+        "x-sdkwork-request-context": "WebRequestContext"
       }
     },
     "/app/v3/api/skill_packages/{packageId}/installations": {
@@ -1620,8 +1609,7 @@
         "x-sdkwork-resource": "skillPackages",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.packages.install"
+        "x-sdkwork-request-context": "WebRequestContext"
       }
     },
     "/app/v3/api/skill_installations": {
@@ -1796,8 +1784,7 @@
         "x-sdkwork-resource": "skillInstallations",
         "x-sdkwork-public": false,
         "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-permission": "skills.installations.read"
+        "x-sdkwork-request-context": "WebRequestContext"
       }
     }
   },

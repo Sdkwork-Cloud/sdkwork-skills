@@ -69,3 +69,6 @@ etc/**/*.local.*
 
 # Local artifacts and build output (do not commit)
 node_modules.stale.*/
+
+# Build artifacts
+/bin/
